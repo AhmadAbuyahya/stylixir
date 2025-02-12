@@ -4,7 +4,7 @@
 
 ## Description
 
-**Stylixir** is a web-based app that makes it easy generates random, unique and beautiful patterns using CSS. It creates a variety of dynamic patterns based on randomized values for colors, shapes, and spacing, providing visually interesting results with the click of a button. It's a simple project that showcases the power of CSS for creating art-like visuals without relying on external libraries or frameworks.
+**Stylixir** is a web-based app that makes it easy to generate random, unique and beautiful patterns using CSS. It creates a variety of dynamic patterns based on randomized values for colors, shapes, and spacing, providing visually interesting results with the click of a button. It's a simple project that showcases the power of CSS for creating art-like visuals without relying on external libraries or frameworks.
 
 ## Features
 
