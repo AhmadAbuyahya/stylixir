@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import tinycolor from 'tinycolor2'
+import { overlayTypes } from '~/lib/overlays'
 import templates from '~/lib/templates'
 
 // Utility functions
@@ -25,6 +26,14 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   const activeTemplate = ref(Object.keys(templates)[0])
   const variablesRef = ref<Record<string, string | number>>({})
 
+  // Overlay variables
+  const overlayVariables = ref({
+    overlayType: 'none',
+    overlayColor: '#000000',
+    overlayOpacity: 0.5,
+    overlayBlur: 0,
+  })
+
   // Getters
   const variables = computed(() => templates[activeTemplate.value].variables)
   const template = computed(() => templates[activeTemplate.value].template)
@@ -37,6 +46,43 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   })
 
   const css = computed(() => utils.generateCss(style.value))
+
+  const overlayStyle = computed(() => {
+    const { overlayType, overlayColor, overlayOpacity, overlayBlur } = overlayVariables.value
+
+    if (overlayType === 'none')
+      return { 'background': 'none', 'backdrop-filter': `blur(${overlayBlur}px)` }
+
+    if (overlayType === 'opacity') {
+      return {
+        'background': tinycolor(overlayColor).setAlpha(overlayOpacity).toRgbString(),
+        'backdrop-filter': `blur(${overlayBlur}px)`,
+      }
+    }
+
+    const typeConfig = overlayTypes[overlayType as keyof typeof overlayTypes]
+
+    let background = ''
+    if (typeConfig.type === 'radial' && 'position' in typeConfig) {
+      const start = typeConfig.start === 'transparent' ? 'transparent' : overlayColor
+      const end = typeConfig.end === 'color' ? overlayColor : 'transparent'
+      background = `radial-gradient(${typeConfig.position}, ${start}, ${end})`
+    }
+    else if (typeConfig.type === 'inner' && 'direction' in typeConfig) {
+      background = `linear-gradient(${typeConfig.direction}, ${overlayColor}, transparent, ${overlayColor})`
+    }
+    else if (typeConfig.type === 'outer' && 'direction' in typeConfig) {
+      background = `linear-gradient(${typeConfig.direction}, transparent, ${overlayColor}, transparent)`
+    }
+    else if ('direction' in typeConfig) {
+      background = `linear-gradient(${typeConfig.direction}, transparent, ${overlayColor})`
+    }
+
+    return {
+      background,
+      'backdrop-filter': `blur(${overlayBlur}px)`,
+    }
+  })
 
   // Actions
   function updateActiveTemplate(slug: string) {
@@ -122,6 +168,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeColors,
     randomizeAll,
     getRandomTemplateCss,
+    overlayVariables,
+    overlayStyle,
   }
 })
 
