@@ -1,931 +1,494 @@
 import type { Templates } from '~/types'
 
 const templates: Templates = {
-  plaid: {
-    template: {
-      'background-image': `linear-gradient(
-        transparent 50%,
-        #9da8e150 50%
-      ),
-      linear-gradient({angleOne}deg, {colorOne} 50%, {colorTwo} 50%)`,
-      'background-size': '{sizeX}rem {sizeY}rem',
-    },
-    variables: {
-      colorOne: {
-        type: 'color',
-        value: '#324171',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#101423',
-      },
-      angleOne: {
-        type: 'range',
-        value: 90,
-        min: 0,
-        max: 360,
-      },
-      sizeX: {
-        type: 'range',
-        value: 4,
-        min: 3,
-        max: 20,
-      },
-      sizeY: {
-        type: 'range',
-        value: 4,
-        min: 3,
-        max: 20,
-      },
-    },
-  },
-  triangles: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `conic-gradient(
-          from {angleOne}deg at 50% 60%,
-          {colorOne} {angleFour}deg,
-          transparent {angleFour}deg
-        ),
-        conic-gradient(from {angleTwo}deg at 50% 30%, {colorTwo} {angleThree}deg, transparent {angleThree}deg)`,
-      'background-size': '{sizeX}rem {sizeY}rem',
-      'background-position': '0 0, {positionOne}px {positionTwo}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#313466',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#11ffbb',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#5255bb',
-      },
-      angleOne: {
-        type: 'range',
-        value: 330,
-        min: 1,
-        max: 360,
-      },
-      angleTwo: {
-        type: 'range',
-        value: 150,
-        min: 1,
-        max: 360,
-      },
-      angleThree: {
-        type: 'range',
-        value: 60,
-        min: 1,
-        max: 360,
-      },
-      angleFour: {
-        type: 'range',
-        value: 60,
-        min: 1,
-        max: 360,
-      },
-      sizeX: {
-        type: 'range',
-        value: 3,
-        min: 3,
-        max: 20,
-      },
-      sizeY: {
-        type: 'range',
-        value: 3,
-        min: 3,
-        max: 20,
-      },
-      positionOne: {
-        type: 'range',
-        value: 1.5 * 16,
-        min: -100,
-        max: 100,
-      },
-      positionTwo: {
-        type: 'range',
-        value: -0.5 * 16,
-        min: -100,
-        max: 100,
-      },
-    },
-  },
-  zigzag: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `linear-gradient(
-          -45deg,
-          transparent 75%,
-          {colorOne} 75%
-        ),
-        linear-gradient(45deg, transparent 75%, {colorOne} 75%),
-        linear-gradient(-135deg, transparent 75%, {colorOne} 75%),
-        linear-gradient(135deg, transparent 75%, {colorOne} 75%)`,
-      'background-size': '{sizeX}rem {sizeY}rem',
-      'background-position': '{PositionOne}rem 0, {PositionOne}rem 0, 0 0, 0 0',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#101423',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#9da8e1',
-      },
-      sizeX: {
-        type: 'range',
-        value: 10,
-        min: 3,
-        max: 20,
-      },
-      sizeY: {
-        type: 'range',
-        value: 10,
-        min: 3,
-        max: 20,
-      },
-      PositionOne: {
-        type: 'range',
-        value: 2,
-        min: 0,
-        max: 20,
-      },
-    },
-  },
-  plus: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `radial-gradient(circle, transparent {sizeOne}px, {bgColor} {sizeOne}px),
-        linear-gradient({colorOne} .5rem, transparent .5rem),
-        linear-gradient(90deg, {colorOne} 8px, transparent 8px)`,
-      'background-size': '5rem 5rem',
-      'background-position': '5.25rem 5.25rem, 2.5rem 2.5rem, 2.5rem 2.5rem',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#212223',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#008080',
-      },
-      sizeOne: {
-        type: 'range',
-        value: 1 * 16,
-        min: 5,
-        max: 40,
-      },
-    },
-  },
-  waves: {
-    template: {
-      'background-color': '#232221',
-      'background-image': `radial-gradient(
-      circle at 100% 50%,
-      transparent 1rem,
-      {colorThree} 1rem,
-      {colorThree} 1.5rem,
-      transparent 1.5rem
-    ),
-    radial-gradient(
-      circle at 0% 50%,
-      transparent 1rem,
-      {colorThree} 1rem,
-      {colorThree} 1.5rem,
-      transparent 1.5rem
-    ),
-    linear-gradient({angleOne}deg, {colorOne}, {colorTwo})`,
-      'background-size': '{sizeOne}rem {sizeTwo}rem, {sizeOne}rem {sizeTwo}rem, 100% 100%',
-      'background-position': '0 0, 0 2.5rem',
-    },
-    variables: {
-      colorOne: {
-        value: '#ff0000',
-        type: 'color',
-      },
-      colorTwo: {
-        value: '#0000ff',
-        type: 'color',
-      },
-      colorThree: {
-        value: '#ffffff',
-        type: 'color',
-      },
-      angleOne: {
-        value: -45,
-        type: 'range',
-        min: 0,
-        max: 360,
-      },
-      sizeOne: {
-        value: 12,
-        type: 'range',
-        min: 1,
-        max: 20,
-      },
-      sizeTwo: {
-        value: 5,
-        type: 'range',
-        min: 1,
-        max: 20,
-      },
-
-    },
-  },
-  brickWall: {
-    template: {
-      'background': 'conic-gradient(at {width}% {height}%,#0000 75%,{colorOne} 0),conic-gradient(at {width}% {height}%,#0000 75%,{colorOne} 0) {scale}px {scale}px {colorTwo}',
-      'background-size': 'calc(2*{scale}px) calc(2*{scale}px)',
-    },
-    variables: {
-      colorOne: {
-        value: '#6b698f',
-        type: 'color',
-      },
-      colorTwo: {
-        value: '#2b2a33',
-        type: 'color',
-      },
-      scale: {
-        value: 50,
-        type: 'range',
-        min: 1,
-        max: 50,
-      },
-      width: {
-        value: 90,
-        type: 'range',
-        min: 1,
-        max: 100,
-      },
-      height: {
-        value: 40,
-        type: 'range',
-        min: 1,
-        max: 100,
-      },
-    },
-  },
-  hexagons: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `linear-gradient(30deg, {colorOne} 12%, transparent 12.5%, transparent 87%, {colorOne} 87.5%, {colorOne}),
-        linear-gradient(150deg, {colorOne} 12%, transparent 12.5%, transparent 87%, {colorOne} 87.5%, {colorOne}),
-        linear-gradient(30deg, {colorOne} 12%, transparent 12.5%, transparent 87%, {colorOne} 87.5%, {colorOne}),
-        linear-gradient(150deg, {colorOne} 12%, transparent 12.5%, transparent 87%, {colorOne} 87.5%, {colorOne}),
-        linear-gradient(60deg, {colorTwo} 25%, transparent 25.5%, transparent 75%, {colorTwo} 75%, {colorTwo}),
-        linear-gradient(60deg, {colorTwo} 25%, transparent 25.5%, transparent 75%, {colorTwo} 75%, {colorTwo})`,
-      'background-size': '{sizeX}rem {sizeY}rem',
-      'background-position': '0 0, 0 0, {offsetX}rem {offsetY}rem, {offsetX}rem {offsetY}rem, 0 0, {offsetX}rem {offsetY}rem',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#ffffff',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#dddddd',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#999999',
-      },
-      sizeX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      sizeY: {
-        type: 'range',
-        value: 35,
-        min: 17,
-        max: 87,
-      },
-      offsetX: {
-        type: 'range',
-        value: 10,
-        min: 5,
-        max: 25,
-      },
-      offsetY: {
-        type: 'range',
-        value: 17.5,
-        min: 8,
-        max: 44,
-      },
-    },
-  },
-  polkaDots: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `radial-gradient({colorOne} {sizeOne}px, transparent {sizeOne}px),
-        radial-gradient({colorTwo} {sizeTwo}px, transparent {sizeTwo}px)`,
-      'background-size': '{spacingX}px {spacingY}px',
-      'background-position': '0 0, {offsetX}px {offsetY}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#ffffff',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#ff9999',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#99ff99',
-      },
-      sizeOne: {
-        type: 'range',
-        value: 3,
-        min: 1,
-        max: 10,
-      },
-      sizeTwo: {
-        type: 'range',
-        value: 2,
-        min: 1,
-        max: 10,
-      },
-      spacingX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      spacingY: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      offsetX: {
-        type: 'range',
-        value: 10,
-        min: 5,
-        max: 25,
-      },
-      offsetY: {
-        type: 'range',
-        value: 10,
-        min: 5,
-        max: 25,
-      },
-    },
-  },
-  stripes: {
-    template: {
-      'background': 'linear-gradient({angle}deg, {colorOne} {widthOne}%, {colorTwo} {widthOne}%, {colorTwo} {widthTwo}%, {colorThree} {widthTwo}%)',
-      'background-size': '{size}px {size}px',
-    },
-    variables: {
-      colorOne: {
-        type: 'color',
-        value: '#ff6b6b',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#4ecdc4',
-      },
-      colorThree: {
-        type: 'color',
-        value: '#45b7d1',
-      },
-      angle: {
-        type: 'range',
-        value: 45,
-        min: 0,
-        max: 360,
-      },
-      widthOne: {
-        type: 'range',
-        value: 25,
-        min: 1,
-        max: 50,
-      },
-      widthTwo: {
-        type: 'range',
-        value: 50,
-        min: 1,
-        max: 100,
-      },
-      size: {
-        type: 'range',
-        value: 60,
-        min: 20,
-        max: 200,
-      },
-    },
-  },
-  tartan: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `repeating-linear-gradient({angle}deg, transparent, transparent {size}px, {colorOne} {size}px, {colorOne} 55px),
-        repeating-linear-gradient({perpAngle}deg, transparent, transparent {size}px, {colorTwo} {size}px, {colorTwo} 55px)`,
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#2c3e50',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#e74c3c',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#3498db',
-      },
-      angle: {
-        type: 'range',
-        value: 0,
-        min: 0,
-        max: 360,
-      },
-      perpAngle: {
-        type: 'range',
-        value: 90,
-        min: 0,
-        max: 360,
-      },
-      size: {
-        type: 'range',
-        value: 50,
-        min: 1,
-        max: 50,
-      },
-    },
-  },
-  circuitBoard: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `
-        linear-gradient({angleOne}deg, {colorOne} {sizeOne}px, transparent {sizeOne}px),
-        linear-gradient({angleTwo}deg, {colorOne} {sizeOne}px, transparent {sizeOne}px),
-        linear-gradient({colorTwo} {sizeTwo}px, transparent {sizeTwo}px),
-        linear-gradient(90deg, {colorTwo} {sizeTwo}px, transparent {sizeTwo}px)`,
-      'background-size': '{spacingX}px {spacingY}px',
-      'background-position': '0 0, 0 0, -{offsetX}px -{offsetY}px, -{offsetX}px -{offsetY}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#1a1a1a',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#4CAF50',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#2196F3',
-      },
-      angleOne: {
-        type: 'range',
-        value: 0,
-        min: 0,
-        max: 360,
-      },
-      angleTwo: {
-        type: 'range',
-        value: 90,
-        min: 0,
-        max: 360,
-      },
-      sizeOne: {
-        type: 'range',
-        value: 2,
-        min: 1,
-        max: 10,
-      },
-      sizeTwo: {
-        type: 'range',
-        value: 1,
-        min: 1,
-        max: 10,
-      },
-      spacingX: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 100,
-      },
-      spacingY: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 100,
-      },
-      offsetX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      offsetY: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-    },
-  },
-  basketWeave: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `
-        linear-gradient({colorOne} {sizeOne}px, transparent {sizeOne}px),
-        linear-gradient(90deg, {colorOne} {sizeOne}px, transparent {sizeOne}px),
-        linear-gradient({colorTwo} {sizeTwo}px, transparent {sizeTwo}px),
-        linear-gradient(90deg, {colorTwo} {sizeTwo}px, transparent {sizeTwo}px)`,
-      'background-size': '{spacingX}px {spacingY}px, {spacingX}px {spacingY}px, {spacingLargeX}px {spacingLargeY}px, {spacingLargeX}px {spacingLargeY}px',
-      'background-position': '0 0, 0 0, {offsetX}px {offsetY}px, {offsetX}px {offsetY}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#f1e3d3',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#d7b899',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#c49a6c',
-      },
-      sizeOne: {
-        type: 'range',
-        value: 2,
-        min: 1,
-        max: 10,
-      },
-      sizeTwo: {
-        type: 'range',
-        value: 4,
-        min: 1,
-        max: 10,
-      },
-      spacingX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      spacingY: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      spacingLargeX: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 100,
-      },
-      spacingLargeY: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 100,
-      },
-      offsetX: {
-        type: 'range',
-        value: 10,
-        min: 5,
-        max: 25,
-      },
-      offsetY: {
-        type: 'range',
-        value: 10,
-        min: 5,
-        max: 25,
-      },
-    },
-  },
-  chevron: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `
-        linear-gradient({angleOne}deg, {colorOne} 25%, transparent 25%),
-        linear-gradient({angleTwo}deg, {colorOne} 25%, transparent 25%)`,
-      'background-size': '{sizeX}px {sizeY}px',
-      'background-position': '0 0, 0 {offsetY}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#f0f0f0',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#d9d9d9',
-      },
-      angleOne: {
-        type: 'range',
-        value: 45,
-        min: 0,
-        max: 360,
-      },
-      angleTwo: {
-        type: 'range',
-        value: -45,
-        min: -360,
-        max: 0,
-      },
-      sizeX: {
-        type: 'range',
-        value: 60,
-        min: 20,
-        max: 200,
-      },
-      sizeY: {
-        type: 'range',
-        value: 60,
-        min: 20,
-        max: 200,
-      },
-      offsetY: {
-        type: 'range',
-        value: 30,
-        min: 10,
-        max: 100,
-      },
-    },
-  },
-  carbonFiber: {
-    template: {
-      'background':
-        `radial-gradient(circle at 50% 50%, {colorTwo} 25%, {colorOne} 25%, {colorOne} 30%, transparent 30%, transparent),
-        radial-gradient(circle at 0% 50%, {colorTwo} 25%, {colorOne} 25%, {colorOne} 30%, transparent 30%, transparent),
-        radial-gradient(circle at 100% 50%, {colorTwo} 25%, {colorOne} 25%, {colorOne} 30%, transparent 30%, transparent)`,
-      'background-size': '{sizeX}px {sizeY}px',
-      'background-color': '{bgColor}',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#2c3e50',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#34495e',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#2c3e50',
-      },
-      sizeX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-      sizeY: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 50,
-      },
-    },
-  },
-  moroccanTiles: {
+  trianglesPattern: {
     template: {
       'background': `
-        radial-gradient(circle at 0 0, {colorOne} {size}px, transparent {size}px) 0 0,
-        radial-gradient(circle at 100% 0, {colorOne} {size}px, transparent {size}px) {tileSize}px 0,
-        radial-gradient(circle at 100% 100%, {colorOne} {size}px, transparent {size}px) {tileSize}px {tileSize}px,
-        radial-gradient(circle at 0 100%, {colorOne} {size}px, transparent {size}px) 0 {tileSize}px,
-        {bgColor}`,
-      'background-size': 'calc(2 * {tileSize}px) calc(2 * {tileSize}px)',
+        conic-gradient(from {angle}deg, {colorBase} 15deg, {colorLight} 0 30deg, #0000 0 180deg,
+                                      {colorLight} 0 195deg, {colorBase} 0 210deg, #0000 0)
+          calc({size}px/2) calc(.5*{size}px/{tanValue}),
+        conic-gradient({colorBase} 30deg, {colorBright} 0 75deg, {colorBase} 0 90deg, {colorLight} 0 105deg,
+                       {colorBright} 0 150deg, {colorLight} 0 180deg, {colorBright} 0 210deg, {colorBase} 0 256deg,
+                       {colorLight} 0 270deg, {colorBase} 0 286deg, {colorLight} 0 331deg, {colorBright} 0)`,
+      'background-size': '{size}px calc({size}px/{tanValue})',
     },
     variables: {
-      bgColor: {
+      // Colors
+      colorBase: {
         type: 'color',
-        value: '#f1f1f1',
+        value: '#b9b9b9',
       },
-      colorOne: {
+      colorLight: {
         type: 'color',
-        value: '#000',
+        value: '#dcdcdc',
       },
+      colorBright: {
+        type: 'color',
+        value: '#fafafa',
+      },
+      // Pattern size
       size: {
         type: 'range',
-        value: 20,
-        min: 5,
-        max: 50,
-      },
-      tileSize: {
-        type: 'range',
-        value: 70,
-        min: 20,
-        max: 100,
-      },
-    },
-  },
-  grid: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `
-        linear-gradient({colorOne} {thickness}px, transparent {thickness}px),
-        linear-gradient(90deg, {colorTwo} {thickness}px, transparent {thickness}px)`,
-      'background-size': '{spacingX}px {spacingY}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#ffffff',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#000000',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#000000',
-      },
-      spacingX: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 100,
-      },
-      spacingY: {
-        type: 'range',
-        value: 20,
-        min: 10,
-        max: 100,
-      },
-      thickness: {
-        type: 'range',
-        value: 1,
-        min: 1,
-        max: 10,
-      },
-    },
-  },
-  checkerboard: {
-    template: {
-      'background-color': '{bgColor}',
-      'background-image': `
-        linear-gradient(45deg, {colorOne} 25%, transparent 25%, transparent 75%, {colorOne} 75%, {colorOne}),
-        linear-gradient(45deg, {colorOne} 25%, transparent 25%, transparent 75%, {colorOne} 75%, {colorOne})`,
-      'background-position': '0 0, {spacingX}px {spacingY}px',
-      'background-size': '{size}px {size}px',
-    },
-    variables: {
-      bgColor: {
-        type: 'color',
-        value: '#ffffff',
-      },
-      colorOne: {
-        type: 'color',
-        value: '#000000',
-      },
-      size: {
-        type: 'range',
-        value: 100,
-        min: 20,
+        value: 105,
+        min: 50,
         max: 200,
+        step: 5,
       },
-      spacingX: {
+      // Angular control
+      angle: {
         type: 'range',
-        value: 50,
-        min: 20,
-        max: 100,
-      },
-      spacingY: {
-        type: 'range',
-        value: 50,
-        min: 20,
-        max: 100,
-      },
-    },
-  },
-  circles: {
-    template: {
-      'background-image': `
-        repeating-radial-gradient(circle at 50% 50%, {colorOne} 0%, {colorOne} 10%, {colorTwo} 10%, {colorTwo} 20%)`,
-      'background-size': '{sizeX}px {sizeY}px',
-    },
-    variables: {
-      colorOne: {
-        type: 'color',
-        value: '#8e44ad',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#9b59b6',
-      },
-      sizeX: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 200,
-      },
-      sizeY: {
-        type: 'range',
-        value: 40,
-        min: 20,
-        max: 200,
-      },
-    },
-  },
-  honeyComb: {
-    template: {
-      '--s': '{scale}px', /* control the size */
-      '--c1': '{colorOne}', /* First color */
-      '--c2': '{colorTwo}', /* Second color */
-
-      '--c': '#0000,var(--c1) .5deg 119.5deg,#0000 120deg',
-      '--g1': 'conic-gradient(from  60deg at 56.25% calc(425%/6),var(--c))',
-      '--g2': 'conic-gradient(from 180deg at 43.75% calc(425%/6),var(--c))',
-      '--g3': 'conic-gradient(from -60deg at 50%   calc(175%/12),var(--c))',
-      'background': `
-        var(--g1), var(--g1) var(--s) calc({positionY} * var(--s)),
-        var(--g2), var(--g2) var(--s) calc({positionY} * var(--s)),
-        var(--g3) var(--s) 0, var(--g3) 0 calc({positionY} * var(--s)),
-        var(--c2)
-      `,
-      'background-size': 'calc(2 * var(--s)) calc(3.46 * var(--s))',
-    },
-    variables: {
-      colorOne: {
-        type: 'color',
-        value: '#2fb8ac',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#ecbe13',
-      },
-      scale: {
-        type: 'range',
-        value: 61,
-        min: 20,
-        max: 150,
-      },
-      positionY: {
-        type: 'range',
-        value: '1.73',
+        value: 75,
         min: 0,
-        max: 4,
+        max: 360,
+      },
+      // Trigonometric factor
+      tanValue: {
+        type: 'range',
+        value: 0.577, // approximation of tan(30deg)
+        min: 0.4,
+        max: 0.8,
         step: 0.1,
       },
     },
   },
-  // interlockingArches: {
-  //   template: {
-  //     'background-color': '{bgColor}',
-  //     'background-image': `
-  //       radial-gradient(55.59px at calc(100% + 27.3px) 50%, transparent calc(99% - 11px), {colorOne} calc(101% - 11px) 99%, transparent 101%),
-  //       radial-gradient(55.59px at -27.3px 50%, transparent calc(99% - 11px), {colorOne} calc(101% - 11px) 99%, transparent 101%)
-  //     `,
-  //     'background-size': '53px 168px',
-  //     'background-position': 'calc(50% - 26.5px + .5px) calc(50% - 84px), calc(50% + 26.5px) 50%',
-  //   },
-  //   variables: {
-  //     bgColor: {
-  //       type: 'color',
-  //       value: '#ffffff',
-  //     },
-  //     colorOne: {
-  //       type: 'color',
-  //       value: '#e0e0e0',
-  //     },
-  //     archSize: {
-  //       type: 'range',
-  //       value: 55.59,
-  //       min: 20,
-  //       max: 100,
-  //     },
-  //     archOffset: {
-  //       type: 'range',
-  //       value: 27.3,
-  //       min: 10,
-  //       max: 50,
-  //     },
-  //     patternWidth: {
-  //       type: 'range',
-  //       value: 53,
-  //       min: 30,
-  //       max: 100,
-  //     },
-  //     patternHeight: {
-  //       type: 'range',
-  //       value: 168,
-  //       min: 100,
-  //       max: 300,
-  //     },
-  //   },
-  // },
+  overlappingCubes: {
+    template: {
+      '--_g': '0 {angleSize}deg,#0000 0',
+      'background':
+        `conic-gradient(at calc(250%/3) calc(100%/3),{colorDark} var(--_g)),
+         conic-gradient(from -120deg at calc(50%/3) calc(100%/3),{colorMid} var(--_g)),
+         conic-gradient(from 120deg at calc(100%/3) calc(250%/3),{colorLight} var(--_g)),
+         conic-gradient(from 120deg at calc(200%/3) calc(250%/3),{colorLight} var(--_g)),
+         conic-gradient(from -180deg at calc(100%/3) 50%,{colorMid} 60deg,{colorLight} var(--_g)),
+         conic-gradient(from 60deg at calc(200%/3) 50%,{colorLight} 60deg,{colorDark} var(--_g)),
+         conic-gradient(from -60deg at 50% calc(100%/3),{colorLight} 120deg,{colorMid} 0 240deg,{colorDark} 0)`,
+      'background-size': 'calc({cubeSize}px*{cubeRatio}) {cubeSize}px',
+    },
+    variables: {
+      // Color Palette (unchanged)
+      colorDark: { type: 'color', value: '#999999' },
+      colorMid: { type: 'color', value: '#cdcbcc' },
+      colorLight: { type: 'color', value: '#f2f2f2' },
+
+      // Size Controls
+      cubeSize: {
+        type: 'range',
+        value: 84,
+        min: 42,
+        max: 168,
+        step: 2,
+      },
+
+      // Now properly integrated cubeRatio
+      cubeRatio: {
+        type: 'range',
+        value: 1.732, // √3
+        min: 1,
+        max: 4,
+        step: 0.01,
+      },
+
+      // Angle Controls
+      angleSize: {
+        type: 'range',
+        value: 120,
+        min: 10,
+        max: 180,
+        step: 5,
+      },
+
+    },
+  },
+  cubesIllusion: {
+    template: {
+      'background': `
+        repeating-conic-gradient(from {angle}deg,#0000 0 120deg,{colorOne} 0 50%)
+         calc({size}px/2) calc({size}px*{tanFactor}/2),
+        repeating-conic-gradient(from {angle}deg,{colorTwo} 0 60deg,{colorThree} 0 120deg,{colorOne} 0 50%)`,
+      'background-size': '{size}px calc({size}px*0.577)',
+    },
+    variables: {
+      // Pattern-preserving variables
+      colorOne: {
+        type: 'color',
+        value: '#3c3c3c',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#1d1d1d',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#4e4f51',
+      },
+      size: {
+        type: 'range',
+        value: 200,
+        min: 100,
+        max: 400,
+      },
+
+      // Pattern-transforming variables (reduced variance)
+      angle: {
+        type: 'range',
+        value: 30,
+        min: 15,
+        max: 45,
+      },
+      tanFactor: {
+        type: 'range',
+        value: 0.577, // approximation of tan(30deg)
+        min: 0.4,
+        max: 0.8,
+        step: 0.1,
+      },
+    },
+  },
+
+  geometricFlowers: {
+    template: {
+      'background': `
+        radial-gradient({colorOne} 24%,#0000 25%),
+        radial-gradient({colorTwo} 30%,#0000 32%) calc({size}px/2) calc({size}px/2),
+        repeating-conic-gradient(from {angle}deg,{colorThree} 0 {degree1}deg,{colorFour} 0 25%)`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      // Pattern-preserving variables (colors, size)
+      colorOne: {
+        type: 'color',
+        value: '#c02942',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#53777a',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#ecd078',
+      },
+      colorFour: {
+        type: 'color',
+        value: '#d95b43',
+      },
+      size: {
+        type: 'range',
+        value: 64,
+        min: 30,
+        max: 200,
+      },
+
+      // Pattern-transforming variables
+      angle: {
+        type: 'range',
+        value: 30,
+        min: 0,
+        max: 360,
+      },
+      degree1: {
+        type: 'range',
+        value: 30,
+        min: 10,
+        max: 90,
+      },
+    },
+  },
+
+  curvedLines: {
+    template: {
+      '--_g': '50%,#0000 37%,{colorOne} 39% 70%,#0000 72%',
+      '--_t': '50%,{colorTwo} 40deg,{colorThree} 0 140deg,{colorTwo} 0 180deg,#0000 0',
+      '--_s': '{position1}% {position2}% at',
+      'background': `
+        radial-gradient(var(--_s) -10% var(--_g)) 0 calc({size}px/2),
+        radial-gradient(var(--_s) -10% var(--_g)) calc({size}px/2) 0,
+        radial-gradient(var(--_s) 110% var(--_g)),
+        radial-gradient(var(--_s) 110% var(--_g)) calc({size}px/2) calc({size}px/2),
+        conic-gradient(from 0deg at 55% var(--_t)) calc({size}px/4) 0,
+        conic-gradient(from 180deg at 45% var(--_t)) calc({size}px/4) 0,
+        {colorTwo}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      // Pattern-preserving variables (colors, size)
+      colorOne: {
+        type: 'color',
+        value: '#fff0e5',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#025d8c',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#e1642a',
+      },
+      size: {
+        type: 'range',
+        value: 100,
+        min: 50,
+        max: 200,
+      },
+
+      // Pattern-transforming variables
+      position1: {
+        type: 'range',
+        value: 47,
+        min: 25,
+        max: 75,
+      },
+      position2: {
+        type: 'range',
+        value: 50,
+        min: 25,
+        max: 75,
+      },
+    },
+  },
+  overlappingCircles: {
+    template: {
+      '--_g': `
+        {colorOne} 0%  5% ,{colorTwo} 6%  15%,{colorOne} 16% 25%,{colorTwo} 26% 35%,{colorOne} 36% 45%,
+        {colorTwo} 46% 55%,{colorOne} 56% 65%,{colorTwo} 66% 75%,{colorOne} 76% 85%,{colorTwo} 86% 95%,
+        #0000 96%`,
+      'background': `
+        radial-gradient({radius1}% {radius1}% at 100% 0,var(--_g)),
+        radial-gradient({radius1}% {radius1}% at 0 100%,var(--_g)),
+        radial-gradient({radius1}% {radius1}%,var(--_g)),
+        radial-gradient({radius1}% {radius1}%,var(--_g)) calc({size}px/2) calc({size}px/2)
+        {colorOne}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      // Pattern-preserving variables (colors, size)
+      colorOne: {
+        type: 'color',
+        value: '#f7d2a1',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#05057e',
+      },
+      size: {
+        type: 'range',
+        value: 150,
+        min: 100,
+        max: 250,
+      },
+
+      // Pattern-transforming variables with limited variance
+      radius1: {
+        type: 'range',
+        value: 50,
+        min: 35,
+        max: 55,
+      },
+    },
+  },
+
+  equilateralTriangles: {
+    template: {
+      'background':
+        `conic-gradient(from {topAngle}deg at 50% 33%,#0000,{colorOne} 0.5deg 60deg,#0000 60.5deg)
+         calc({size}px/2) calc({size}px/{sqrtFactor}),
+         conic-gradient(from {bottomAngle}deg at 50% 66%,#0000,{colorTwo} 0.5deg 60deg,{colorThree} 60.5deg)`,
+      'background-size': '{size}px calc(0.5*{size}px/tan(30deg))',
+    },
+    variables: {
+      // Colors
+      colorOne: {
+        type: 'color',
+        value: '#FA6900',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#D95B43',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#ECD078',
+      },
+
+      // Sizing
+      size: {
+        type: 'range',
+        value: 120,
+        min: 60,
+        max: 240,
+        step: 10,
+      },
+
+      // Angles
+      topAngle: {
+        type: 'range',
+        value: 150,
+        min: 120,
+        max: 180,
+      },
+      bottomAngle: {
+        type: 'range',
+        value: -30,
+        min: -60,
+        max: 0,
+      },
+
+      // Math factors
+      sqrtFactor: {
+        type: 'range',
+        value: 1.4142, // sqrt(2)
+        min: 1.2,
+        max: 1.6,
+        step: 0.01,
+      },
+    },
+  },
+
+  braidedLines: {
+    template: {
+      '--g': 'calc({gap}px * {sizeFactor})', // Scale gap proportionally
+      'background':
+        `conic-gradient(at calc({cornerSize}px * {sizeFactor}) calc(100% - calc({cornerSize}px * {sizeFactor})),
+          #0000 270deg,{colorOne} 0) calc(calc({cornerSize}px * {sizeFactor}) + var(--g)) 0,
+         linear-gradient({colorTwo} calc({cornerSize}px * {sizeFactor}),#0000 0) 0 var(--g),
+         conic-gradient(at calc({cornerSize}px * {sizeFactor}) calc(100% - calc({cornerSize}px * {sizeFactor})),
+          #0000 90deg,{colorTwo} 0 180deg, {colorOne} 0),
+         {backgroundColor}`,
+      'background-size': `calc(2*(calc({cornerSize}px * {sizeFactor}) + var(--g)))
+                          calc(2*(calc({cornerSize}px * {sizeFactor}) + var(--g)))`,
+    },
+    variables: {
+      colorOne: { type: 'color', value: '#C02942' },
+      colorTwo: { type: 'color', value: '#53777A' },
+      backgroundColor: { type: 'color', value: '#ECD078' },
+      sizeFactor: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+      },
+      cornerSize: {
+        type: 'range',
+        value: 20,
+        min: 10,
+        max: 40,
+        step: 2,
+      },
+      gap: {
+        type: 'range',
+        value: 20,
+        min: 5,
+        max: 40,
+        step: 1,
+      },
+
+    },
+  },
+
+  parallelograms: {
+    template: {
+      background:
+        `linear-gradient({degree}deg,{colorOne} 33%,{colorTwo} 33.5% 66.5%,{colorOne} 67%)
+        0/{tileSize}px {tileSize}px`,
+    },
+    variables: {
+      // Colors
+      colorOne: {
+        type: 'color',
+        value: '#4ECDC4',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#556270',
+      },
+
+      // Pattern Geometry
+      tileSize: {
+        type: 'range',
+        value: 100,
+        min: 50,
+        max: 200,
+        step: 5,
+      },
+      degree: {
+        type: 'range',
+        value: 26,
+        min: 0,
+        max: 360,
+        step: 1,
+      },
+
+    },
+
+  },
+  distortedMesh: {
+    template: {
+      '--_g': '#0000 {gap}%,{colorBand} calc({gap}% + 2%) calc({gap}% + {bandWidth}%),#0000 calc({gap}% + 7%)',
+      'background':
+        `radial-gradient(farthest-side at -33.33% 50%,var(--_g)) 0 calc({baseSize}px/2),
+         radial-gradient(farthest-side at 50% 133.33%,var(--_g)) calc({baseSize}px/2) 0,
+         radial-gradient(farthest-side at 133.33% 50%,var(--_g)),
+         radial-gradient(farthest-side at 50% -33.33%,var(--_g)),
+         {backgroundColor}`,
+      'background-size':
+        `calc({baseSize}px/{widthRatio}) {baseSize}px,
+         {baseSize}px calc({baseSize}px/{heightRatio})`,
+    },
+    variables: {
+      // Colors
+      colorBand: {
+        type: 'color',
+        value: '#170409',
+      },
+      backgroundColor: {
+        type: 'color',
+        value: '#67917A',
+      },
+      transparentColor: {
+        type: 'color',
+        value: '#0000',
+      },
+
+      // Pattern Geometry
+      baseSize: {
+        type: 'range',
+        value: 140,
+        min: 70,
+        max: 280,
+        step: 10,
+      },
+      widthRatio: {
+        type: 'range',
+        value: 4.667,
+        min: 3,
+        max: 6,
+        step: 0.001,
+      },
+      heightRatio: {
+        type: 'range',
+        value: 4.667,
+        min: 3,
+        max: 6,
+        step: 0.001,
+      },
+
+      // Band Configuration
+      gap: {
+        type: 'range',
+        value: 52,
+        min: 40,
+        max: 60,
+      },
+
+      bandWidth: {
+        type: 'range',
+        value: 5,
+        min: 3,
+        max: 15,
+        step: 0.1,
+      },
+    },
+  },
+
 }
 export default templates

@@ -5,7 +5,7 @@ import templates from '~/lib/templates'
 
 // Utility functions
 const utils = {
-  randomNumber: (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min),
+  randomNumber: (min: number, max: number) => parseFloat((Math.random() * (max - min + 1) + min).toFixed(2)),
   randomColor: (alpha: number) => {
     const color = tinycolor.random()
     color.setAlpha(alpha)
@@ -127,29 +127,6 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeNumberValues()
   }
 
-  function getRandomTemplateCss(): string {
-    const randomTemplateKey = Object.keys(templates)[utils.randomNumber(0, Object.keys(templates).length - 1)]
-    const randomTemplate = templates[randomTemplateKey]
-
-    const randomVariables = Object.entries(randomTemplate.variables).reduce((acc, [key, variable]) => {
-      if (variable.type === 'color')
-        acc[key] = utils.randomColor(tinycolor(variable.value as string).getAlpha())
-      else if (variable.type === 'range' || variable.type === 'number')
-        acc[key] = utils.randomNumber(variable.min ?? 0, variable.max ?? 0)
-      else
-        acc[key] = variable.value
-
-      return acc
-    }, {} as Record<string, string | number>)
-
-    const randomStyle = Object.entries(randomTemplate.template).reduce((acc, [key, value]) => {
-      acc[key] = utils.interpolateTemplate(value, randomVariables)
-      return acc
-    }, {} as Record<string, string>)
-
-    return utils.generateCss(randomStyle)
-  }
-
   // Watchers
   watch(activeTemplate, initVariablesRef)
 
@@ -167,7 +144,6 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeNumberValues,
     randomizeColors,
     randomizeAll,
-    getRandomTemplateCss,
     overlayVariables,
     overlayStyle,
   }

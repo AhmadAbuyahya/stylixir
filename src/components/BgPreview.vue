@@ -43,6 +43,7 @@ function copyStyle() {
         filter: 'blur(5px) brightness(0.5)',
         inset: 0,
         position: 'absolute',
+        transition: 'all 0.2s ease-in-out',
       }"
     />
     <div
@@ -50,6 +51,8 @@ function copyStyle() {
 
       :style="{
         ...style,
+        transition: 'all 0.2s ease-in-out',
+
       }"
     >
       <button

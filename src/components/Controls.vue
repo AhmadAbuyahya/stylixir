@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import startCase from 'lodash.startcase'
 import { storeToRefs } from 'pinia'
+import ColorInput from './ColorInput.vue'
 import { overlayTypes } from '~/lib/overlays'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 
@@ -76,13 +77,17 @@ function setOverlayType(type: string) {
         </div>
         <div>
           <label class="block w-full text-left">Overlay Color</label>
-          <input v-model="overlayVariables.overlayColor" type="color" class="w-full">
+          <ColorInput v-model="overlayVariables.overlayColor" />
         </div>
         <div v-for="(value, key) in variables" :key="key" class="mb-4">
           <label class="block w-full text-left" :for="String(key)">
             {{ startCase(String(key)) }}
           </label>
+          <template v-if="value.type === 'color'">
+            <ColorInput v-model="variablesRef[key]" />
+          </template>
           <input
+            v-else
             :id="String(key)" v-model="variablesRef[key]" :type="value.type" :min="value.min" :max="value.max"
             :step="value.step"
           >
