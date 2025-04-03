@@ -1,146 +1,47 @@
 import type { Templates } from '~/types'
 
 const templates: Templates = {
-  trianglesPattern: {
+
+  zigzag: {
     template: {
-      'background': `
-        conic-gradient(from {angle}deg, {colorBase} 15deg, {colorLight} 0 30deg, #0000 0 180deg,
-                                      {colorLight} 0 195deg, {colorBase} 0 210deg, #0000 0)
-          calc({size}px/2) calc(.5*{size}px/{tanValue}),
-        conic-gradient({colorBase} 30deg, {colorBright} 0 75deg, {colorBase} 0 90deg, {colorLight} 0 105deg,
-                       {colorBright} 0 150deg, {colorLight} 0 180deg, {colorBright} 0 210deg, {colorBase} 0 256deg,
-                       {colorLight} 0 270deg, {colorBase} 0 286deg, {colorLight} 0 331deg, {colorBright} 0)`,
-      'background-size': '{size}px calc({size}px/{tanValue})',
+      'background-color': '{bgColor}',
+      'background-image': `linear-gradient(
+          -45deg,
+          transparent 75%,
+          {colorOne} 75%
+        ),
+        linear-gradient(45deg, transparent 75%, {colorOne} 75%),
+        linear-gradient(-135deg, transparent 75%, {colorOne} 75%),
+        linear-gradient(135deg, transparent 75%, {colorOne} 75%)`,
+      'background-size': '{sizeX}px {sizeY}px',
+      'background-position': '{PositionOne}px 0, {PositionOne}px 0, 0 0, 0 0',
     },
     variables: {
-      // Colors
-      colorBase: {
+      bgColor: {
         type: 'color',
-        value: '#b9b9b9',
+        value: '#101423',
       },
-      colorLight: {
-        type: 'color',
-        value: '#dcdcdc',
-      },
-      colorBright: {
-        type: 'color',
-        value: '#fafafa',
-      },
-      // Pattern size
-      size: {
-        type: 'range',
-        value: 105,
-        min: 50,
-        max: 200,
-        step: 5,
-      },
-      // Angular control
-      angle: {
-        type: 'range',
-        value: 75,
-        min: 0,
-        max: 360,
-      },
-      // Trigonometric factor
-      tanValue: {
-        type: 'range',
-        value: 0.577, // approximation of tan(30deg)
-        min: 0.4,
-        max: 0.8,
-        step: 0.1,
-      },
-    },
-  },
-  overlappingCubes: {
-    template: {
-      '--_g': '0 {angleSize}deg,#0000 0',
-      'background':
-        `conic-gradient(at calc(250%/3) calc(100%/3),{colorDark} var(--_g)),
-         conic-gradient(from -120deg at calc(50%/3) calc(100%/3),{colorMid} var(--_g)),
-         conic-gradient(from 120deg at calc(100%/3) calc(250%/3),{colorLight} var(--_g)),
-         conic-gradient(from 120deg at calc(200%/3) calc(250%/3),{colorLight} var(--_g)),
-         conic-gradient(from -180deg at calc(100%/3) 50%,{colorMid} 60deg,{colorLight} var(--_g)),
-         conic-gradient(from 60deg at calc(200%/3) 50%,{colorLight} 60deg,{colorDark} var(--_g)),
-         conic-gradient(from -60deg at 50% calc(100%/3),{colorLight} 120deg,{colorMid} 0 240deg,{colorDark} 0)`,
-      'background-size': 'calc({cubeSize}px*{cubeRatio}) {cubeSize}px',
-    },
-    variables: {
-      // Color Palette (unchanged)
-      colorDark: { type: 'color', value: '#999999' },
-      colorMid: { type: 'color', value: '#cdcbcc' },
-      colorLight: { type: 'color', value: '#f2f2f2' },
-
-      // Size Controls
-      cubeSize: {
-        type: 'range',
-        value: 84,
-        min: 42,
-        max: 168,
-        step: 2,
-      },
-
-      // Now properly integrated cubeRatio
-      cubeRatio: {
-        type: 'range',
-        value: 1.732, // √3
-        min: 1,
-        max: 4,
-        step: 0.01,
-      },
-
-      // Angle Controls
-      angleSize: {
-        type: 'range',
-        value: 120,
-        min: 10,
-        max: 180,
-        step: 5,
-      },
-
-    },
-  },
-  cubesIllusion: {
-    template: {
-      'background': `
-        repeating-conic-gradient(from {angle}deg,#0000 0 120deg,{colorOne} 0 50%)
-         calc({size}px/2) calc({size}px*{tanFactor}/2),
-        repeating-conic-gradient(from {angle}deg,{colorTwo} 0 60deg,{colorThree} 0 120deg,{colorOne} 0 50%)`,
-      'background-size': '{size}px calc({size}px*0.577)',
-    },
-    variables: {
-      // Pattern-preserving variables
       colorOne: {
         type: 'color',
-        value: '#3c3c3c',
+        value: '#9da8e1',
       },
-      colorTwo: {
-        type: 'color',
-        value: '#1d1d1d',
-      },
-      colorThree: {
-        type: 'color',
-        value: '#4e4f51',
-      },
-      size: {
+      sizeX: {
         type: 'range',
-        value: 200,
-        min: 100,
-        max: 400,
+        value: 100,
+        min: 20,
+        max: 200,
       },
-
-      // Pattern-transforming variables (reduced variance)
-      angle: {
+      sizeY: {
         type: 'range',
-        value: 30,
-        min: 15,
-        max: 45,
+        value: 100,
+        min: 20,
+        max: 200,
       },
-      tanFactor: {
+      PositionOne: {
         type: 'range',
-        value: 0.577, // approximation of tan(30deg)
-        min: 0.4,
-        max: 0.8,
-        step: 0.1,
+        value: 50,
+        min: 0,
+        max: 200,
       },
     },
   },
@@ -194,6 +95,140 @@ const templates: Templates = {
     },
   },
 
+  trianglesPattern: {
+    template: {
+      'background': `
+        conic-gradient(from {angle}deg, {colorBase} 15deg, {colorLight} 0 30deg, #0000 0 180deg,
+                                      {colorLight} 0 195deg, {colorBase} 0 210deg, #0000 0)
+          calc({size}px/2) calc(.5*{size}px/{tanValue}),
+        conic-gradient({colorBase} 30deg, {colorBright} 0 75deg, {colorBase} 0 90deg, {colorLight} 0 105deg,
+                       {colorBright} 0 150deg, {colorLight} 0 180deg, {colorBright} 0 210deg, {colorBase} 0 256deg,
+                       {colorLight} 0 270deg, {colorBase} 0 286deg, {colorLight} 0 331deg, {colorBright} 0)`,
+      'background-size': '{size}px calc({size}px/{tanValue})',
+    },
+    variables: {
+      // Colors
+      colorBase: {
+        type: 'color',
+        value: '#b9b9b9',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#dcdcdc',
+      },
+      colorBright: {
+        type: 'color',
+        value: '#fafafa',
+      },
+      // Pattern size
+      size: {
+        type: 'range',
+        value: 105,
+        min: 50,
+        max: 200,
+        step: 5,
+      },
+      // Angular control
+      angle: {
+        type: 'range',
+        value: 75,
+        min: 0,
+        max: 360,
+      },
+      // Trigonometric factor
+      tanValue: {
+        type: 'range',
+        value: 0.577, // approximation of tan(30deg)
+        min: 0.4,
+        max: 0.8,
+        step: 0.1,
+      },
+    },
+  },
+  parallelograms: {
+    template: {
+      background:
+        `linear-gradient({degree}deg,{colorOne} 33%,{colorTwo} 33.5% 66.5%,{colorOne} 67%)
+        0/{tileSize}px {tileSize}px`,
+    },
+    variables: {
+      // Colors
+      colorOne: {
+        type: 'color',
+        value: '#4ECDC4',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#556270',
+      },
+
+      // Pattern Geometry
+      tileSize: {
+        type: 'range',
+        value: 100,
+        min: 50,
+        max: 200,
+        step: 5,
+      },
+      degree: {
+        type: 'range',
+        value: 26,
+        min: 0,
+        max: 360,
+        step: 1,
+      },
+
+    },
+
+  },
+  overlappingCubes: {
+    template: {
+      '--_g': '0 {angleSize}deg,#0000 0',
+      'background':
+        `conic-gradient(at calc(250%/3) calc(100%/3),{colorDark} var(--_g)),
+         conic-gradient(from -120deg at calc(50%/3) calc(100%/3),{colorMid} var(--_g)),
+         conic-gradient(from 120deg at calc(100%/3) calc(250%/3),{colorLight} var(--_g)),
+         conic-gradient(from 120deg at calc(200%/3) calc(250%/3),{colorLight} var(--_g)),
+         conic-gradient(from -180deg at calc(100%/3) 50%,{colorMid} 60deg,{colorLight} var(--_g)),
+         conic-gradient(from 60deg at calc(200%/3) 50%,{colorLight} 60deg,{colorDark} var(--_g)),
+         conic-gradient(from -60deg at 50% calc(100%/3),{colorLight} 120deg,{colorMid} 0 240deg,{colorDark} 0)`,
+      'background-size': 'calc({cubeSize}px*{cubeRatio}) {cubeSize}px',
+    },
+    variables: {
+      // Color Palette (unchanged)
+      colorDark: { type: 'color', value: '#999999' },
+      colorMid: { type: 'color', value: '#cdcbcc' },
+      colorLight: { type: 'color', value: '#f2f2f2' },
+
+      // Size Controls
+      cubeSize: {
+        type: 'range',
+        value: 84,
+        min: 42,
+        max: 168,
+        step: 2,
+      },
+
+      // Now properly integrated cubeRatio
+      cubeRatio: {
+        type: 'range',
+        value: 1.732, // √3
+        min: 1,
+        max: 4,
+        step: 0.01,
+      },
+
+      // Angle Controls
+      angleSize: {
+        type: 'range',
+        value: 120,
+        min: 10,
+        max: 180,
+        step: 5,
+      },
+
+    },
+  },
   curvedLines: {
     template: {
       '--_g': '50%,#0000 37%,{colorOne} 39% 70%,#0000 72%',
@@ -245,6 +280,52 @@ const templates: Templates = {
       },
     },
   },
+  cubesIllusion: {
+    template: {
+      'background': `
+        repeating-conic-gradient(from {angle}deg,#0000 0 120deg,{colorOne} 0 50%)
+         calc({size}px/2) calc({size}px*{tanFactor}/2),
+        repeating-conic-gradient(from {angle}deg,{colorTwo} 0 60deg,{colorThree} 0 120deg,{colorOne} 0 50%)`,
+      'background-size': '{size}px calc({size}px*0.577)',
+    },
+    variables: {
+      // Pattern-preserving variables
+      colorOne: {
+        type: 'color',
+        value: '#3c3c3c',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#1d1d1d',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#4e4f51',
+      },
+      size: {
+        type: 'range',
+        value: 200,
+        min: 100,
+        max: 400,
+      },
+
+      // Pattern-transforming variables (reduced variance)
+      angle: {
+        type: 'range',
+        value: 30,
+        min: 15,
+        max: 45,
+      },
+      tanFactor: {
+        type: 'range',
+        value: 0.577, // approximation of tan(30deg)
+        min: 0.4,
+        max: 0.8,
+        step: 0.1,
+      },
+    },
+  },
+
   overlappingCircles: {
     template: {
       '--_g': `
@@ -385,42 +466,6 @@ const templates: Templates = {
     },
   },
 
-  parallelograms: {
-    template: {
-      background:
-        `linear-gradient({degree}deg,{colorOne} 33%,{colorTwo} 33.5% 66.5%,{colorOne} 67%)
-        0/{tileSize}px {tileSize}px`,
-    },
-    variables: {
-      // Colors
-      colorOne: {
-        type: 'color',
-        value: '#4ECDC4',
-      },
-      colorTwo: {
-        type: 'color',
-        value: '#556270',
-      },
-
-      // Pattern Geometry
-      tileSize: {
-        type: 'range',
-        value: 100,
-        min: 50,
-        max: 200,
-        step: 5,
-      },
-      degree: {
-        type: 'range',
-        value: 26,
-        min: 0,
-        max: 360,
-        step: 1,
-      },
-
-    },
-
-  },
   distortedMesh: {
     template: {
       '--_g': '#0000 {gap}%,{colorBand} calc({gap}% + 2%) calc({gap}% + {bandWidth}%),#0000 calc({gap}% + 7%)',
@@ -489,6 +534,85 @@ const templates: Templates = {
       },
     },
   },
-
+  heartsPattern: {
+    template: {
+      'background': `
+        radial-gradient(at 80% 80%,{colorHeart} 25.4%,#0000 26%),
+        radial-gradient(at 20% 80%,{colorHeart} 25.4%,#0000 26%),
+        conic-gradient(from -45deg at 50% 41%,{colorHeart} 90deg,{colorBackground} 0)
+           calc({size}px/2) 0`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      // Colors
+      colorHeart: {
+        type: 'color',
+        value: '#e7525b',
+      },
+      colorBackground: {
+        type: 'color',
+        value: '#78dbf0',
+      },
+      // Pattern size
+      size: {
+        type: 'range',
+        value: 120,
+        min: 60,
+        max: 200,
+        step: 10,
+      },
+    },
+  },
+  diagonalSquares: {
+    template: {
+      'background': `
+        repeating-conic-gradient(at {position1}% {position1}%, {colorSquare} 0 {degree}%, #0000 0 50%),
+        repeating-conic-gradient(at {position2}% {position2}%, {colorSquare} 0 {degree}%, #0000 0 50%),
+        {colorBackground}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      // Colors
+      colorSquare: {
+        type: 'color',
+        value: '#00A0B0',
+      },
+      colorBackground: {
+        type: 'color',
+        value: '#EB6841',
+      },
+      // Pattern size
+      size: {
+        type: 'range',
+        value: 100,
+        min: 50,
+        max: 200,
+        step: 5,
+      },
+      // Position controls
+      position1: {
+        type: 'range',
+        value: 33,
+        min: 20,
+        max: 45,
+        step: 1,
+      },
+      position2: {
+        type: 'range',
+        value: 66,
+        min: 55,
+        max: 80,
+        step: 1,
+      },
+      // Degree for squares
+      degree: {
+        type: 'range',
+        value: 25,
+        min: 15,
+        max: 35,
+        step: 1,
+      },
+    },
+  },
 }
 export default templates

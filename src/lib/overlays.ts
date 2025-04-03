@@ -51,5 +51,14 @@ export const overlayTypes = {
     direction: 'to left',
     preview: 'linear-gradient(to left, transparent, black, transparent)',
   },
-
+  'linear-gradient-inner-horizontal': {
+    type: 'inner',
+    direction: 'to top',
+    preview: 'linear-gradient(to top, black, transparent, black)',
+  },
+  'linear-gradient-outer-horizontal': {
+    type: 'outer',
+    direction: 'to top',
+    preview: 'linear-gradient(to top, transparent, black, transparent)',
+  },
 }

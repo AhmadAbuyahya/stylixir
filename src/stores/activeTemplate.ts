@@ -28,7 +28,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   // Overlay variables
   const overlayVariables = ref({
-    overlayType: 'none',
+    overlayType: 'radial-gradient-center',
     overlayColor: '#000000',
     overlayOpacity: 0.5,
     overlayBlur: 0,
