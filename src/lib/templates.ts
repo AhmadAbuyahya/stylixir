@@ -2,7 +2,7 @@ import type { Templates } from '~/types'
 
 const templates: Templates = {
 
-  zigzag: {
+  'zigzag': {
     template: {
       'background-color': '{bgColor}',
       'background-image': `linear-gradient(
@@ -13,8 +13,8 @@ const templates: Templates = {
         linear-gradient(45deg, transparent 75%, {colorOne} 75%),
         linear-gradient(-135deg, transparent 75%, {colorOne} 75%),
         linear-gradient(135deg, transparent 75%, {colorOne} 75%)`,
-      'background-size': '{sizeX}px {sizeY}px',
-      'background-position': '{PositionOne}px 0, {PositionOne}px 0, 0 0, 0 0',
+      'background-size': 'calc({sizeX}px * {sizeFactor}) calc({sizeY}px * {sizeFactor})',
+      'background-position': 'calc({positionOne}px * {sizeFactor}) 0, calc({positionOne}px * {sizeFactor}) 0, 0 0, 0 0',
     },
     variables: {
       bgColor: {
@@ -24,6 +24,13 @@ const templates: Templates = {
       colorOne: {
         type: 'color',
         value: '#9da8e1',
+      },
+      sizeFactor: {
+        type: 'range',
+        value: 1,
+        min: 0.1,
+        max: 2,
+        step: 0.1,
       },
       sizeX: {
         type: 'range',
@@ -37,7 +44,7 @@ const templates: Templates = {
         min: 20,
         max: 200,
       },
-      PositionOne: {
+      positionOne: {
         type: 'range',
         value: 50,
         min: 0,
@@ -46,7 +53,7 @@ const templates: Templates = {
     },
   },
 
-  geometricFlowers: {
+  'geometric_flowers': {
     template: {
       'background': `
         radial-gradient({colorOne} 24%,#0000 25%),
@@ -95,7 +102,7 @@ const templates: Templates = {
     },
   },
 
-  trianglesPattern: {
+  '3d_triangles': {
     template: {
       'background': `
         conic-gradient(from {angle}deg, {colorBase} 15deg, {colorLight} 0 30deg, #0000 0 180deg,
@@ -145,7 +152,7 @@ const templates: Templates = {
       },
     },
   },
-  parallelograms: {
+  'parallelograms': {
     template: {
       background:
         `linear-gradient({degree}deg,{colorOne} 33%,{colorTwo} 33.5% 66.5%,{colorOne} 67%)
@@ -181,7 +188,7 @@ const templates: Templates = {
     },
 
   },
-  overlappingCubes: {
+  'overlapping_cubes': {
     template: {
       '--_g': '0 {angleSize}deg,#0000 0',
       'background':
@@ -229,7 +236,7 @@ const templates: Templates = {
 
     },
   },
-  curvedLines: {
+  'curved_lines': {
     template: {
       '--_g': '50%,#0000 37%,{colorOne} 39% 70%,#0000 72%',
       '--_t': '50%,{colorTwo} 40deg,{colorThree} 0 140deg,{colorTwo} 0 180deg,#0000 0',
@@ -280,7 +287,7 @@ const templates: Templates = {
       },
     },
   },
-  cubesIllusion: {
+  'cubes_illusion': {
     template: {
       'background': `
         repeating-conic-gradient(from {angle}deg,#0000 0 120deg,{colorOne} 0 50%)
@@ -326,7 +333,7 @@ const templates: Templates = {
     },
   },
 
-  overlappingCircles: {
+  'overlapping_circles': {
     template: {
       '--_g': `
         {colorOne} 0%  5% ,{colorTwo} 6%  15%,{colorOne} 16% 25%,{colorTwo} 26% 35%,{colorOne} 36% 45%,
@@ -367,7 +374,7 @@ const templates: Templates = {
     },
   },
 
-  equilateralTriangles: {
+  'equilateral_triangles': {
     template: {
       'background':
         `conic-gradient(from {topAngle}deg at 50% 33%,#0000,{colorOne} 0.5deg 60deg,#0000 60.5deg)
@@ -424,7 +431,7 @@ const templates: Templates = {
     },
   },
 
-  braidedLines: {
+  'braided_lines': {
     template: {
       '--g': 'calc({gap}px * {sizeFactor})', // Scale gap proportionally
       'background':
@@ -466,7 +473,7 @@ const templates: Templates = {
     },
   },
 
-  distortedMesh: {
+  'distorted_mesh': {
     template: {
       '--_g': '#0000 {gap}%,{colorBand} calc({gap}% + 2%) calc({gap}% + {bandWidth}%),#0000 calc({gap}% + 7%)',
       'background':
@@ -488,10 +495,6 @@ const templates: Templates = {
       backgroundColor: {
         type: 'color',
         value: '#67917A',
-      },
-      transparentColor: {
-        type: 'color',
-        value: '#0000',
       },
 
       // Pattern Geometry
@@ -534,22 +537,22 @@ const templates: Templates = {
       },
     },
   },
-  heartsPattern: {
+  'hearts_pattern': {
     template: {
       'background': `
-        radial-gradient(at 80% 80%,{colorHeart} 25.4%,#0000 26%),
-        radial-gradient(at 20% 80%,{colorHeart} 25.4%,#0000 26%),
-        conic-gradient(from -45deg at 50% 41%,{colorHeart} 90deg,{colorBackground} 0)
+        radial-gradient(at 80% 80%,{heartColor} 25.4%,#0000 26%),
+        radial-gradient(at 20% 80%,{heartColor} 25.4%,#0000 26%),
+        conic-gradient(from -45deg at 50% 41%,{heartColor} 90deg,{backgroundColor} 0)
            calc({size}px/2) 0`,
       'background-size': '{size}px {size}px',
     },
     variables: {
       // Colors
-      colorHeart: {
+      heartColor: {
         type: 'color',
         value: '#e7525b',
       },
-      colorBackground: {
+      backgroundColor: {
         type: 'color',
         value: '#78dbf0',
       },
@@ -563,21 +566,21 @@ const templates: Templates = {
       },
     },
   },
-  diagonalSquares: {
+  'diagonal_squares': {
     template: {
       'background': `
-        repeating-conic-gradient(at {position1}% {position1}%, {colorSquare} 0 {degree}%, #0000 0 50%),
-        repeating-conic-gradient(at {position2}% {position2}%, {colorSquare} 0 {degree}%, #0000 0 50%),
-        {colorBackground}`,
+        repeating-conic-gradient(at {position1}% {position1}%, {squareColor} 0 {degree}%, #0000 0 50%),
+        repeating-conic-gradient(at {position2}% {position2}%, {squareColor} 0 {degree}%, #0000 0 50%),
+        {backgroundColor}`,
       'background-size': '{size}px {size}px',
     },
     variables: {
       // Colors
-      colorSquare: {
+      squareColor: {
         type: 'color',
         value: '#00A0B0',
       },
-      colorBackground: {
+      backgroundColor: {
         type: 'color',
         value: '#EB6841',
       },

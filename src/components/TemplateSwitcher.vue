@@ -31,17 +31,22 @@ function getStyle(slug: string) {
     >
       <button
         v-for="(_, key) in templates" :key="key" :title="String(key)"
-        class="relative min-h-100px min-w-150px inline-flex select-none items-center justify-center rounded-lg bg-transparent px-4 py-2 align-middle text-lg font-semibold capitalize text-white outline-1 outline transition-all duration-250 md:min-h-110px md:w-auto hover:outline-4"
-        :style="getStyle(String(key))" :class="{
+        class="relative min-h-100px min-w-150px inline-flex select-none items-center justify-center overflow-hidden rounded-lg bg-transparent px-4 py-2 align-middle text-lg font-semibold capitalize text-white outline-1 outline transition-all duration-250 md:min-h-110px md:w-auto hover:outline-4"
+        :class="{
           'outline-6 outline-blue': activeTemplateStore.activeTemplate === key,
         }"
-
         @click="() => activeTemplateStore.updateActiveTemplate(String(key))"
       >
+        <div
+          :style="getStyle(String(key))"
+
+          class="absolute inset-0"
+          style="zoom: .5"
+        />
         <span
           class="absolute bottom-0 left-0 right-0 top-0 z-0 flex items-center justify-center rounded-lg bg-[#171717] bg-opacity-60 transition-all duration-250 hover:bg-opacity-80"
         >
-          {{ key }}
+          {{ String(key).replace(/_/g, ' ') }}
         </span>
       </button>
     </div>

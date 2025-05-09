@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import tinycolor from 'tinycolor2'
+import { useDebounceFn, useUrlSearchParams } from '@vueuse/core'
 import { overlayTypes } from '~/lib/overlays'
 import templates from '~/lib/templates'
 
@@ -22,16 +23,26 @@ const utils = {
 }
 
 export const useActiveTemplateStore = defineStore('activeTemplate', () => {
+  // URL state management
+  const params = useUrlSearchParams('hash')
+
+  // Debounced URL update function
+  const updateUrlParams = useDebounceFn((updates: Record<string, string | number>) => {
+    Object.entries(updates).forEach(([key, value]) => {
+      params[key] = String(value)
+    })
+  }, 300)
+
   // State
-  const activeTemplate = ref(Object.keys(templates)[0])
+  const activeTemplate = ref(params.template as string || Object.keys(templates)[0])
   const variablesRef = ref<Record<string, string | number>>({})
 
   // Overlay variables
   const overlayVariables = ref({
-    overlayType: 'radial-gradient-center',
-    overlayColor: '#000000',
-    overlayOpacity: 0.5,
-    overlayBlur: 0,
+    overlayType: params.overlayType as string || 'radial-gradient-center',
+    overlayColor: params.overlayColor as string || '#000000',
+    overlayOpacity: parseFloat(params.overlayOpacity as string) || 0.5,
+    overlayBlur: parseFloat(params.overlayBlur as string) || 0,
   })
 
   // Getters
@@ -86,13 +97,25 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   // Actions
   function updateActiveTemplate(slug: string) {
+    // Clear all URL parameters
+    Object.keys(params).forEach((key) => {
+      delete params[key]
+    })
+    // Set the new template
     activeTemplate.value = slug
+    params.template = slug
     initVariablesRef()
   }
 
   function initVariablesRef() {
     variablesRef.value = Object.entries(variables.value).reduce((acc, [key, variable]) => {
-      acc[key] = variable.value
+      // Try to get value from URL params first, fallback to default
+      const paramValue = params[key]
+      acc[key] = paramValue !== undefined
+        ? ((variable.type === 'range' || variable.type === 'number')
+            ? parseFloat(String(paramValue))
+            : String(paramValue))
+        : variable.value
       return acc
     }, {} as Record<string, string | number>)
   }
@@ -100,26 +123,33 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   function reset() {
     Object.entries(variables.value).forEach(([key, variable]) => {
       variablesRef.value[key] = variable.value
+      delete params[key]
     })
   }
 
   function randomizeNumberValues() {
+    const updates: Record<string, string | number> = {}
     Object.entries(variables.value).forEach(([key, variable]) => {
       if (variable.type === 'range' || variable.type === 'number') {
         const min = variable.min ?? 0
         const max = variable.max ?? 0
         variablesRef.value[key] = utils.randomNumber(min, max)
+        updates[key] = variablesRef.value[key]
       }
     })
+    updateUrlParams(updates)
   }
 
   function randomizeColors() {
+    const updates: Record<string, string | number> = {}
     Object.entries(variables.value).forEach(([key, variable]) => {
       if (variable.type === 'color' && typeof variable.value === 'string') {
         const alpha = tinycolor(variable.value).getAlpha()
         variablesRef.value[key] = utils.randomColor(alpha)
+        updates[key] = variablesRef.value[key]
       }
     })
+    updateUrlParams(updates)
   }
 
   function randomizeAll() {
@@ -129,6 +159,16 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   // Watchers
   watch(activeTemplate, initVariablesRef)
+
+  // Watch variablesRef and sync with URL
+  watch(variablesRef, (newVars) => {
+    updateUrlParams(newVars)
+  }, { deep: true })
+
+  // Watch overlayVariables and sync with URL
+  watch(overlayVariables, (newVars) => {
+    updateUrlParams(newVars)
+  }, { deep: true })
 
   // Initialize
   initVariablesRef()

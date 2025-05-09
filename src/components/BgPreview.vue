@@ -13,7 +13,8 @@ function copyStyle() {
       <style>
         .background {
          height: 100%;
-        width: 100%;
+         width: 100%;
+         position: relative;
           ${css.value}
         }
         .background::before {
