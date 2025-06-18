@@ -23,31 +23,105 @@ const utils = {
 }
 
 export const useActiveTemplateStore = defineStore('activeTemplate', () => {
-  // URL state management
-  const params = useUrlSearchParams('hash')
+  // URL state management with proper client-side handling
+  const isClient = ref(false)
+
+  // Initialize isClient on mount
+  onMounted(() => {
+    isClient.value = true
+  })
+
+  // Use both hash and query params for better compatibility
+  const hashParams = useUrlSearchParams('hash')
+  const queryParams = useUrlSearchParams('history')
+
+  // Helper function to get param value from either hash or query
+  const getParam = (key: string) => {
+    if (!isClient.value)
+      return undefined
+    return hashParams[key] || queryParams[key]
+  }
+
+  // Helper function to set param value in both hash and query
+  const setParam = (key: string, value: string) => {
+    if (!isClient.value)
+      return
+    hashParams[key] = value
+    queryParams[key] = value
+  }
+
+  // Helper function to delete param from both hash and query
+  const deleteParam = (key: string) => {
+    if (!isClient.value)
+      return
+    delete hashParams[key]
+    delete queryParams[key]
+  }
 
   // Debounced URL update function
   const updateUrlParams = useDebounceFn((updates: Record<string, string | number>) => {
+    if (!isClient.value)
+      return
+
     Object.entries(updates).forEach(([key, value]) => {
-      params[key] = String(value)
+      setParam(key, String(value))
     })
   }, 300)
 
-  // State
-  const activeTemplate = ref(params.template as string || Object.keys(templates)[0])
+  // State with proper fallbacks
+  const activeTemplate = ref('')
   const variablesRef = ref<Record<string, string | number>>({})
 
-  // Overlay variables
+  // Overlay variables with proper fallbacks
   const overlayVariables = ref({
-    overlayType: params.overlayType as string || 'radial-gradient-center',
-    overlayColor: params.overlayColor as string || '#000000',
-    overlayOpacity: parseFloat(params.overlayOpacity as string) || 0.5,
-    overlayBlur: parseFloat(params.overlayBlur as string) || 0,
+    overlayType: 'radial-gradient-center',
+    overlayColor: '#000000',
+    overlayOpacity: 0.5,
+    overlayBlur: 0,
   })
 
+  // Initialize state from URL params or defaults
+  const initializeFromUrl = () => {
+    if (!isClient.value)
+      return
+
+    // Debug logging for production troubleshooting
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.log('Initializing from URL params:', {
+        hashParams: Object.fromEntries(Object.entries(hashParams)),
+        queryParams: Object.fromEntries(Object.entries(queryParams)),
+        templateParam: getParam('template'),
+        overlayParams: {
+          type: getParam('overlayType'),
+          color: getParam('overlayColor'),
+          opacity: getParam('overlayOpacity'),
+          blur: getParam('overlayBlur'),
+        },
+      })
+    }
+
+    // Initialize activeTemplate
+    const templateParam = getParam('template') as string
+    activeTemplate.value = (templateParam && Object.keys(templates).includes(templateParam))
+      ? templateParam
+      : Object.keys(templates)[0]
+
+    // Initialize overlay variables
+    overlayVariables.value = {
+      overlayType: getParam('overlayType') as string || 'radial-gradient-center',
+      overlayColor: getParam('overlayColor') as string || '#000000',
+      overlayOpacity: parseFloat(getParam('overlayOpacity') as string) || 0.5,
+      overlayBlur: parseFloat(getParam('overlayBlur') as string) || 0,
+    }
+
+    // Initialize variablesRef
+    initVariablesRef()
+  }
+
   // Getters
-  const variables = computed(() => templates[activeTemplate.value].variables)
-  const template = computed(() => templates[activeTemplate.value].template)
+  const variables = computed(() => templates[activeTemplate.value]?.variables || {})
+  const template = computed(() => templates[activeTemplate.value]?.template || {})
 
   const style = computed(() => {
     return Object.entries(template.value).reduce((acc, [key, value]) => {
@@ -97,20 +171,26 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   // Actions
   function updateActiveTemplate(slug: string) {
+    if (!isClient.value)
+      return
+
     // Clear all URL parameters
-    Object.keys(params).forEach((key) => {
-      delete params[key]
+    Object.keys(hashParams).forEach((key) => {
+      deleteParam(key)
     })
     // Set the new template
     activeTemplate.value = slug
-    params.template = slug
+    setParam('template', slug)
     initVariablesRef()
   }
 
   function initVariablesRef() {
+    if (!isClient.value)
+      return
+
     variablesRef.value = Object.entries(variables.value).reduce((acc, [key, variable]) => {
       // Try to get value from URL params first, fallback to default
-      const paramValue = params[key]
+      const paramValue = getParam(key)
       acc[key] = paramValue !== undefined
         ? ((variable.type === 'range' || variable.type === 'number')
             ? parseFloat(String(paramValue))
@@ -121,13 +201,19 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   }
 
   function reset() {
+    if (!isClient.value)
+      return
+
     Object.entries(variables.value).forEach(([key, variable]) => {
       variablesRef.value[key] = variable.value
-      delete params[key]
+      deleteParam(key)
     })
   }
 
   function randomizeNumberValues() {
+    if (!isClient.value)
+      return
+
     const updates: Record<string, string | number> = {}
     Object.entries(variables.value).forEach(([key, variable]) => {
       if (variable.type === 'range' || variable.type === 'number') {
@@ -141,6 +227,9 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   }
 
   function randomizeColors() {
+    if (!isClient.value)
+      return
+
     const updates: Record<string, string | number> = {}
     Object.entries(variables.value).forEach(([key, variable]) => {
       if (variable.type === 'color' && typeof variable.value === 'string') {
@@ -170,8 +259,29 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     updateUrlParams(newVars)
   }, { deep: true })
 
-  // Initialize
-  initVariablesRef()
+  // Initialize when client is ready
+  watch(isClient, (clientReady) => {
+    if (clientReady) {
+      // Small delay to ensure URL is fully available
+      nextTick(() => {
+        initializeFromUrl()
+      })
+    }
+  }, { immediate: true })
+
+  // Also listen for URL changes (back/forward navigation)
+  if (isClient.value) {
+    watch([hashParams, queryParams], () => {
+      if (isClient.value)
+        initializeFromUrl()
+    }, { deep: true })
+  }
+
+  // Fallback initialization for SSR
+  if (!isClient.value) {
+    activeTemplate.value = Object.keys(templates)[0]
+    initVariablesRef()
+  }
 
   return {
     activeTemplate,
