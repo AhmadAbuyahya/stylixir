@@ -30,3 +30,15 @@ export interface Toast {
   title: string
   variant: 'success' | 'error' | 'warning' | 'info'
 }
+
+// New color palette types
+export interface ColorPalette {
+  id: string
+  name: string
+  colors: string[]
+  isCustom?: boolean
+}
+
+export interface ColorPalettes {
+  [key: string]: ColorPalette
+}

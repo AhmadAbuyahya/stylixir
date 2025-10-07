@@ -11,6 +11,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     BgPreview: typeof import('./components/BgPreview.vue')['default']
     ColorInput: typeof import('./components/ColorInput.vue')['default']
+    ColorPaletteSelector: typeof import('./components/ColorPaletteSelector.vue')['default']
     Controls: typeof import('./components/Controls.vue')['default']
     Footer: typeof import('./components/Footer.vue')['default']
     Logo: typeof import('./components/Logo.vue')['default']

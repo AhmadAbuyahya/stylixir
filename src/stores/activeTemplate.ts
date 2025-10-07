@@ -1,8 +1,9 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import tinycolor from 'tinycolor2'
-import { useDebounceFn, useUrlSearchParams } from '@vueuse/core'
+import { useColorPaletteStore } from './colorPalette'
 import { overlayTypes } from '~/lib/overlays'
 import templates from '~/lib/templates'
+import { useUrlStore } from '~/composables/url'
 
 // Utility functions
 const utils = {
@@ -24,49 +25,15 @@ const utils = {
 
 export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   // URL state management with proper client-side handling
-  const isClient = ref(false)
-
-  // Initialize isClient on mount
-  onMounted(() => {
-    isClient.value = true
-  })
-
-  // Use both hash and query params for better compatibility
-  const hashParams = useUrlSearchParams('hash')
-  const queryParams = useUrlSearchParams('history')
-
-  // Helper function to get param value from either hash or query
-  const getParam = (key: string) => {
-    if (!isClient.value)
-      return undefined
-    return hashParams[key] || queryParams[key]
-  }
-
-  // Helper function to set param value in both hash and query
-  const setParam = (key: string, value: string) => {
-    if (!isClient.value)
-      return
-    hashParams[key] = value
-    queryParams[key] = value
-  }
-
-  // Helper function to delete param from both hash and query
-  const deleteParam = (key: string) => {
-    if (!isClient.value)
-      return
-    delete hashParams[key]
-    delete queryParams[key]
-  }
-
-  // Debounced URL update function
-  const updateUrlParams = useDebounceFn((updates: Record<string, string | number>) => {
-    if (!isClient.value)
-      return
-
-    Object.entries(updates).forEach(([key, value]) => {
-      setParam(key, String(value))
-    })
-  }, 300)
+  const {
+    getParam,
+    setParam,
+    deleteParam,
+    updateUrlParams,
+    isClient,
+    hashParams,
+    queryParams,
+  } = useUrlStore()
 
   // State with proper fallbacks
   const activeTemplate = ref('')
@@ -80,26 +47,13 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     overlayBlur: 0,
   })
 
+  // Get color palette store
+  const colorPaletteStore = useColorPaletteStore()
+
   // Initialize state from URL params or defaults
   const initializeFromUrl = () => {
     if (!isClient.value)
       return
-
-    // Debug logging for production troubleshooting
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('Initializing from URL params:', {
-        hashParams: Object.fromEntries(Object.entries(hashParams)),
-        queryParams: Object.fromEntries(Object.entries(queryParams)),
-        templateParam: getParam('template'),
-        overlayParams: {
-          type: getParam('overlayType'),
-          color: getParam('overlayColor'),
-          opacity: getParam('overlayOpacity'),
-          blur: getParam('overlayBlur'),
-        },
-      })
-    }
 
     // Initialize activeTemplate
     const templateParam = getParam('template') as string
@@ -123,9 +77,33 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   const variables = computed(() => templates[activeTemplate.value]?.variables || {})
   const template = computed(() => templates[activeTemplate.value]?.template || {})
 
+  // Get variables with colors replaced by palette colors
+  const variablesWithPaletteColors = computed(() => {
+    const templateVars = variables.value
+    const result: Record<string, string | number> = {}
+
+    Object.entries(templateVars).forEach(([key, variable]) => {
+      // For non-color variables, use the value from variablesRef
+      result[key] = variablesRef.value[key] ?? variable.value
+    })
+
+    // Add color variables from the palette system
+    // Check the template string for color variables (c1, c2, c3, c4, etc.)
+    const templateString = JSON.stringify(template.value)
+    const colorMatches = templateString.match(/\{c[1-9]\}/g) || []
+
+    colorMatches.forEach((match) => {
+      const colorVar = match.slice(1, -1) // Remove { and }
+      if (!result[colorVar])
+        result[colorVar] = colorPaletteStore.getColorForTemplate(activeTemplate.value, colorVar)
+    })
+
+    return result
+  })
+
   const style = computed(() => {
     return Object.entries(template.value).reduce((acc, [key, value]) => {
-      acc[key] = utils.interpolateTemplate(value, variablesRef.value)
+      acc[key] = utils.interpolateTemplate(value, variablesWithPaletteColors.value)
       return acc
     }, {} as Record<string, string>)
   })
@@ -189,7 +167,6 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       return
 
     variablesRef.value = Object.entries(variables.value).reduce((acc, [key, variable]) => {
-      // Try to get value from URL params first, fallback to default
       const paramValue = getParam(key)
       acc[key] = paramValue !== undefined
         ? ((variable.type === 'range' || variable.type === 'number')
@@ -205,8 +182,10 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       return
 
     Object.entries(variables.value).forEach(([key, variable]) => {
-      variablesRef.value[key] = variable.value
-      deleteParam(key)
+      if (variable.type !== 'color') {
+        variablesRef.value[key] = variable.value
+        deleteParam(key)
+      }
     })
   }
 
@@ -230,15 +209,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     if (!isClient.value)
       return
 
-    const updates: Record<string, string | number> = {}
-    Object.entries(variables.value).forEach(([key, variable]) => {
-      if (variable.type === 'color' && typeof variable.value === 'string') {
-        const alpha = tinycolor(variable.value).getAlpha()
-        variablesRef.value[key] = utils.randomColor(alpha)
-        updates[key] = variablesRef.value[key]
-      }
-    })
-    updateUrlParams(updates)
+    // Use the color palette store's randomize function
+    colorPaletteStore.randomizeColors()
   }
 
   function randomizeAll() {
@@ -249,9 +221,14 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   // Watchers
   watch(activeTemplate, initVariablesRef)
 
-  // Watch variablesRef and sync with URL
+  // Watch variablesRef and sync with URL (only for non-color variables)
   watch(variablesRef, (newVars) => {
-    updateUrlParams(newVars)
+    const nonColorUpdates: Record<string, string | number> = {}
+    Object.entries(newVars).forEach(([key, value]) => {
+      if (variables.value[key]?.type !== 'color')
+        nonColorUpdates[key] = value
+    })
+    updateUrlParams(nonColorUpdates)
   }, { deep: true })
 
   // Watch overlayVariables and sync with URL
@@ -287,6 +264,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     activeTemplate,
     variablesRef,
     variables,
+    variablesWithPaletteColors,
     style,
     css,
     updateActiveTemplate,
