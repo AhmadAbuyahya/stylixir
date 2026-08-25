@@ -1,48 +1,68 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import tinycolor from 'tinycolor2'
 import { useDebounceFn, useUrlSearchParams } from '@vueuse/core'
-import { overlayTypes } from '~/lib/overlays'
+import { buildOverlayBackground } from '~/lib/overlays'
+import {
+  defaultVariables,
+  generateCss,
+  interpolateTemplate,
+  paramToValue,
+  randomNumber,
+  randomVariables,
+  valueToParam,
+} from '~/lib/pattern'
 import templates from '~/lib/templates'
 
 // Utility functions
 const utils = {
-  randomNumber: (min: number, max: number) => parseFloat((Math.random() * (max - min + 1) + min).toFixed(2)),
-  randomColor: (alpha: number) => {
-    const color = tinycolor.random()
-    color.setAlpha(alpha)
-    return color.toHexString()
-  },
-  interpolateTemplate: (template: string, variables: Record<string, string | number>) => {
-    return template.replace(/{(\w+)}/g, (_, p1) => String(variables[p1]))
-  },
-  generateCss: (style: Record<string, string>) => {
-    return Object.entries(style)
-      .map(([key, value]) => `${key}: ${value};`)
-      .join('\n')
-  },
+  randomNumber,
+  interpolateTemplate,
+  generateCss,
+}
+
+function numberFromParam(raw: unknown, fallback: number) {
+  if (raw === undefined || raw === null || raw === '')
+    return fallback
+  const parsed = parseFloat(String(raw))
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function queryValue(raw: unknown): string | undefined {
+  if (raw === undefined || raw === null || raw === '')
+    return undefined
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return typeof value === 'string' ? value : undefined
 }
 
 export const useActiveTemplateStore = defineStore('activeTemplate', () => {
-  // URL state management with proper client-side handling
-  const isClient = ref(false)
+  // URL state management with proper client-side handling.
+  // True immediately on the client so SPA navigations from `/` don't wait on
+  // a store-level onMounted (which only runs the first time the store is used).
+  const isClient = ref(!import.meta.env.SSR)
+  const route = useRoute()
+  const router = useRouter()
 
-  // Initialize isClient on mount
   onMounted(() => {
     isClient.value = true
   })
 
-  // Use both hash and query params for better compatibility
+  // useUrlSearchParams tracks its own history writes. Vue Router `route.query`
+  // is only trusted for inbound navigations (hero link, refresh, shared URL).
   const hashParams = useUrlSearchParams('hash')
   const queryParams = useUrlSearchParams('history')
 
-  // Helper function to get param value from either hash or query
+  function templateSlugFromRoute(): string | undefined {
+    const slug = queryValue(route.query.template)
+    if (slug && Object.keys(templates).includes(slug))
+      return slug
+    return undefined
+  }
+
   const getParam = (key: string) => {
     if (!isClient.value)
       return undefined
     return hashParams[key] || queryParams[key]
   }
 
-  // Helper function to set param value in both hash and query
   const setParam = (key: string, value: string) => {
     if (!isClient.value)
       return
@@ -50,7 +70,6 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     queryParams[key] = value
   }
 
-  // Helper function to delete param from both hash and query
   const deleteParam = (key: string) => {
     if (!isClient.value)
       return
@@ -58,21 +77,28 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     delete queryParams[key]
   }
 
-  // Debounced URL update function
+  function clearDialParams() {
+    const keys = new Set([
+      ...Object.keys(hashParams),
+      ...Object.keys(queryParams),
+    ])
+    keys.forEach(key => deleteParam(key))
+  }
+
   const updateUrlParams = useDebounceFn((updates: Record<string, string | number>) => {
     if (!isClient.value)
       return
 
     Object.entries(updates).forEach(([key, value]) => {
-      setParam(key, String(value))
+      if (value === undefined || value === null)
+        return
+      setParam(key, valueToParam(value))
     })
   }, 300)
 
-  // State with proper fallbacks
   const activeTemplate = ref('')
   const variablesRef = ref<Record<string, string | number>>({})
 
-  // Overlay variables with proper fallbacks
   const overlayVariables = ref({
     overlayType: 'radial-gradient-center',
     overlayColor: '#000000',
@@ -80,46 +106,58 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     overlayBlur: 0,
   })
 
-  // Initialize state from URL params or defaults
+  function initVariablesRef() {
+    const defs = templates[activeTemplate.value]?.variables || {}
+    variablesRef.value = Object.entries(defs).reduce((acc, [key, variable]) => {
+      acc[key] = paramToValue(isClient.value ? getParam(key) : undefined, variable)
+      return acc
+    }, {} as Record<string, string | number>)
+  }
+
+  /** Apply dials from Vue Router query (inbound links), falling back to search params / defaults. */
+  function applyRouteQueryToVariables() {
+    const defs = templates[activeTemplate.value]?.variables || {}
+    variablesRef.value = Object.entries(defs).reduce((acc, [key, variable]) => {
+      const fromRoute = queryValue(route.query[key])
+      acc[key] = paramToValue(fromRoute ?? getParam(key), variable)
+      return acc
+    }, {} as Record<string, string | number>)
+  }
+
+  function applyRouteQueryToOverlay() {
+    overlayVariables.value = {
+      overlayType: queryValue(route.query.overlayType)
+        || (getParam('overlayType') as string)
+        || overlayVariables.value.overlayType
+        || 'radial-gradient-center',
+      overlayColor: String(paramToValue(
+        queryValue(route.query.overlayColor) ?? getParam('overlayColor'),
+        { type: 'color', value: overlayVariables.value.overlayColor || '#000000' },
+      )),
+      overlayOpacity: numberFromParam(
+        queryValue(route.query.overlayOpacity) ?? getParam('overlayOpacity'),
+        overlayVariables.value.overlayOpacity ?? 0.5,
+      ),
+      overlayBlur: numberFromParam(
+        queryValue(route.query.overlayBlur) ?? getParam('overlayBlur'),
+        overlayVariables.value.overlayBlur ?? 0,
+      ),
+    }
+  }
+
   const initializeFromUrl = () => {
     if (!isClient.value)
       return
 
-    // Debug logging for production troubleshooting
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('Initializing from URL params:', {
-        hashParams: Object.fromEntries(Object.entries(hashParams)),
-        queryParams: Object.fromEntries(Object.entries(queryParams)),
-        templateParam: getParam('template'),
-        overlayParams: {
-          type: getParam('overlayType'),
-          color: getParam('overlayColor'),
-          opacity: getParam('overlayOpacity'),
-          blur: getParam('overlayBlur'),
-        },
-      })
-    }
-
-    // Initialize activeTemplate
-    const templateParam = getParam('template') as string
+    const templateParam = templateSlugFromRoute() || queryValue(getParam('template'))
     activeTemplate.value = (templateParam && Object.keys(templates).includes(templateParam))
       ? templateParam
       : Object.keys(templates)[0]
 
-    // Initialize overlay variables
-    overlayVariables.value = {
-      overlayType: getParam('overlayType') as string || 'radial-gradient-center',
-      overlayColor: getParam('overlayColor') as string || '#000000',
-      overlayOpacity: parseFloat(getParam('overlayOpacity') as string) || 0.5,
-      overlayBlur: parseFloat(getParam('overlayBlur') as string) || 0,
-    }
-
-    // Initialize variablesRef
-    initVariablesRef()
+    applyRouteQueryToOverlay()
+    applyRouteQueryToVariables()
   }
 
-  // Getters
   const variables = computed(() => templates[activeTemplate.value]?.variables || {})
   const template = computed(() => templates[activeTemplate.value]?.template || {})
 
@@ -135,69 +173,27 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   const overlayStyle = computed(() => {
     const { overlayType, overlayColor, overlayOpacity, overlayBlur } = overlayVariables.value
 
-    if (overlayType === 'none')
-      return { 'background': 'none', 'backdrop-filter': `blur(${overlayBlur}px)` }
-
-    if (overlayType === 'opacity') {
-      return {
-        'background': tinycolor(overlayColor).setAlpha(overlayOpacity).toRgbString(),
-        'backdrop-filter': `blur(${overlayBlur}px)`,
-      }
-    }
-
-    const typeConfig = overlayTypes[overlayType as keyof typeof overlayTypes]
-
-    let background = ''
-    if (typeConfig.type === 'radial' && 'position' in typeConfig) {
-      const start = typeConfig.start === 'transparent' ? 'transparent' : overlayColor
-      const end = typeConfig.end === 'color' ? overlayColor : 'transparent'
-      background = `radial-gradient(${typeConfig.position}, ${start}, ${end})`
-    }
-    else if (typeConfig.type === 'inner' && 'direction' in typeConfig) {
-      background = `linear-gradient(${typeConfig.direction}, ${overlayColor}, transparent, ${overlayColor})`
-    }
-    else if (typeConfig.type === 'outer' && 'direction' in typeConfig) {
-      background = `linear-gradient(${typeConfig.direction}, transparent, ${overlayColor}, transparent)`
-    }
-    else if ('direction' in typeConfig) {
-      background = `linear-gradient(${typeConfig.direction}, transparent, ${overlayColor})`
-    }
-
     return {
-      background,
+      'background': buildOverlayBackground(overlayType, overlayColor, overlayOpacity),
       'backdrop-filter': `blur(${overlayBlur}px)`,
     }
   })
 
-  // Actions
   function updateActiveTemplate(slug: string) {
     if (!isClient.value)
       return
-
-    // Clear all URL parameters
-    Object.keys(hashParams).forEach((key) => {
-      deleteParam(key)
-    })
-    // Set the new template
-    activeTemplate.value = slug
-    setParam('template', slug)
-    initVariablesRef()
-  }
-
-  function initVariablesRef() {
-    if (!isClient.value)
+    if (!templates[slug])
       return
 
-    variablesRef.value = Object.entries(variables.value).reduce((acc, [key, variable]) => {
-      // Try to get value from URL params first, fallback to default
-      const paramValue = getParam(key)
-      acc[key] = paramValue !== undefined
-        ? ((variable.type === 'range' || variable.type === 'number')
-            ? parseFloat(String(paramValue))
-            : String(paramValue))
-        : variable.value
-      return acc
-    }, {} as Record<string, string | number>)
+    // Drop every previous dial so same-named keys (size, colorOne, …) cannot
+    // leak into the next pattern via route.query or search params.
+    clearDialParams()
+    activeTemplate.value = slug
+    variablesRef.value = defaultVariables(templates[slug].variables)
+    setParam('template', slug)
+
+    if (route.path === '/generator')
+      router.replace({ path: '/generator', query: { template: slug } })
   }
 
   function reset() {
@@ -230,12 +226,15 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     if (!isClient.value)
       return
 
+    const next = randomVariables(templates[activeTemplate.value], {
+      colors: true,
+      numbers: false,
+    })
     const updates: Record<string, string | number> = {}
     Object.entries(variables.value).forEach(([key, variable]) => {
-      if (variable.type === 'color' && typeof variable.value === 'string') {
-        const alpha = tinycolor(variable.value).getAlpha()
-        variablesRef.value[key] = utils.randomColor(alpha)
-        updates[key] = variablesRef.value[key]
+      if (variable.type === 'color') {
+        variablesRef.value[key] = next[key]
+        updates[key] = next[key]
       }
     })
     updateUrlParams(updates)
@@ -246,42 +245,48 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeNumberValues()
   }
 
-  // Watchers
+  function applyTemplateFromRoute() {
+    if (!isClient.value || route.path !== '/generator')
+      return
+
+    const slug = templateSlugFromRoute()
+    if (!slug)
+      return
+
+    // Inbound navigation only (hero / shared URL). Do not clear the query —
+    // it carries the roll we want to restore.
+    if (slug !== activeTemplate.value)
+      activeTemplate.value = slug
+
+    applyRouteQueryToVariables()
+    applyRouteQueryToOverlay()
+  }
+
   watch(activeTemplate, initVariablesRef)
 
-  // Watch variablesRef and sync with URL
   watch(variablesRef, (newVars) => {
     updateUrlParams(newVars)
   }, { deep: true })
 
-  // Watch overlayVariables and sync with URL
   watch(overlayVariables, (newVars) => {
     updateUrlParams(newVars)
   }, { deep: true })
 
-  // Initialize when client is ready
+  if (!activeTemplate.value)
+    activeTemplate.value = Object.keys(templates)[0]
+  initVariablesRef()
+
   watch(isClient, (clientReady) => {
     if (clientReady) {
-      // Small delay to ensure URL is fully available
       nextTick(() => {
         initializeFromUrl()
       })
     }
   }, { immediate: true })
 
-  // Also listen for URL changes (back/forward navigation)
-  if (isClient.value) {
-    watch([hashParams, queryParams], () => {
-      if (isClient.value)
-        initializeFromUrl()
-    }, { deep: true })
-  }
-
-  // Fallback initialization for SSR
-  if (!isClient.value) {
-    activeTemplate.value = Object.keys(templates)[0]
-    initVariablesRef()
-  }
+  watch(() => route.fullPath, () => {
+    applyTemplateFromRoute()
+  })
 
   return {
     activeTemplate,
@@ -290,6 +295,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     style,
     css,
     updateActiveTemplate,
+    applyTemplateFromRoute,
     reset,
     randomizeNumberValues,
     randomizeColors,

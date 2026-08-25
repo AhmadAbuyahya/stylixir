@@ -2,12 +2,17 @@ import { type ViteSSGContext } from 'vite-ssg'
 
 export type UserModule = (ctx: ViteSSGContext) => void
 
+export type ColorRole = 'ground' | 'figure' | 'shade-dark' | 'shade-mid' | 'shade-light'
+
+export type ColorHarmony = 'ramp' | 'pair' | 'set'
+
 interface Variable {
   type: 'color' | 'number' | 'range'
   value: string | number
   min?: number
   max?: number
   step?: number
+  role?: ColorRole
 }
 
 export interface Variables {
@@ -19,6 +24,7 @@ export interface Template {
     [key: string]: string
   }
   variables: Variables
+  harmony?: ColorHarmony
 }
 
 export interface Templates {

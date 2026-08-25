@@ -1,71 +1,53 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: string | number
+  modelValue: string | number | null | undefined
 }>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
-const colorValue = ref(String(props.modelValue))
+function normalizeColor(value: string | number | null | undefined) {
+  if (value === undefined || value === null || value === '' || value === 'undefined')
+    return '#000000'
+  const raw = String(value).trim()
+  if (raw.startsWith('#'))
+    return raw
+  if (/^[0-9a-fA-F]{3,8}$/.test(raw))
+    return `#${raw}`
+  return '#000000'
+}
+
+const colorValue = ref(normalizeColor(props.modelValue))
 
 watch(() => props.modelValue, (newValue) => {
-  colorValue.value = String(newValue)
+  colorValue.value = normalizeColor(newValue)
 })
 
 function updateColor(value: string) {
-  colorValue.value = value
-  emit('update:modelValue', value)
+  const next = normalizeColor(value)
+  colorValue.value = next
+  emit('update:modelValue', next)
 }
 </script>
 
 <template>
-  <div class="color-input">
-    <input
-      v-model="colorValue"
-      type="color"
-      class="color-picker"
-      @input="updateColor(colorValue)"
-    >
+  <div class="flex items-center gap-2">
+    <label class="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden border-1 border-white/10 rounded-md">
+      <span class="absolute inset-0" :style="{ background: colorValue }" />
+      <input
+        v-model="colorValue"
+        type="color"
+        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        @input="updateColor(colorValue)"
+      >
+    </label>
     <input
       v-model="colorValue"
       type="text"
-      class="color-text"
-      @input="updateColor(colorValue)"
+      spellcheck="false"
+      class="min-w-0 flex-1 border-1 border-white/10 rounded-md bg-#141414 px-2.5 py-2 font-mono text-xs text-white outline-none focus:border-teal-400"
+      @change="updateColor(colorValue)"
     >
   </div>
 </template>
-
-<style scoped>
-.color-input {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.color-picker {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  outline: 1px solid #2e2e2e;
-  outline-offset: -1px;
-}
-
-.color-text {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #343434;
-  border-radius: 4px;
-  background: #242424;
-  color: white;
-  font-family: inherit;
-}
-
-.color-text:focus {
-  outline: none;
-  border-color: #60a5fa;
-}
-</style>

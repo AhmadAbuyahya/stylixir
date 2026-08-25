@@ -21,6 +21,7 @@
     "@vercel/analytics": "^1.0.1",
     "@vueuse/core": "^10.1.2",
     "@vueuse/head": "^1.1.26",
+    "html-to-image": "^1.11.13",
     "lodash.startcase": "^4.4.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.0.35",
