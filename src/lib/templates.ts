@@ -1165,7 +1165,7 @@ const templates: Templates = {
   'diamond_3d': {
     harmony: 'ramp',
     template: {
-      '--_c': '{fillStop}%,{colorMid} {tipAngle}deg,#0000 0',
+      '--_c': '{faceY}%,{colorMid} calc(180deg - 2*{tipAngle}deg),#0000 0',
       '--_g1': 'conic-gradient(from calc(-1 * (180deg - {tipAngle}deg)) at {facePos}% var(--_c))',
       '--_g2': 'conic-gradient(from {tipAngle}deg at calc(100% - {facePos}%) var(--_c))',
       'background': `
@@ -1198,7 +1198,7 @@ const templates: Templates = {
         max: 80,
         step: 0.5,
       },
-      fillStop: {
+      faceY: {
         type: 'range',
         value: 75,
         min: 65,
@@ -1428,7 +1428,7 @@ const templates: Templates = {
         conic-gradient(from -90deg at 50% {mid}%,{colorTwo} 60deg,{colorOne} 0 180deg,#0000 0),
         conic-gradient(from 90deg at 50% calc(100% - {mid}%),{colorTwo} 120deg,{colorOne} 0 180deg,#0000 0),
         conic-gradient(from calc(-1 * {tipFrom}deg) at {tipX}% 50%,{colorTwo} 120deg,{colorOne} 0 240deg,#0000 0),
-        conic-gradient(from 90deg at calc(100% - {tipX}%) 50%,{colorTwo} 120deg,{colorOne} 0 180deg,{colorTwo} 0 240deg,{colorOne} 0)`,
+        conic-gradient(from 90deg at calc({tipX}% - 50%) 50%,{colorTwo} 120deg,{colorOne} 0 180deg,{colorTwo} 0 240deg,{colorOne} 0)`,
       'background-size': '{size}px calc(.866*{size}px)',
     },
     variables: {
@@ -1469,9 +1469,9 @@ const templates: Templates = {
     template: {
       'background': `
         conic-gradient(at 50% calc(100%/{cellDiv}),{colorOne} {wedge}deg,#0000 0),
-        conic-gradient(at calc(100%/{cellDiv}) 50%,#0000 calc(360deg - {wedge}deg),{colorOne} 0),
+        conic-gradient(at calc(100%/{cellDiv}) 50%,#0000 calc(360deg - 2*{wedge}deg),{colorOne} 0),
         conic-gradient(from 180deg at calc(100%/{cellDiv}) calc(500%/{cellDiv}),{colorOne} {wedge}deg,#0000 0),
-        conic-gradient(from 180deg at calc(500%/{cellDiv}),#0000 calc(360deg - {wedge}deg),{colorOne} 0) calc(4*.866*{size}px) 0,
+        conic-gradient(from 180deg at calc(500%/{cellDiv}),#0000 calc(360deg - 2*{wedge}deg),{colorOne} 0) calc(4*.866*{size}px) 0,
         repeating-linear-gradient(-150deg,{colorTwo} 0 calc(100%/{cellDiv}),#0000 0 50%),
         repeating-linear-gradient(-30deg,{colorThree} 0 calc(100%/{cellDiv}),{colorFour} 0 50%)`,
       'background-size': 'calc(6*.866*{size}px) calc(3*{size}px)',
@@ -2281,6 +2281,1367 @@ const templates: Templates = {
         min: 2,
         max: 8,
         step: 0.5,
+      },
+    },
+  },
+
+  'wavy_lines': {
+    template: {
+      '--_g': '#0000 {edge}%,#0008 calc({edge}% + 22%),{colorOne} calc({edge}% + 28%) calc({edge}% + 122%),{colorTwo} calc({edge}% + 128%) calc({edge}% + 222%),{colorOne} calc({edge}% + 228%) calc({edge}% + 322%),{colorTwo} calc({edge}% + 328%) calc({edge}% + 422%),{colorOne} calc({edge}% + 428%) calc({edge}% + 522%),#0008 calc({edge}% + 528%),#0000 calc({edge}% + 550%)',
+      '--_s': 'calc(25%/3) calc(25%/4) at 50%',
+      'background': `
+        radial-gradient(var(--_s) 100%,var(--_g)),
+        radial-gradient(var(--_s) 100%,var(--_g)) calc({size}px/2) calc(3*{size}px/4),
+        radial-gradient(var(--_s) 0,var(--_g)) calc({size}px/2) 0,
+        radial-gradient(var(--_s) 0,var(--_g)) 0 calc(3*{size}px/4),
+        repeating-linear-gradient(90deg,{colorThree} calc(25%/-6) calc(25%/6),{colorFour} 0 calc(25%/2))`,
+      'background-size': '{size}px calc(3*{size}px/2)',
+    },
+    variables: {
+      size: size(140, 70, 240, 5),
+      colorOne: {
+        type: 'color',
+        value: '#AB3E5B',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#FFBE40',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#ACCEC0',
+      },
+      colorFour: {
+        type: 'color',
+        value: '#61A6AB',
+        role: 'ground',
+      },
+      edge: {
+        type: 'range',
+        value: 25,
+        min: 18,
+        max: 32,
+        step: 1,
+      },
+    },
+  },
+
+  'arabesque_style': {
+    template: {
+      '--t': 'calc({size}px/{thicknessDiv})',
+      '--_c': '#0000 calc(98% - var(--t)),{figureColor} calc(100% - var(--t)) 98%,#0000',
+      '--_s': 'calc(2*{size}px) calc(5*{size}px/2)',
+      '--_r0': '/var(--_s) radial-gradient(calc({size}px/2) at 0 20%,var(--_c))',
+      '--_r1': '/var(--_s) radial-gradient(calc({size}px/2) at 100% 20%,var(--_c))',
+      'background': `
+        0 0 var(--_r0),calc(-1*{size}px) calc(5*{size}px/4) var(--_r0),
+        {size}px 0 var(--_r1),0 calc(5*{size}px/4) var(--_r1),
+        conic-gradient(at var(--t) calc(20% + 2*var(--t)),#0000 {fillStop}%,{figureColor} 0)
+          calc(var(--t)/-2) calc({size}px - var(--t))/{size}px calc(5*{size}px/4),
+        repeating-conic-gradient({bgColor} 0 25%,#0000 0 50%)
+          {size}px calc({size}px/-8)/var(--_s),
+        conic-gradient(from 90deg at var(--t) var(--t),{bgColor} 25%,{figureColor} 0)
+          calc(({size}px - var(--t))/2) calc(({size}px - var(--t))/2)/{size}px calc(5*{size}px/4)`,
+    },
+    variables: {
+      size: size(50, 28, 100, 2),
+      figureColor: {
+        type: 'color',
+        value: '#084c7f',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#fef5e9',
+        role: 'ground',
+      },
+      thicknessDiv: {
+        type: 'range',
+        value: 10,
+        min: 6,
+        max: 16,
+        step: 0.5,
+      },
+      fillStop: {
+        type: 'range',
+        value: 75,
+        min: 65,
+        max: 85,
+        step: 0.5,
+      },
+    },
+  },
+
+  'citrus_shapes': {
+    template: {
+      '--b': 'calc({size}px/{thickDiv})',
+      '--_r': 'calc(1.28*{size}px + var(--b)/2) at top 50%',
+      '--_f': 'calc(99.5% - var(--b)),{fillColor} calc(101% - var(--b)) 99.5%,#0000 101%',
+      '--_g0': 'calc(-.8*{size}px), {colorOne} var(--_f)',
+      '--_g1': 'calc(-.8*{size}px), {colorTwo} var(--_f)',
+      '--_s': 'calc(1.8*{size}px + var(--b))',
+      'background': `
+        radial-gradient(var(--_r) right var(--_g0)) calc(-1*var(--_s)) {size}px,
+        radial-gradient(var(--_r) left var(--_g1)) var(--_s) calc(-1*{size}px),
+        radial-gradient(var(--_r) right var(--_g1)) calc(var(--_s)/-2) calc(-1*{size}px),
+        radial-gradient(var(--_r) left var(--_g0)) calc(var(--_s)/2) {size}px,
+        linear-gradient(90deg,{colorOne} 50%,{colorTwo} 0)`,
+      'background-size': 'var(--_s) calc(4*{size}px)',
+    },
+    variables: {
+      size: size(55, 28, 110, 1),
+      colorOne: {
+        type: 'color',
+        value: '#88A65E',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#BFB35A',
+      },
+      fillColor: {
+        type: 'color',
+        value: '#F9F2E7',
+        role: 'ground',
+      },
+      thickDiv: {
+        type: 'range',
+        value: 3.67,
+        min: 2.5,
+        max: 5.5,
+        step: 0.01,
+      },
+    },
+  },
+
+  'quarter_circles': {
+    template: {
+      '--_g': '{figureColor} {fill}%, #0000 calc({fill}% + {gap}%)',
+      'background': `
+        radial-gradient(at 100% 100%, var(--_g)),
+        radial-gradient(at 0 0, var(--_g))
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(64, 28, 140, 2),
+      figureColor: {
+        type: 'color',
+        value: '#036564',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#E8DDCB',
+        role: 'ground',
+      },
+      fill: {
+        type: 'range',
+        value: 35,
+        min: 25,
+        max: 48,
+        step: 0.5,
+      },
+      gap: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 4,
+        step: 0.5,
+      },
+    },
+  },
+
+  'rhombus_nested': {
+    template: {
+      '--_g': '#0000 calc(-650%/{bandDiv}) calc(50%/{bandDiv}),{figureColor} 0 calc(100%/{bandDiv}),#0000 0 calc(150%/{bandDiv}),{figureColor} 0 calc(200%/{bandDiv}),#0000 0 calc(250%/{bandDiv}),{figureColor} 0 calc(300%/{bandDiv})',
+      '--_g0': 'repeating-linear-gradient(45deg,var(--_g))',
+      '--_g1': 'repeating-linear-gradient(-45deg,var(--_g))',
+      'background': `
+        var(--_g0),var(--_g0) {size}px {size}px,
+        var(--_g1),var(--_g1) {size}px {size}px {bgColor}`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(80, 40, 160, 5),
+      figureColor: {
+        type: 'color',
+        value: '#542437',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#C02942',
+        role: 'ground',
+      },
+      bandDiv: {
+        type: 'range',
+        value: 13,
+        min: 9,
+        max: 17,
+        step: 1,
+      },
+    },
+  },
+
+  'lollipop': {
+    template: {
+      '--_c1': '{colorOne} 99%,#0000 101%',
+      '--_c2': '{colorTwo} 99%,#0000 101%',
+      '--r': 'calc({size}px*.866)',
+      '--g0': 'radial-gradient({size}px,var(--_c1))',
+      '--g1': 'radial-gradient({size}px,var(--_c2))',
+      '--f': 'radial-gradient({size}px at calc(100% + var(--r)) 50%,var(--_c1))',
+      '--p': 'radial-gradient({size}px at 100% 50%,var(--_c2))',
+      'background': `
+        var(--f) 0 calc(-5*{size}px/2),
+        var(--f) calc(-2*var(--r)) calc({size}px/2),
+        var(--p) 0 calc(-2*{size}px),
+        var(--g0) var(--r) calc(-5*{size}px/2),
+        var(--g1) var(--r) calc(5*{size}px/2),
+        radial-gradient({size}px at 100% 100%,var(--_c1)) 0 calc(-1*{size}px),
+        radial-gradient({size}px at 0% 50%,var(--_c1)) 0 calc(-4*{size}px),
+        var(--g1) calc(-1*var(--r)) calc(-7*{size}px/2),
+        var(--g0) calc(-1*var(--r)) calc(-5*{size}px/2),
+        var(--p) calc(-2*var(--r)) {size}px,
+        var(--g0) calc(-1*var(--r)) calc({size}px/2),
+        var(--g1) calc(-1*var(--r)) calc({size}px/-2),
+        var(--g0) 0 calc(-1*{size}px),
+        var(--g1) var(--r) calc({size}px/-2),
+        var(--g0) var(--r) calc({size}px/2)
+        {colorTwo}`,
+      'background-size': 'calc(4*var(--r)) calc(6*{size}px)',
+    },
+    variables: {
+      size: size(56, 28, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#3FB8AF',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#FF9E9D',
+        role: 'ground',
+      },
+    },
+  },
+
+  'semi_circles': {
+    template: {
+      '--_g': 'radial-gradient({figureColor} {fill}%,#0000 calc({fill}% + {gap}%))',
+      'background': `
+        var(--_g) calc({size}px/-2) calc({size}px/2),
+        repeating-conic-gradient(from {angle}deg,{bgColor} 0 25%,#0000 0 50%)
+          calc({size}px/2) calc({size}px/2),
+        var(--_g),var(--_g) {size}px {size}px {bgColor}`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(50, 24, 120, 2),
+      figureColor: {
+        type: 'color',
+        value: '#0B486B',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#CFF09E',
+        role: 'ground',
+      },
+      fill: {
+        type: 'range',
+        value: 49,
+        min: 40,
+        max: 55,
+        step: 0.5,
+      },
+      gap: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 4,
+        step: 0.5,
+      },
+      angle: {
+        type: 'range',
+        value: 45,
+        min: 0,
+        max: 90,
+        step: 1,
+      },
+    },
+  },
+
+  'christmas_tree': {
+    template: {
+      '--_c': '#0000,{treeColor} {gap}deg calc({wedge}deg - {gap}deg),#0000 calc({wedge}deg + {gap}deg)',
+      '--g0': 'conic-gradient(from {from}deg at 50% 87.5%,var(--_c))',
+      '--g1': 'conic-gradient(from {from}deg at 50% 81.25%,var(--_c))',
+      '--g2': 'conic-gradient(from {from}deg at 50% 75%,var(--_c))',
+      '--g3': 'conic-gradient(at 10% 20%,#0000 75%,{treeColor} 0)',
+      'background': `
+        var(--g0) 0 calc({size}px/-4),var(--g0) {size}px calc(3*{size}px/4),
+        var(--g1),var(--g1) {size}px {size}px,
+        var(--g2) 0 calc({size}px/4),var(--g2) {size}px calc(5*{size}px/4),
+        var(--g3) calc({size}px/-10) {size}px,
+        var(--g3) calc(9*{size}px/10) calc(2*{size}px),
+        repeating-conic-gradient(from 45deg,{colorOne} 0 25%,{colorTwo} 0 50%)`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(75, 40, 140, 5),
+      treeColor: {
+        type: 'color',
+        value: '#ffffff',
+      },
+      colorOne: {
+        type: 'color',
+        value: '#a31e39',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#31570e',
+      },
+      from: {
+        type: 'range',
+        value: 140,
+        min: 120,
+        max: 160,
+        step: 1,
+      },
+      wedge: {
+        type: 'range',
+        value: 80,
+        min: 60,
+        max: 100,
+        step: 1,
+      },
+      gap: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 3,
+        step: 0.5,
+      },
+    },
+  },
+
+  'christmas': {
+    template: {
+      '--b': 'calc({size}px/{thickDiv})',
+      '--_r': 'calc(1.28*{size}px + var(--b)/2) at left 50%',
+      '--_f': 'calc(100% - var(--b)),{fillColor} calc(101% - var(--b)) 100%,#0000 101%',
+      '--g0': 'calc(-.8*{size}px),{colorOne} var(--_f)',
+      '--g1': 'calc(-.8*{size}px),{colorTwo} var(--_f)',
+      '--_s': 'calc(1.5*{size}px + var(--b))',
+      'background': `
+        radial-gradient(var(--_r) bottom var(--g0)) calc(2*{size}px) calc(-1*var(--_s)),
+        radial-gradient(var(--_r) bottom var(--g1)) calc(-1*{size}px) calc(var(--_s)/-2),
+        radial-gradient(var(--_r) top var(--g1)) 0 var(--_s),
+        radial-gradient(var(--_r) top var(--g0)) {size}px calc(var(--_s)/2),
+        linear-gradient({colorOne} 50%,{colorTwo} 0)`,
+      'background-size': 'calc(4*{size}px) var(--_s)',
+    },
+    variables: {
+      size: size(48, 24, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#bb2528',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#146b3a',
+      },
+      fillColor: {
+        type: 'color',
+        value: '#d8d8d8',
+        role: 'ground',
+      },
+      thickDiv: {
+        type: 'range',
+        value: 2.67,
+        min: 1.8,
+        max: 4,
+        step: 0.01,
+      },
+    },
+  },
+
+  'diagonal_rectangles': {
+    template: {
+      'background': `
+        linear-gradient({angle}deg,#0000 {cutStart}%,{colorOne} 0 {cutEnd}%,#0000 0),
+        repeating-linear-gradient(calc({angle}deg - 90deg),{colorOne} calc(-1 * {band}%) {band}%,{colorTwo} 0 calc(3*{band}%))`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(150, 70, 260, 5),
+      colorOne: {
+        type: 'color',
+        value: '#5E412F',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#FCEBB6',
+        role: 'ground',
+      },
+      angle: {
+        type: 'range',
+        value: 135,
+        min: 120,
+        max: 150,
+        step: 1,
+      },
+      cutStart: {
+        type: 'range',
+        value: 18.75,
+        min: 12,
+        max: 24,
+        step: 0.25,
+      },
+      cutEnd: {
+        type: 'range',
+        value: 31.25,
+        min: 26,
+        max: 38,
+        step: 0.25,
+      },
+      band: {
+        type: 'range',
+        value: 6.25,
+        min: 4,
+        max: 10,
+        step: 0.25,
+      },
+    },
+  },
+
+  'rhombus_octagons': {
+    template: {
+      '--_g': '{colorOne} {inner}%,{colorTwo} 0 {mid}%,#0000 0 calc(100% - {mid}%),{colorTwo} 0 calc(100% - {inner}%),{colorOne} 0',
+      'background': `
+        conic-gradient(from 90deg at {dot}px {dot}px,#0000 25%,{colorOne} 0) calc(-0.5*{dot}px) calc(-0.5*{dot}px),
+        linear-gradient(-45deg,var(--_g)),linear-gradient(45deg,var(--_g)),
+        conic-gradient(from 90deg at {cell}% {cell}%,{colorOne} 25%,{colorTwo} 0)
+          calc({size}px/-5) calc({size}px/-5)`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(120, 60, 220, 5),
+      colorOne: {
+        type: 'color',
+        value: '#4E395D',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#8EBE94',
+      },
+      inner: {
+        type: 'range',
+        value: 15,
+        min: 10,
+        max: 22,
+        step: 0.5,
+      },
+      mid: {
+        type: 'range',
+        value: 28,
+        min: 22,
+        max: 36,
+        step: 0.5,
+      },
+      cell: {
+        type: 'range',
+        value: 40,
+        min: 30,
+        max: 50,
+        step: 1,
+      },
+      dot: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 4,
+        step: 0.5,
+      },
+    },
+  },
+
+  'colorful_circles': {
+    template: {
+      '--_g': 'radial-gradient(#0000 {ring}%,{ringColor} calc({ring}% + {gap}%))',
+      'background': `
+        var(--_g),var(--_g) calc({size}px/2) calc({size}px/2),
+        conic-gradient({colorOne} 25%,{colorTwo} 0 50%,{colorThree} 0 75%,{colorFour} 0)`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(120, 60, 220, 5),
+      colorOne: {
+        type: 'color',
+        value: '#0f9177',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#fdebad',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#d34434',
+      },
+      colorFour: {
+        type: 'color',
+        value: '#b5d999',
+      },
+      ringColor: {
+        type: 'color',
+        value: '#1a2030',
+      },
+      ring: {
+        type: 'range',
+        value: 70,
+        min: 55,
+        max: 82,
+        step: 1,
+      },
+      gap: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 4,
+        step: 0.5,
+      },
+    },
+  },
+
+  'pill_shapes': {
+    template: {
+      '--_g': 'radial-gradient(calc({size}px/2),{colorOne} 97%,#0000)',
+      'background': `
+        var(--_g),var(--_g) calc(2*{size}px) calc(2*{size}px),
+        repeating-conic-gradient(from {angle}deg,#0000 0 25%,{colorTwo} 0 50%) calc(-.707*{size}px) calc(-.707*{size}px),
+        repeating-linear-gradient(calc({angle}deg + 90deg),{colorOne} calc({size}px/-2) calc({size}px/2),{colorTwo} 0 calc(2.328*{size}px))`,
+      'background-size': 'calc(4*{size}px) calc(4*{size}px)',
+    },
+    variables: {
+      size: size(34, 18, 70, 1),
+      colorOne: {
+        type: 'color',
+        value: '#ECBE13',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#309292',
+      },
+      angle: {
+        type: 'range',
+        value: 45,
+        min: 15,
+        max: 75,
+        step: 1,
+      },
+    },
+  },
+
+  'half_circles': {
+    template: {
+      background: `
+        radial-gradient({rx}% {ry}% at 25% -50%,{colorOne} {fill}%,#0000)
+          0 0/calc(2*{size}px) {size}px,
+        radial-gradient({rx}% {ry}% at 75% 150%,{colorOne} {fill}%,#0000)
+          0 0/calc(2*{size}px) {size}px,
+        radial-gradient({ry}% {rx}% at 150% 25%,{colorOne} {fill}%,#0000)
+          0 0/{size}px calc(2*{size}px),
+        radial-gradient({ry}% {rx}% at -50% 75%,{colorOne} {fill}%,#0000)
+          0 0/{size}px calc(2*{size}px),
+        repeating-conic-gradient({colorOne} 0 {wedge}deg,{colorTwo} 0 25%)
+          0 0/calc(2*{size}px) calc(2*{size}px)`,
+    },
+    variables: {
+      size: size(71, 36, 140, 1),
+      colorOne: {
+        type: 'color',
+        value: '#FCEBB6',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#78C0A8',
+      },
+      rx: {
+        type: 'range',
+        value: 36,
+        min: 28,
+        max: 45,
+        step: 1,
+      },
+      ry: {
+        type: 'range',
+        value: 72,
+        min: 58,
+        max: 85,
+        step: 1,
+      },
+      fill: {
+        type: 'range',
+        value: 98,
+        min: 92,
+        max: 99,
+        step: 0.5,
+      },
+      wedge: {
+        type: 'range',
+        value: 45,
+        min: 30,
+        max: 60,
+        step: 1,
+      },
+    },
+  },
+
+  'curved_segments': {
+    template: {
+      '--_c': '{colorOne} calc(100% - {size}px/2) 99%,#0000',
+      '--_g': '{size}px,#0000 calc(99% - {size}px/2),var(--_c)',
+      'background': `
+        radial-gradient({size}px at 100% var(--_g)),
+        radial-gradient(calc({size}px/4) at 50% calc(100%/{cellDiv}),var(--_c)) {size}px 0,
+        radial-gradient({size}px at 0% var(--_g)) 0 calc(3*{size}px)
+        {bgColor}`,
+      'background-size': `
+        calc(2*{size}px) calc(9*{size}px/4),
+        calc(2*{size}px) calc(3*{size}px/4)`,
+    },
+    variables: {
+      size: size(60, 30, 120, 2),
+      colorOne: {
+        type: 'color',
+        value: '#7BB0A8',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#A7DBAB',
+        role: 'ground',
+      },
+      cellDiv: {
+        type: 'range',
+        value: 3,
+        min: 2.4,
+        max: 4,
+        step: 0.1,
+      },
+    },
+  },
+
+  'waves': {
+    template: {
+      '--_s': '{ovalX}% {ovalY}% at {anchor}%',
+      '--_g': '{edge}% 99%,#0000 101%',
+      '--g1': 'radial-gradient(var(--_s) 100%,#0000 {cut}%,{colorOne} var(--_g))',
+      '--g2': 'radial-gradient(var(--_s) 0,#0000 {cut}%,{colorOne} var(--_g))',
+      '--g3': 'radial-gradient(var(--_s) 100%,#0000 {cut}%,{colorTwo} var(--_g))',
+      '--g4': 'radial-gradient(var(--_s) 0,#0000 {cut}%,{colorTwo} var(--_g))',
+      'background': `
+        var(--g1),
+        var(--g2) 0 calc(3*{size}px),
+        var(--g3) {size}px calc(3*{size}px),
+        var(--g4) {size}px calc(6*{size}px),
+        var(--g1) calc(2*{size}px) calc(6*{size}px),
+        var(--g2) calc(2*{size}px) calc(9*{size}px),
+        var(--g3) calc(3*{size}px) calc(9*{size}px),
+        var(--g4) calc(3*{size}px) 0,
+        repeating-linear-gradient({colorOne} 0 25%,{colorTwo} 0 50%)`,
+      'background-size': 'calc(4*{size}px) calc(12*{size}px)',
+    },
+    variables: {
+      size: size(30, 16, 60, 2),
+      colorOne: {
+        type: 'color',
+        value: '#E5FCC2',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#45ADA8',
+      },
+      ovalX: {
+        type: 'range',
+        value: 37.5,
+        min: 28,
+        max: 48,
+        step: 0.5,
+      },
+      ovalY: {
+        type: 'range',
+        value: 12.5,
+        min: 8,
+        max: 18,
+        step: 0.5,
+      },
+      anchor: {
+        type: 'range',
+        value: 62.5,
+        min: 50,
+        max: 75,
+        step: 0.5,
+      },
+      cut: {
+        type: 'range',
+        value: 32,
+        min: 24,
+        max: 40,
+        step: 1,
+      },
+      edge: {
+        type: 'range',
+        value: 34,
+        min: 26,
+        max: 42,
+        step: 1,
+      },
+    },
+  },
+
+  'chevron_stripes': {
+    template: {
+      '--g': 'calc({size}px/{gapDiv})',
+      '--_l': '#0000 calc(33% - .866*var(--g)),{figureColor} calc(33.2% - .866*var(--g)) 33%,#0000 34%',
+      'background': `
+        repeating-linear-gradient({figureColor} 0 var(--g), #0000 0 50%)
+          0 calc(.866*{size}px - var(--g)/2),
+        conic-gradient(from -150deg at var(--g) 50%,{figureColor} 120deg,#0000 0),
+        linear-gradient(-120deg,var(--_l)),linear-gradient(-60deg,var(--_l))
+        {bgColor}`,
+      'background-size': '{size}px calc(3.466*{size}px)',
+    },
+    variables: {
+      size: size(65, 32, 130, 1),
+      figureColor: {
+        type: 'color',
+        value: '#ECD078',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#0B486B',
+        role: 'ground',
+      },
+      gapDiv: {
+        type: 'range',
+        value: 5,
+        min: 3,
+        max: 8,
+        step: 0.5,
+      },
+    },
+  },
+
+  'wavy_bands': {
+    harmony: 'ramp',
+    template: {
+      '--_g': '#0000, #0004 {soft}%,{colorDark} calc({soft}% + 1%) calc({soft}% + 1% + {band}%),{colorLight} calc({soft}% + 1% + {band}% + {gap}%) calc({soft}% + 1% + 2*{band}% + {gap}%),{colorDark} calc({soft}% + 1% + 2*{band}% + 2*{gap}%) calc({soft}% + 1% + 3*{band}% + 2*{gap}%),{colorLight} calc({soft}% + 1% + 3*{band}% + 3*{gap}%) calc({soft}% + 1% + 4*{band}% + 3*{gap}%),{colorDark} calc({soft}% + 1% + 4*{band}% + 4*{gap}%) calc({soft}% + 1% + 5*{band}% + 4*{gap}%),{colorLight} calc({soft}% + 1% + 5*{band}% + 5*{gap}%) calc({soft}% + 1% + 6*{band}% + 5*{gap}%),{colorDark} calc({soft}% + 1% + 6*{band}% + 6*{gap}%) calc({soft}% + 1% + 7*{band}% + 6*{gap}%),{colorLight} calc({soft}% + 1% + 7*{band}% + 7*{gap}%) calc({soft}% + 1% + 8*{band}% + 7*{gap}%),{colorDark} calc({soft}% + 1% + 8*{band}% + 8*{gap}%) calc({soft}% + 1% + 9*{band}% + 8*{gap}%),#0004 calc(100% - {soft}%),#0000',
+      'background': `
+        radial-gradient(100% 50% at 100% 0,var(--_g)),
+        radial-gradient(100% 50% at 0 50%,var(--_g)),
+        radial-gradient(100% 50% at 100% 100%,var(--_g))`,
+      'background-size': '{size}px calc(2*{size}px)',
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorDark: {
+        type: 'color',
+        value: '#3B8183',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#E1F5C4',
+      },
+      soft: {
+        type: 'range',
+        value: 5,
+        min: 2,
+        max: 8,
+        step: 0.5,
+      },
+      gap: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 4,
+        step: 0.5,
+      },
+      band: {
+        type: 'range',
+        value: 8,
+        min: 5,
+        max: 12,
+        step: 0.5,
+      },
+    },
+  },
+
+  'arrows': {
+    template: {
+      'background': `
+        conic-gradient(#0000 {fillStop}%,{colorOne} 0) 0 calc({size}px/4),
+        conic-gradient(from {angle}deg,{colorOne} 25%,{colorTwo} 0)`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorOne: {
+        type: 'color',
+        value: '#CFF09E',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#3B8686',
+      },
+      fillStop: {
+        type: 'range',
+        value: 75,
+        min: 60,
+        max: 85,
+        step: 0.5,
+      },
+      angle: {
+        type: 'range',
+        value: 45,
+        min: 15,
+        max: 75,
+        step: 1,
+      },
+    },
+  },
+
+  'diagonal_chevrons': {
+    template: {
+      background: `
+        conic-gradient({colorOne} {a}deg,{colorTwo} 0 {b}deg,{colorOne} 0 {c}deg,{colorTwo} 0)
+        0/{size}px {size}px`,
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorOne: {
+        type: 'color',
+        value: '#7A6A53',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#D9CEB2',
+      },
+      a: {
+        type: 'range',
+        value: 135,
+        min: 110,
+        max: 155,
+        step: 1,
+      },
+      b: {
+        type: 'range',
+        value: 270,
+        min: 240,
+        max: 300,
+        step: 1,
+      },
+      c: {
+        type: 'range',
+        value: 315,
+        min: 290,
+        max: 340,
+        step: 1,
+      },
+    },
+  },
+
+  'irregular_zig_zag': {
+    template: {
+      '--c': '{figureColor} {fill}%',
+      'background': `
+        conic-gradient(from {fromA}deg at {tipX}% {tipY}%,var(--c),#0000 0),
+        conic-gradient(from {fromB}deg at calc(100% - {tipX}%) calc(100% - {tipY}%),var(--c),#0000 0)
+          0 calc({size}px/2),
+        conic-gradient(from 180deg at 50% calc(100% - {mid}%),#0000 {cut}%,var(--c)),
+        conic-gradient(at 50% {mid}%,#0000 {cut}%,var(--c))
+          0 calc({size}px/2) {bgColor}`,
+      'background-size': '{size}px calc(2*{size}px)',
+    },
+    variables: {
+      size: size(66, 32, 130, 2),
+      figureColor: {
+        type: 'color',
+        value: '#B38184',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#413E4A',
+        role: 'ground',
+      },
+      fill: {
+        type: 'range',
+        value: 25,
+        min: 15,
+        max: 35,
+        step: 1,
+      },
+      fromA: {
+        type: 'range',
+        value: -45,
+        min: -75,
+        max: -15,
+        step: 1,
+      },
+      fromB: {
+        type: 'range',
+        value: 135,
+        min: 105,
+        max: 165,
+        step: 1,
+      },
+      tipX: {
+        type: 'range',
+        value: 75,
+        min: 60,
+        max: 88,
+        step: 0.5,
+      },
+      tipY: {
+        type: 'range',
+        value: 12.5,
+        min: 6,
+        max: 20,
+        step: 0.5,
+      },
+      mid: {
+        type: 'range',
+        value: 25,
+        min: 18,
+        max: 35,
+        step: 1,
+      },
+      cut: {
+        type: 'range',
+        value: 62.5,
+        min: 50,
+        max: 75,
+        step: 0.5,
+      },
+    },
+  },
+
+  'zig_zag_3d': {
+    harmony: 'ramp',
+    template: {
+      '--g1': 'conic-gradient(at calc(250%/{cellDiv}) calc(50%/{cellDiv}),{colorMid} {wedge}deg,#0000 0 calc(360deg - {wedge}deg),{colorDark} 0)',
+      '--g2': 'conic-gradient(at calc(50%/{cellDiv}) 50%,#0000 {fillStop}%,{colorDark} 0)',
+      '--g3': 'conic-gradient(at calc(100%/{cellDiv}) 50%,#0000 {fillStop}%,{colorMid} 0)',
+      '--g4': 'conic-gradient(from calc({wedge}deg - 1deg) at calc(200%/{cellDiv}) calc(249%/(3*{cellDiv})),{colorBase} calc({wedge}deg + 1deg),#0000 calc({wedge}deg + 2deg))',
+      '--g5': 'conic-gradient(from {wedge}deg at 50% calc(250%/{cellDiv}),{colorLight} {wedge}deg,{colorDark} 0 calc(2*{wedge}deg),#0000 0)',
+      '--_p': 'calc(9*tan(30deg)*{size}px)',
+      'background': `
+        var(--g1) calc(-1*{size}px) 0,var(--g1) calc(2*{size}px) var(--_p),
+        var(--g2),var(--g2) calc(3*{size}px) var(--_p),
+        var(--g3),var(--g3) calc(3*{size}px) var(--_p),
+        var(--g4),var(--g4) calc(3*{size}px) var(--_p),
+        var(--g5) calc(3*{size}px) 0,var(--g5) 0 var(--_p) {colorBase}`,
+      'background-size': 'calc(6*{size}px) calc(2*var(--_p))',
+    },
+    variables: {
+      size: size(36, 18, 72, 1),
+      colorDark: {
+        type: 'color',
+        value: '#000000',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#d2d3d5',
+      },
+      colorBase: {
+        type: 'color',
+        value: '#727c7e',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#f1f1f1',
+      },
+      cellDiv: {
+        type: 'range',
+        value: 3,
+        min: 2.4,
+        max: 4,
+        step: 0.1,
+      },
+      wedge: {
+        type: 'range',
+        value: 60,
+        min: 45,
+        max: 75,
+        step: 1,
+      },
+      fillStop: {
+        type: 'range',
+        value: 75,
+        min: 65,
+        max: 85,
+        step: 0.5,
+      },
+    },
+  },
+
+  'outline_circles': {
+    template: {
+      '--_g': 'radial-gradient(#0000 {ringA}%,{figureColor} calc({ringA}% + {gap}%) calc({ringA}% + {gap}% + {stroke}%),#0000 calc({ringA}% + 2*{gap}% + {stroke}%) {ringB}%,{figureColor} calc({ringB}% + {gap}%) calc({ringB}% + {gap}% + {stroke}%),#0000 calc({ringB}% + 2*{gap}% + {stroke}%))',
+      '--_c': ',#0000 {fillStop}%,{bgColor} 0',
+      'background': `
+        conic-gradient(at {armA}% {armB}% var(--_c)) calc({size}px * .44) calc(.9*{size}px),
+        conic-gradient(at {armA}% {armB}% var(--_c)) calc({size}px * -.06) calc(.4*{size}px),
+        conic-gradient(at {armB}% {armA}% var(--_c)) calc(.9*{size}px) calc({size}px * .44),
+        conic-gradient(at {armB}% {armA}% var(--_c)) calc(.4*{size}px) calc({size}px * -.06),
+        var(--_g),var(--_g) calc({size}px/2) calc({size}px/2) {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(220, 100, 320, 5),
+      figureColor: {
+        type: 'color',
+        value: '#774F38',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#F1D4AF',
+        role: 'ground',
+      },
+      ringA: {
+        type: 'range',
+        value: 60,
+        min: 50,
+        max: 68,
+        step: 1,
+      },
+      ringB: {
+        type: 'range',
+        value: 77,
+        min: 70,
+        max: 85,
+        step: 1,
+      },
+      gap: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 2.5,
+        step: 0.5,
+      },
+      stroke: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 4,
+        step: 0.5,
+      },
+      fillStop: {
+        type: 'range',
+        value: 75,
+        min: 65,
+        max: 85,
+        step: 0.5,
+      },
+      armA: {
+        type: 'range',
+        value: 12,
+        min: 8,
+        max: 18,
+        step: 0.5,
+      },
+      armB: {
+        type: 'range',
+        value: 20,
+        min: 14,
+        max: 28,
+        step: 0.5,
+      },
+    },
+  },
+
+  'zig_zag_rectangles': {
+    template: {
+      '--g': '{colorTwo} {band}%,{colorOne} 0 calc(3*{band}%),{colorTwo} 0 calc(5*{band}%),{colorOne} 0 calc(7*{band}%),{colorTwo} 0 calc(9*{band}%),#0000 0',
+      'background': `
+        linear-gradient(225deg,#0000 {band}%,{colorOne} 0 calc(3*{band}%),#0000 0 calc(25*{band}%),{colorOne} 0 calc(27*{band}%),#0000 0)
+          0 calc({size}px/2),
+        linear-gradient(45deg,var(--g)) 0 {size}px,
+        linear-gradient(45deg,var(--g)) calc({size}px/-2) calc({size}px/-2),
+        linear-gradient(225deg,var(--g)) {size}px 0,
+        linear-gradient(225deg,var(--g)) calc({size}px/2) {size}px,
+        repeating-linear-gradient(-45deg,{colorTwo} calc(-1 * {band}%) {band}%,{colorOne} 0 calc(3*{band}%))`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorOne: {
+        type: 'color',
+        value: '#987F69',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#FDF1CC',
+        role: 'ground',
+      },
+      band: {
+        type: 'range',
+        value: 3.125,
+        min: 2,
+        max: 5,
+        step: 0.125,
+      },
+    },
+  },
+
+  'right_triangles': {
+    template: {
+      '--_g': ',#0000 {fillStop}%,{figureColor} 0',
+      'background': `
+        linear-gradient(-45deg var(--_g)),
+        linear-gradient(45deg var(--_g))
+          0 calc({size}px/2) {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(70, 35, 140, 5),
+      figureColor: {
+        type: 'color',
+        value: '#F67280',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#355C7D',
+        role: 'ground',
+      },
+      fillStop: {
+        type: 'range',
+        value: 75,
+        min: 60,
+        max: 85,
+        step: 0.5,
+      },
+    },
+  },
+
+  'optical_illusion': {
+    template: {
+      background: `
+        radial-gradient({rx}% {ry}%,{colorOne} {fill}%,#0000)
+          {size}px 0/calc(2*{size}px) {size}px,
+        radial-gradient({rx}% {ry}%,{colorTwo} {fill}%,#0000)
+          0 0/calc(2*{size}px) {size}px,
+        repeating-conic-gradient({colorOne} 0 25%,{colorTwo} 0 50%)
+          0 0/calc(2*{size}px) calc(2*{size}px)`,
+    },
+    variables: {
+      size: size(50, 24, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#5E412F',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#FCEBB6',
+      },
+      rx: {
+        type: 'range',
+        value: 25,
+        min: 18,
+        max: 35,
+        step: 1,
+      },
+      ry: {
+        type: 'range',
+        value: 50,
+        min: 35,
+        max: 65,
+        step: 1,
+      },
+      fill: {
+        type: 'range',
+        value: 98,
+        min: 92,
+        max: 99,
+        step: 0.5,
+      },
+    },
+  },
+
+  'triangle_tiles': {
+    template: {
+      background: `
+        repeating-conic-gradient({colorOne} 0 {wedge}deg,{colorTwo} 0 calc(2*{wedge}deg))
+        0/{size}px {size}px`,
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorOne: {
+        type: 'color',
+        value: '#F2E9E1',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#99B2B7',
+      },
+      wedge: {
+        type: 'range',
+        value: 45,
+        min: 30,
+        max: 60,
+        step: 1,
+      },
+    },
+  },
+
+  'thick_wavy': {
+    template: {
+      '--_g': `calc(2*{size}px) calc(2*{size}px)
+        radial-gradient({petal}% {petal}%,{colorOne} 99%,#0000 101%)`,
+      'background': `
+        0 {size}px/var(--_g),{size}px 0/var(--_g),
+        radial-gradient(50% 50%,{colorTwo} {fill}%,#0000)
+          calc({size}px/2) calc({size}px/2)/{size}px {size}px,
+        linear-gradient(90deg,{colorOne} 50%,{colorTwo} 0)
+          0 0/calc(2*{size}px)`,
+    },
+    variables: {
+      size: size(50, 24, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#D9CEB2',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#948C75',
+      },
+      petal: {
+        type: 'range',
+        value: 25,
+        min: 18,
+        max: 35,
+        step: 1,
+      },
+      fill: {
+        type: 'range',
+        value: 97,
+        min: 90,
+        max: 99,
+        step: 0.5,
+      },
+    },
+  },
+
+  'two_color_circles': {
+    template: {
+      background: `
+        radial-gradient(#0000 {inner}%,{colorOne} calc({inner}% + {gap}%) calc({inner}% + {gap}% + {ring}%),{colorTwo} calc({inner}% + 2*{gap}% + {ring}%))
+        0 0/{size}px {size}px,
+        repeating-linear-gradient({angle}deg,{colorOne} 0 25%,{colorTwo} 0 50%)
+        0 0/calc(2*{size}px) calc(2*{size}px)`,
+    },
+    variables: {
+      size: size(100, 50, 200, 5),
+      colorOne: {
+        type: 'color',
+        value: '#5A3D31',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#E5EDB8',
+      },
+      inner: {
+        type: 'range',
+        value: 50,
+        min: 40,
+        max: 60,
+        step: 1,
+      },
+      gap: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 4,
+        step: 0.5,
+      },
+      ring: {
+        type: 'range',
+        value: 3,
+        min: 1,
+        max: 6,
+        step: 0.5,
+      },
+      angle: {
+        type: 'range',
+        value: 45,
+        min: 15,
+        max: 75,
+        step: 1,
+      },
+    },
+  },
+
+  'folded_zig_zag': {
+    template: {
+      '--a': 'from {from}deg at',
+      'background': `
+        linear-gradient(#0000 50%,#0004 0),
+        conic-gradient(var(--a) {posA}%,{colorLight} {wedge}deg,#0000 0),
+        conic-gradient(var(--a) {posB}%,{colorMid} {wedge}deg,#0000 0),
+        conic-gradient(var(--a) {posC}%,#0000 {wedge}deg,{colorLight} 0),
+        conic-gradient(var(--a) {posD}%,{colorLight} {wedge}deg,{colorDark} 0)`,
+      'background-size': 'calc(1.5*{size}px) {size}px',
+    },
+    variables: {
+      size: size(84, 42, 160, 2),
+      colorLight: {
+        type: 'color',
+        value: '#ffffff',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#71e9a0',
+      },
+      colorDark: {
+        type: 'color',
+        value: '#2a6a9b',
+      },
+      from: {
+        type: 'range',
+        value: -30,
+        min: -50,
+        max: -10,
+        step: 1,
+      },
+      wedge: {
+        type: 'range',
+        value: 240,
+        min: 200,
+        max: 280,
+        step: 1,
+      },
+      posA: {
+        type: 'range',
+        value: 90,
+        min: 80,
+        max: 95,
+        step: 1,
+      },
+      posB: {
+        type: 'range',
+        value: 75,
+        min: 65,
+        max: 85,
+        step: 1,
+      },
+      posC: {
+        type: 'range',
+        value: 25,
+        min: 15,
+        max: 35,
+        step: 1,
+      },
+      posD: {
+        type: 'range',
+        value: 40,
+        min: 30,
+        max: 50,
+        step: 1,
       },
     },
   },
