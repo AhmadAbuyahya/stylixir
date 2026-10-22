@@ -17,12 +17,12 @@ const templates: Templates = {
       'background-color': '{bgColor}',
       'background-image': `linear-gradient(
           -45deg,
-          transparent 75%,
-          {colorOne} 75%
+          transparent {width}%,
+          {colorOne} {width}%
         ),
-        linear-gradient(45deg, transparent 75%, {colorOne} 75%),
-        linear-gradient(-135deg, transparent 75%, {colorOne} 75%),
-        linear-gradient(135deg, transparent 75%, {colorOne} 75%)`,
+        linear-gradient(45deg, transparent {width}%, {colorOne} {width}%),
+        linear-gradient(-135deg, transparent {width}%, {colorOne} {width}%),
+        linear-gradient(135deg, transparent {width}%, {colorOne} {width}%)`,
       'background-size': '{size}px {size}px',
       'background-position': 'calc({size}px * {position}) 0, calc({size}px * {position}) 0, 0 0, 0 0',
     },
@@ -42,6 +42,13 @@ const templates: Templates = {
         min: 0,
         max: 1,
         step: 0.01,
+      },
+      width: {
+        type: 'range',
+        value: 75,
+        min: 64,
+        max: 95,
+        step: 1,
       },
     },
   },

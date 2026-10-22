@@ -9,6 +9,10 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AuditAddVariable: typeof import('./components/audit/AuditAddVariable.vue')['default']
+    AuditCssEditor: typeof import('./components/audit/AuditCssEditor.vue')['default']
+    AuditPreviewTile: typeof import('./components/audit/AuditPreviewTile.vue')['default']
+    AuditVariableRow: typeof import('./components/audit/AuditVariableRow.vue')['default']
     BgPreview: typeof import('./components/BgPreview.vue')['default']
     ColorInput: typeof import('./components/ColorInput.vue')['default']
     Controls: typeof import('./components/Controls.vue')['default']
@@ -21,7 +25,6 @@ declare module '@vue/runtime-core' {
     Logo: typeof import('./components/Logo.vue')['default']
     PatternCanvas: typeof import('./components/home/PatternCanvas.vue')['default']
     PatternLibrary: typeof import('./components/home/PatternLibrary.vue')['default']
-    RandomPreview: typeof import('./components/RandomPreview.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScenarioShowcase: typeof import('./components/home/ScenarioShowcase.vue')['default']

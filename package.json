@@ -12,6 +12,7 @@
     "test:e2e": "cypress open",
     "test:unit": "vitest",
     "typecheck": "vue-tsc --noEmit",
+    "audit:promote": "vite-node scripts/promote-audit.ts",
     "up": "taze major -I",
     "postinstall": "npx simple-git-hooks",
     "sizecheck": "npx vite-bundle-visualizer"

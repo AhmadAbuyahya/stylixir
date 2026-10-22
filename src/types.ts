@@ -6,7 +6,7 @@ export type ColorRole = 'ground' | 'figure' | 'shade-dark' | 'shade-mid' | 'shad
 
 export type ColorHarmony = 'ramp' | 'pair' | 'set'
 
-interface Variable {
+export interface Variable {
   type: 'color' | 'number' | 'range'
   value: string | number
   min?: number

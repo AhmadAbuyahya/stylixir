@@ -14,6 +14,7 @@ export const SIZE_PRESETS: SizePreset[] = [
   { id: 'qhd', label: 'QHD', hint: '2560 × 1440', width: 2560, height: 1440 },
   { id: 'uhd', label: '4K', hint: '3840 × 2160', width: 3840, height: 2160 },
   { id: 'story', label: 'Story', hint: '1080 × 1920', width: 1080, height: 1920 },
+  { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 1170, height: 2532 },
   { id: 'og', label: 'Open Graph', hint: '1200 × 630', width: 1200, height: 630 },
 ]
 

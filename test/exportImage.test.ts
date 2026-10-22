@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_SIDE,
+  SIZE_PRESETS,
   canUsePixelRatio,
   clampDimension,
   exportFilename,
@@ -20,6 +21,16 @@ describe('exportImage helpers', () => {
     expect(clampDimension(-20)).toBe(1)
     expect(clampDimension(MAX_SIDE + 100)).toBe(MAX_SIDE)
     expect(clampDimension(1920.4)).toBe(1920)
+  })
+
+  it('includes a phone lock-screen size', () => {
+    expect(SIZE_PRESETS.find(preset => preset.id === 'phone')).toEqual({
+      id: 'phone',
+      label: 'Phone',
+      hint: '1170 × 2532',
+      width: 1170,
+      height: 2532,
+    })
   })
 
   it('rejects 2x density when the raster would overflow', () => {

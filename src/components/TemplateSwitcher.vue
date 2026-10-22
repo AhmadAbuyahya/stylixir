@@ -35,13 +35,20 @@ onMounted(() => nextTick(scrollActiveIntoView))
 
 <template>
   <aside class="flex flex-col overflow-hidden border-white/10 bg-#0d0d0d md:h-full md:border-r-1">
-    <div class="flex shrink-0 items-center border-b-1 border-white/10 px-3 py-3">
+    <div class="flex shrink-0 items-center justify-between gap-2 border-b-1 border-white/10 px-3 py-3">
       <RouterLink
         to="/"
         class="h-7 overflow-hidden opacity-90 transition-opacity hover:opacity-100"
         title="Stylixir home"
       >
         <Logo class="h-full w-auto" />
+      </RouterLink>
+      <RouterLink
+        :to="{ path: '/audit', query: { template: activeTemplateStore.activeTemplate } }"
+        class="shrink-0 border-1 border-white/12 rounded-md px-2 py-1 font-mono text-10px tracking-wider uppercase text-white/55 transition hover:border-teal-400/40 hover:text-teal-200"
+        title="Open pattern audit"
+      >
+        Audit
       </RouterLink>
     </div>
 

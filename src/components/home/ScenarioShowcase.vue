@@ -75,18 +75,18 @@ function selectSurface(id: Surface) {
           </p>
         </div>
 
-        <div class="stage__viewport">
+        <div class="stage__viewport" :class="{ 'is-phone': surface === 'phone' }">
           <Transition name="surface" mode="out-in">
             <!-- Landing: edge-to-edge hero plane -->
             <div v-if="surface === 'landing'" key="landing" class="frame frame--landing">
               <PatternCanvas class="frame__fill" :style="style" :version="version" />
               <div class="frame__scrim frame__scrim--landing" />
               <div class="frame__copy frame__copy--landing">
-                <p class="font-federo text-3xl leading-none tracking-tight uppercase text-white md:text-5xl sm:text-4xl">
+                <p class="frame__headline font-federo text-3xl leading-none tracking-tight uppercase text-white md:text-5xl sm:text-4xl">
                   Built from
                   <span class="text-teal-300">gradients.</span>
                 </p>
-                <p class="mt-4 max-w-sm text-sm text-white/70 sm:text-base">
+                <p class="frame__lede mt-4 max-w-sm text-sm text-white/85 sm:text-base">
                   No image file. Just CSS sitting behind the type.
                 </p>
               </div>
@@ -98,10 +98,10 @@ function selectSurface(id: Surface) {
                 <PatternCanvas class="frame__fill" :style="style" :version="version" />
                 <div class="frame__scrim frame__scrim--poster" />
                 <div class="poster__type">
-                  <p class="font-mono text-10px tracking-[0.22em] uppercase text-white/70">
+                  <p class="frame__kicker font-mono text-10px tracking-[0.22em] uppercase text-white/85">
                     Issue 07 · Stylixir
                   </p>
-                  <h3 class="mt-3 font-federo text-4xl leading-none tracking-tight uppercase text-white sm:text-5xl">
+                  <h3 class="frame__headline mt-3 font-federo text-4xl leading-none tracking-tight uppercase text-white sm:text-5xl">
                     Tessellate
                   </h3>
                 </div>
@@ -114,11 +114,12 @@ function selectSurface(id: Surface) {
                 <div class="sleeve__spine" aria-hidden="true" />
                 <div class="sleeve__face">
                   <PatternCanvas class="frame__fill" :style="style" :version="version" />
+                  <div class="frame__scrim frame__scrim--sleeve" />
                   <div class="sleeve__caption">
-                    <p class="font-federo text-lg tracking-tight uppercase text-white">
+                    <p class="frame__headline font-federo text-lg tracking-tight uppercase text-white">
                       Midnight Drift
                     </p>
-                    <p class="mt-1 font-mono text-10px tracking-widest uppercase text-white/55">
+                    <p class="frame__kicker mt-1 font-mono text-10px tracking-widest uppercase text-white/80">
                       Side A
                     </p>
                   </div>
@@ -133,11 +134,12 @@ function selectSurface(id: Surface) {
                   <div class="phone__notch" aria-hidden="true" />
                   <div class="phone__screen">
                     <PatternCanvas class="frame__fill" :style="style" :version="version" />
+                    <div class="frame__scrim frame__scrim--phone" />
                     <div class="phone__ui">
-                      <p class="font-mono text-xs text-white/70">
+                      <p class="frame__kicker font-mono text-xs text-white/90">
                         Tue 25
                       </p>
-                      <p class="font-federo text-5xl leading-none tracking-tight text-white">
+                      <p class="frame__headline font-federo text-5xl leading-none tracking-tight text-white">
                         9:41
                       </p>
                     </div>
@@ -226,18 +228,40 @@ function selectSurface(id: Surface) {
   inset: 0;
 }
 
-.frame__scrim--landing {
+.frame__scrim {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+}
+
+.frame__scrim--landing {
   background:
-    linear-gradient(90deg, rgba(13, 13, 13, 0.82) 0%, rgba(13, 13, 13, 0.35) 48%, rgba(13, 13, 13, 0.15) 100%),
-    linear-gradient(180deg, transparent 40%, rgba(13, 13, 13, 0.55) 100%);
+    linear-gradient(90deg, rgba(8, 8, 8, 0.9) 0%, rgba(8, 8, 8, 0.5) 40%, rgba(8, 8, 8, 0.12) 72%, transparent 100%),
+    linear-gradient(180deg, rgba(8, 8, 8, 0.28) 0%, transparent 38%, rgba(8, 8, 8, 0.78) 100%);
 }
 
 .frame__scrim--poster {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 35%, rgba(0, 0, 0, 0.72) 100%);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.08) 38%, rgba(0, 0, 0, 0.86) 100%);
+}
+
+.frame__scrim--sleeve {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, transparent 42%, rgba(0, 0, 0, 0.82) 100%);
+}
+
+.frame__scrim--phone {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.18) 32%, rgba(0, 0, 0, 0.08) 55%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+.frame__headline {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.frame__lede,
+.frame__kicker {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 .frame__copy--landing {
@@ -259,6 +283,15 @@ function selectSurface(id: Surface) {
   display: grid;
   place-items: center;
   padding: clamp(1rem, 3vw, 2rem);
+}
+
+.stage__viewport.is-phone {
+  min-height: min(42rem, 78vh);
+}
+
+.frame--phone {
+  container-type: size;
+  padding: clamp(1.25rem, 3.5vw, 2.5rem);
 }
 
 .poster {
@@ -311,12 +344,13 @@ function selectSurface(id: Surface) {
   right: 0;
   bottom: 0;
   left: 0;
-  padding: 1.1rem 1rem;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72));
+  padding: 1.25rem 1rem 1.15rem;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.88) 78%);
 }
 
 .phone {
-  width: min(100%, 16rem);
+  /* Leave room for bezel padding + drop shadow inside overflow:hidden. */
+  width: min(16rem, 100%, calc((100cqh - 2.5rem) * 9 / 20.6));
 }
 
 .phone__bezel {
@@ -357,7 +391,6 @@ function selectSurface(id: Surface) {
   flex-direction: column;
   align-items: center;
   padding-top: 18%;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 40%, rgba(0, 0, 0, 0.45));
   text-align: center;
 }
 

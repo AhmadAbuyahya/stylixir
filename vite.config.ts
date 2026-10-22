@@ -18,6 +18,7 @@ import Shiki from 'markdown-it-shiki'
 // @ts-expect-error failed to resolve types
 import VueMacros from 'unplugin-vue-macros/vite'
 import WebfontDownload from 'vite-plugin-webfont-dl'
+import { auditPromotePlugin } from './vite-plugin-audit-promote'
 
 export default defineConfig({
   resolve: {
@@ -144,6 +145,9 @@ export default defineConfig({
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     WebfontDownload(),
+
+    // Dev-only: POST /__audit/promote writes audit drafts into templates.ts
+    auditPromotePlugin(),
   ],
 
   // https://github.com/vitest-dev/vitest
