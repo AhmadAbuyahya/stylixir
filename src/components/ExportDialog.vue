@@ -27,7 +27,7 @@ defineOptions({
 })
 
 const store = useActiveTemplateStore()
-const { style, overlayStyle, activeTemplate } = storeToRefs(store)
+const { activeTemplate } = storeToRefs(store)
 const { addToast } = useToastStore()
 
 const width = ref(1920)
@@ -52,16 +52,6 @@ const filename = computed(() =>
 const outputLabel = computed(() => {
   const ratio = densityAllowed.value ? pixelRatio.value : 1
   return `${width.value * ratio} × ${height.value * ratio} px`
-})
-
-const previewOverlay = computed(() => {
-  if (!includeOverlay.value)
-    return undefined
-  const blur = overlayStyle.value['backdrop-filter']
-  return {
-    background: overlayStyle.value.background,
-    ...(blur ? { 'backdrop-filter': blur } : {}),
-  }
 })
 
 watch(() => props.open, (open) => {
@@ -117,10 +107,8 @@ async function render() {
     format: format.value,
     quality: quality.value,
     pixelRatio: densityAllowed.value ? pixelRatio.value : 1,
-    includeOverlay: includeOverlay.value,
     slug: activeTemplate.value,
-    patternStyle: style.value,
-    overlayStyle: overlayStyle.value,
+    frame: store.frame({ animate: false, overlay: includeOverlay.value }),
   })
 }
 
@@ -210,12 +198,7 @@ function onKeydown(event: KeyboardEvent) {
               height: height > width ? '100%' : 'auto',
             }"
           >
-            <div class="absolute inset-0" :style="style" />
-            <div
-              v-if="includeOverlay"
-              class="pointer-events-none absolute inset-0"
-              :style="previewOverlay"
-            />
+            <PatternLayers :animate="false" :overlay="includeOverlay" />
           </div>
         </div>
 

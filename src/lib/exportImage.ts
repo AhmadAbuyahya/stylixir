@@ -1,3 +1,5 @@
+import { GRAIN_TILE, type PatternFrame } from '~/lib/effects'
+
 export type ImageFormat = 'png' | 'jpeg' | 'webp'
 
 export interface SizePreset {
@@ -27,10 +29,9 @@ export interface ExportSpec {
   format: ImageFormat
   quality: number
   pixelRatio: 1 | 2
-  includeOverlay: boolean
   slug: string
-  patternStyle: Record<string, string>
-  overlayStyle: Record<string, string>
+  /** A still frame (no motion); leave its overlay out to export without one. */
+  frame: PatternFrame
 }
 
 export function clampDimension(value: number) {
@@ -116,30 +117,71 @@ function mountExportFrame(spec: ExportSpec) {
     'overflow:hidden',
   ].join(';')
 
-  const pattern = doc.createElement('div')
-  pattern.style.cssText = 'position:absolute;inset:0;'
-  applyCss(pattern, spec.patternStyle)
+  root.style.isolation = 'isolate'
 
-  if (spec.includeOverlay) {
-    const blur = overlayBlurPx(spec.overlayStyle)
-    if (blur > 0)
-      pattern.style.filter = `blur(${blur}px)`
-  }
+  const { frame } = spec
+  const pattern = doc.createElement('div')
+  applyCss(pattern, frame.pattern)
+
+  // html-to-image does not paint backdrop-filter, so the overlay's blur is
+  // applied to the pattern itself instead.
+  const blur = frame.overlay ? overlayBlurPx(frame.overlay) : 0
+  if (blur > 0)
+    pattern.style.filter = [frame.pattern.filter, `blur(${blur}px)`].filter(Boolean).join(' ')
 
   root.append(pattern)
 
-  if (spec.includeOverlay) {
-    const background = spec.overlayStyle.background
-    if (background && background !== 'none') {
-      const overlay = doc.createElement('div')
-      overlay.style.cssText = 'position:absolute;inset:0;'
-      overlay.style.background = background
-      root.append(overlay)
-    }
+  // Grain is painted straight onto the canvas afterwards (see `paintGrain`):
+  // its SVG noise tile does not survive html-to-image's foreignObject capture.
+  for (const layer of ['light', 'overlay'] as const) {
+    const css = frame[layer]
+    if (!css)
+      continue
+    const el = doc.createElement('div')
+    applyCss(el, css)
+    el.style.removeProperty('backdrop-filter')
+    root.append(el)
   }
+
+  // Cloned into the capture with the rest of the root, so `url(#…)` still resolves.
+  if (frame.filterMarkup)
+    root.insertAdjacentHTML('beforeend', frame.filterMarkup)
 
   doc.body.append(root)
   return { iframe, pattern, width, height }
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Could not load the grain texture.'))
+    image.src = src
+  })
+}
+
+/** Composites the frame's grain layer over a finished capture, matching its CSS blend. */
+async function paintGrain(canvas: HTMLCanvasElement, grain: Record<string, string>, pixelRatio: number) {
+  const src = grain['background-image']?.match(/^url\("(.*)"\)$/)?.[1]
+  const ctx = canvas.getContext('2d')
+  if (!src || !ctx)
+    return
+
+  const image = await loadImage(src)
+  const tile = document.createElement('canvas')
+  tile.width = GRAIN_TILE * pixelRatio
+  tile.height = GRAIN_TILE * pixelRatio
+  tile.getContext('2d')?.drawImage(image, 0, 0, tile.width, tile.height)
+
+  const pattern = ctx.createPattern(tile, 'repeat')
+  if (!pattern)
+    return
+  ctx.save()
+  ctx.globalAlpha = Number(grain.opacity ?? 1)
+  ctx.globalCompositeOperation = (grain['mix-blend-mode'] ?? 'overlay') as GlobalCompositeOperation
+  ctx.fillStyle = pattern
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.restore()
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, format: ImageFormat, quality: number) {
@@ -176,6 +218,8 @@ export async function renderPatternBlob(spec: ExportSpec) {
       cacheBust: false,
       skipAutoScale: true,
     })
+    if (spec.frame.grain)
+      await paintGrain(canvas, spec.frame.grain, pixelRatio)
     return canvasToBlob(canvas, spec.format, spec.quality)
   }
   finally {

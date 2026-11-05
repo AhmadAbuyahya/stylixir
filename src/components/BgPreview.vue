@@ -1,36 +1,23 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { buildSnippet } from '~/lib/effects'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 import { useToastStore } from '~/stores/toast'
 
 const activeTemplateStore = useActiveTemplateStore()
-const { overlayStyle, css, style, activeTemplate } = storeToRefs(activeTemplateStore)
+const { style, activeTemplate } = storeToRefs(activeTemplateStore)
 const { addToast } = useToastStore()
 
 const copied = ref(false)
 const exportOpen = ref(false)
+const card = ref<HTMLElement>()
+const { isFullscreen, isSupported: canFullscreen, toggle: toggleFullscreen } = useFullscreen(card)
 let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
 const patternName = computed(() => activeTemplate.value.replace(/_/g, ' '))
 
 function copyStyle() {
-  const html = `
-      <div class="background"></div>
-      <style>
-        .background {
-         height: 100%;
-         width: 100%;
-         position: relative;
-          ${css.value}
-        }
-        .background::before {
-         content: "";
-        position: absolute;
-        inset: 0;
-          ${Object.entries(overlayStyle.value).map(([key, value]) => `${key}: ${value};`).join('\n')}
-        }
-      </style>
-    `
+  const html = buildSnippet(activeTemplateStore.frame())
 
   navigator.clipboard.writeText(html)
   addToast({
@@ -58,16 +45,35 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
       }"
     />
 
-    <div class="absolute inset-3 overflow-hidden border-1 border-white/10 rounded-2xl shadow-2xl shadow-black/50 md:inset-[8%] sm:inset-5">
-      <div class="absolute inset-0" :style="style" />
-      <div class="pointer-events-none absolute inset-0" :style="overlayStyle" />
+    <div ref="card" class="preview-card absolute inset-3 overflow-hidden border-1 border-white/10 rounded-2xl shadow-2xl shadow-black/50 md:inset-[8%] sm:inset-5">
+      <PatternLayers />
 
-      <div class="absolute inset-x-0 bottom-0 z-10 from-black/75 to-transparent bg-gradient-to-t p-3 pt-10 sm:p-4">
+      <button
+        v-if="isFullscreen"
+        class="absolute right-4 top-4 z-10 items-center gap-1.5 px-3 py-2 text-xs btn !flex"
+        type="button"
+        @click="toggleFullscreen"
+      >
+        <div class="i-carbon-minimize" />
+        Exit full screen
+      </button>
+
+      <div v-else class="absolute inset-x-0 bottom-0 z-10 from-black/75 to-transparent bg-gradient-to-t p-3 pt-10 sm:p-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <p class="font-mono text-xs tracking-widest uppercase text-white/80">
             {{ patternName }}
           </p>
           <div class="flex flex-wrap items-center gap-2">
+            <button
+              v-if="canFullscreen"
+              class="items-center px-2.5 py-2 text-xs btn !flex"
+              type="button"
+              title="Full screen"
+              aria-label="Full screen"
+              @click="toggleFullscreen"
+            >
+              <div class="i-carbon-maximize" />
+            </button>
             <button
               class="button px-3 py-2 text-xs !gap-1.5"
               type="button"
@@ -92,3 +98,10 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
     <ExportDialog v-model:open="exportOpen" />
   </section>
 </template>
+
+<style scoped>
+.preview-card:fullscreen {
+  border: 0;
+  border-radius: 0;
+}
+</style>

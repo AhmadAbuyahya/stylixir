@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useDebounceFn, useUrlSearchParams } from '@vueuse/core'
 import { buildOverlayBackground } from '~/lib/overlays'
+import { DEFAULT_EFFECTS, type Effects, type FrameOptions, buildFrame, effectParamKeys, effectsToParams, parseEffects } from '~/lib/effects'
 import {
   defaultVariables,
   generateCss,
@@ -85,7 +86,13 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     keys.forEach(key => deleteParam(key))
   }
 
-  const updateUrlParams = useDebounceFn((updates: Record<string, string | number>) => {
+  // Updates are merged until the debounce fires, so a dial drag and an
+  // overlay/effect change in the same window don't drop each other.
+  let pendingParams: Record<string, string | number> = {}
+
+  const flushUrlParams = useDebounceFn(() => {
+    const updates = pendingParams
+    pendingParams = {}
     if (!isClient.value)
       return
 
@@ -96,6 +103,11 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     })
   }, 300)
 
+  function updateUrlParams(updates: Record<string, string | number>) {
+    Object.assign(pendingParams, updates)
+    flushUrlParams()
+  }
+
   const activeTemplate = ref('')
   const variablesRef = ref<Record<string, string | number>>({})
 
@@ -105,6 +117,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     overlayOpacity: 0.5,
     overlayBlur: 0,
   })
+
+  const effectVariables = ref<Effects>({ ...DEFAULT_EFFECTS })
 
   function initVariablesRef() {
     const defs = templates[activeTemplate.value]?.variables || {}
@@ -145,6 +159,13 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     }
   }
 
+  function applyRouteQueryToEffects() {
+    effectVariables.value = parseEffects(
+      key => queryValue(route.query[key]) ?? getParam(key),
+      effectVariables.value,
+    )
+  }
+
   const initializeFromUrl = () => {
     if (!isClient.value)
       return
@@ -155,6 +176,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       : Object.keys(templates)[0]
 
     applyRouteQueryToOverlay()
+    applyRouteQueryToEffects()
     applyRouteQueryToVariables()
   }
 
@@ -179,6 +201,24 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     }
   })
 
+  /** Every layer for the current roll — pattern, light, overlay, grain, warp filter, motion rules. */
+  function frame(options: Partial<Omit<FrameOptions, 'template' | 'variables' | 'values' | 'effects' | 'overlay'>> & { overlay?: boolean } = {}) {
+    const { overlay = true, ...rest } = options
+    return buildFrame({
+      template: template.value,
+      variables: variables.value,
+      values: variablesRef.value,
+      effects: effectVariables.value,
+      overlay: overlay ? overlayStyle.value : undefined,
+      ...rest,
+    })
+  }
+
+  function resetEffects() {
+    effectVariables.value = { ...DEFAULT_EFFECTS }
+    effectParamKeys().forEach(key => deleteParam(key))
+  }
+
   function updateActiveTemplate(slug: string) {
     if (!isClient.value)
       return
@@ -191,6 +231,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     activeTemplate.value = slug
     variablesRef.value = defaultVariables(templates[slug].variables)
     setParam('template', slug)
+    // Overlay and effects belong to the canvas, not the pattern — carry them over.
+    updateUrlParams({ ...overlayVariables.value, ...effectsToParams(effectVariables.value) })
 
     if (route.path === '/generator')
       router.replace({ path: '/generator', query: { template: slug } })
@@ -260,6 +302,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
     applyRouteQueryToVariables()
     applyRouteQueryToOverlay()
+    applyRouteQueryToEffects()
   }
 
   watch(activeTemplate, initVariablesRef)
@@ -270,6 +313,10 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   watch(overlayVariables, (newVars) => {
     updateUrlParams(newVars)
+  }, { deep: true })
+
+  watch(effectVariables, (newVars) => {
+    updateUrlParams(effectsToParams(newVars))
   }, { deep: true })
 
   if (!activeTemplate.value)
@@ -302,6 +349,9 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeAll,
     overlayVariables,
     overlayStyle,
+    effectVariables,
+    resetEffects,
+    frame,
   }
 })
 
