@@ -5,6 +5,7 @@
  *   pnpm audit:sheets                         # every pattern
  *   pnpm audit:sheets zigzag waves            # some patterns
  *   pnpm audit:sheets zigzag --var width --range 50:99 --steps 12 --scale 1
+ *   pnpm audit:sheets zigzag waves --var width,cut      # only these rows
  *
  * Writes audit-sheets/<slug>.png and audit-sheets/report.json.
  */
@@ -22,11 +23,11 @@ const outDir = path.resolve(__dirname, '../audit-sheets')
 const TILE = 240 // CSS px; big enough to show a couple of repeats at the largest sizes
 
 function parseArgs(argv: string[]) {
-  const opts = { slugs: [] as string[], variable: '', range: undefined as [number, number] | undefined, steps: 7, scale: 0.5 }
+  const opts = { slugs: [] as string[], variables: [] as string[], range: undefined as [number, number] | undefined, steps: 7, scale: 0.5 }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--var')
-      opts.variable = argv[++i]
+      opts.variables = argv[++i].split(',')
     else if (arg === '--range')
       opts.range = argv[++i].split(':').map(Number) as [number, number]
     else if (arg === '--steps')
@@ -150,12 +151,13 @@ async function main() {
 
   const browser = await chromium.launch()
   const page = await browser.newPage({ deviceScaleFactor: opts.scale, viewport: { width: 800, height: 600 } })
-  const report: Record<string, Record<string, { values: number[]; flags: SweepFlag[] }>> = {}
+  // change: largest fraction of pixels that differ from the first sample (0 = does nothing).
+  const report: Record<string, Record<string, { values: number[]; change: number; flags: SweepFlag[] }>> = {}
 
   for (const slug of slugs) {
     const { variables } = templates[slug]
     const rows: Row[] = Object.entries(variables)
-      .filter(([name, v]) => v.type !== 'color' && (!opts.variable || name === opts.variable))
+      .filter(([name, v]) => v.type !== 'color' && (!opts.variables.length || opts.variables.includes(name)))
       .map(([name, v]) => ({ name, values: sampleRange(v, opts.steps, opts.range) }))
     if (!rows.length)
       continue
@@ -187,7 +189,7 @@ async function main() {
       const l = layout[r]
       const rowDiffs = diffs.slice(pair, pair += row.values.length)
       const flags = flagSweep(row.values, stats.slice(l.first, l.last + 1) as TileStats[], stats[l.defaultIdx] as TileStats, rowDiffs)
-      report[slug][row.name] = { values: row.values, flags }
+      report[slug][row.name] = { values: row.values, change: Number(Math.max(...rowDiffs).toFixed(4)), flags }
       if (flags.length) {
         marks.push({
           row: r,

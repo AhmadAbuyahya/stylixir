@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildPreviewStyle,
+  cloneTemplateEntry,
+  diffTemplateEntry,
   exportTemplatePatch,
   extractPlaceholders,
   flagSweep,
@@ -82,5 +84,29 @@ describe('audit sweeps', () => {
     expect(kinds(Array(5).fill(tile(0.6)), [0, 0, 0, 0, 0])).toEqual(['dead'])
     expect(kinds([tile(0.6), tile(0.7), tile(0.6), tile(0.7), tile(0.8)], [0, 0.2, 0, 0.2, 0.3])).toContain('periodic')
     expect(kinds([tile(0.6), tile(0.65), tile(0.7), tile(0.75), tile(0.99, 0.01)], [0, 0.1, 0.2, 0.3, 0.9])).toEqual(['collapse', 'jump'])
+  })
+})
+
+describe('diffTemplateEntry', () => {
+  const entry = templates.zigzag
+
+  it('reports no change for identical entries, ignoring CSS whitespace', () => {
+    const copy = cloneTemplateEntry(entry)
+    copy.template['background-size'] = '  {size}px   {size}px '
+    expect(diffTemplateEntry(entry, copy).changed).toBe(false)
+  })
+
+  it('reports changed, removed and added variables and CSS', () => {
+    const after = cloneTemplateEntry(entry)
+    after.variables.width = { ...after.variables.width, min: 70 }
+    after.template = inlineVariableInTemplate(after.template, 'position', 0.5)
+    delete after.variables.position
+    after.variables.extra = { type: 'range', value: 1, min: 0, max: 2 }
+
+    const diff = diffTemplateEntry(entry, after)
+    const kinds = Object.fromEntries(diff.variables.map(v => [v.name, v.kind]))
+    expect(diff.changed).toBe(true)
+    expect(diff.cssChanged).toEqual(['background-position'])
+    expect(kinds).toMatchObject({ width: 'changed', position: 'removed', extra: 'added', size: 'same' })
   })
 })

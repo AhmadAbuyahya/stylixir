@@ -225,3 +225,39 @@ export function flagSweep(
 
   return flags
 }
+
+export interface VariableChange {
+  name: string
+  kind: 'added' | 'removed' | 'changed' | 'same'
+  before?: Variable
+  after?: Variable
+}
+
+export interface TemplateEntryDiff {
+  changed: boolean
+  /** CSS properties whose value differs (whitespace ignored). */
+  cssChanged: string[]
+  variables: VariableChange[]
+}
+
+const squash = (css?: string) => css?.replace(/\s+/g, ' ').trim()
+
+/** What differs between two versions of one pattern entry. */
+export function diffTemplateEntry(before: Template, after: Template): TemplateEntryDiff {
+  const cssChanged = [...new Set([...Object.keys(before.template), ...Object.keys(after.template)])]
+    .filter(prop => squash(before.template[prop]) !== squash(after.template[prop]))
+
+  const variables = [...new Set([...Object.keys(before.variables), ...Object.keys(after.variables)])]
+    .map((name): VariableChange => {
+      const b = before.variables[name]
+      const a = after.variables[name]
+      const kind = !b ? 'added' : !a ? 'removed' : JSON.stringify(b) === JSON.stringify(a) ? 'same' : 'changed'
+      return { name, kind, before: b, after: a }
+    })
+
+  return {
+    changed: cssChanged.length > 0 || variables.some(v => v.kind !== 'same') || before.harmony !== after.harmony,
+    cssChanged,
+    variables,
+  }
+}
