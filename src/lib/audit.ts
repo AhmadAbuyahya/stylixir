@@ -123,3 +123,105 @@ export function isDraftDirty(slug: string, draft: Template, source: Templates): 
     return true
   return JSON.stringify(draft) !== JSON.stringify(cloneTemplateEntry(original))
 }
+
+/** Evenly spaced values across a variable's range (or an override), snapped to its step. */
+export function sampleRange(variable: Variable, steps: number, range?: [number, number]): number[] {
+  const lo = range?.[0] ?? variable.min ?? Number(variable.value)
+  const hi = range?.[1] ?? variable.max ?? Number(variable.value)
+  const snap = (n: number) => {
+    const stepped = variable.step ? Math.round(n / variable.step) * variable.step : n
+    return Number(stepped.toFixed(variable.step ? 4 : 2))
+  }
+  if (steps < 2 || lo === hi)
+    return [snap(lo)]
+  return [...new Set(Array.from({ length: steps }, (_, i) => snap(lo + (hi - lo) * i / (steps - 1))))]
+}
+
+/** Translation-invariant summary of a rendered tile. */
+export interface TileStats {
+  /** Quantized color -> fraction of pixels. */
+  hist: Record<string, number>
+  /** Most common quantized color's fraction (1 = solid fill). */
+  dominant: number
+  /** Mean neighbour-pixel difference, 0..1 (how much detail/edges). */
+  edge: number
+}
+
+export type SweepFlagKind = 'dead' | 'periodic' | 'subtle' | 'collapse' | 'busy' | 'jump'
+
+export interface SweepFlag {
+  kind: SweepFlagKind
+  /** Sampled values the flag applies to. */
+  at: number[]
+  detail: string
+}
+
+// Starting guesses; tune these against hand-labelled good/bad examples.
+export const SWEEP_THRESHOLDS = {
+  deadPixelDiff: 0.001,
+  subtleSignature: 0.05,
+  collapseDominant: 0.98,
+  busyEdgeRatio: 3,
+  jumpRatio: 3,
+  jumpMin: 0.3,
+}
+
+export function tileDistance(a: TileStats, b: TileStats): number {
+  let hist = 0
+  for (const key of new Set([...Object.keys(a.hist), ...Object.keys(b.hist)]))
+    hist += Math.abs((a.hist[key] ?? 0) - (b.hist[key] ?? 0))
+  const edge = Math.abs(a.edge - b.edge) / Math.max(a.edge, b.edge, 0.01)
+  return hist / 2 + edge
+}
+
+/**
+ * Flags suspicious behaviour in one variable's sweep.
+ * `pixelDiffs[i]` is the fraction of pixels that visibly differ between sample i and the first sample.
+ */
+export function flagSweep(
+  values: number[],
+  stats: TileStats[],
+  defaultStats: TileStats,
+  pixelDiffs: number[],
+  t = SWEEP_THRESHOLDS,
+): SweepFlag[] {
+  const flags: SweepFlag[] = []
+  const first = values[0]
+  const last = values[values.length - 1]
+
+  const maxDiff = Math.max(...pixelDiffs)
+  if (maxDiff < t.deadPixelDiff) {
+    flags.push({ kind: 'dead', at: [first, last], detail: `at most ${(maxDiff * 100).toFixed(2)}% of pixels change` })
+    return flags
+  }
+
+  // An interior sample identical to the first means the range wraps around (angles, offsets).
+  const repeat = pixelDiffs.findIndex((d, i) => i > 0 && i < values.length - 1 && d < t.deadPixelDiff)
+  if (repeat > 0)
+    flags.push({ kind: 'periodic', at: [values[repeat]], detail: `looks identical to ${first} — range wraps` })
+
+  const maxSig = Math.max(...stats.map(s => tileDistance(s, defaultStats)))
+  if (maxSig < t.subtleSignature)
+    flags.push({ kind: 'subtle', at: [first, last], detail: `barely changes colours or detail (signature Δ ${maxSig.toFixed(3)})` })
+
+  if (defaultStats.dominant < t.collapseDominant - 0.03) {
+    const collapsed = values.filter((_, i) => stats[i].dominant >= t.collapseDominant)
+    if (collapsed.length)
+      flags.push({ kind: 'collapse', at: collapsed, detail: 'near-solid fill' })
+  }
+
+  const busy = values.filter((_, i) => stats[i].edge > defaultStats.edge * t.busyEdgeRatio && stats[i].edge > 0.05)
+  if (busy.length)
+    flags.push({ kind: 'busy', at: busy, detail: `edge density > ${t.busyEdgeRatio}x default` })
+
+  if (stats.length >= 4) {
+    const steps = stats.slice(1).map((s, i) => tileDistance(stats[i], s))
+    const median = [...steps].sort((a, b) => a - b)[Math.floor(steps.length / 2)]
+    const peak = Math.max(...steps)
+    const i = steps.indexOf(peak)
+    if (peak >= t.jumpMin && peak > median * t.jumpRatio)
+      flags.push({ kind: 'jump', at: [values[i], values[i + 1]], detail: `step Δ ${peak.toFixed(2)} vs median ${median.toFixed(2)}` })
+  }
+
+  return flags
+}

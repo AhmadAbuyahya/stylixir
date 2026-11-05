@@ -3,7 +3,9 @@ import {
   buildPreviewStyle,
   exportTemplatePatch,
   extractPlaceholders,
+  flagSweep,
   inlineVariableInTemplate,
+  sampleRange,
   validateAuditDraft,
 } from '~/lib/audit'
 import templates from '~/lib/templates'
@@ -61,5 +63,24 @@ describe('audit helpers', () => {
     expect(patch).toContain(`'${slug}': {`)
     expect(patch).toContain('background-size')
     expect(patch).toContain('variables: {')
+  })
+})
+
+describe('audit sweeps', () => {
+  const tile = (dominant: number, edge = 0.1) => ({ hist: { a: dominant, b: 1 - dominant }, dominant, edge })
+
+  it('samples a range evenly, snapped to step', () => {
+    expect(sampleRange({ type: 'range', value: 1, min: 0, max: 1, step: 0.25 }, 5)).toEqual([0, 0.25, 0.5, 0.75, 1])
+    expect(sampleRange({ type: 'range', value: 5, min: 0, max: 10, step: 3 }, 3)).toEqual([0, 6, 9])
+    expect(sampleRange({ type: 'range', value: 5, min: 0, max: 100 }, 4, [10, 20])).toEqual([10, 13.33, 16.67, 20])
+  })
+
+  it('flags dead, periodic, collapse and jump sweeps', () => {
+    const kinds = (stats: ReturnType<typeof tile>[], diffs: number[]) =>
+      flagSweep([0, 1, 2, 3, 4], stats, tile(0.6), diffs).map(f => f.kind)
+
+    expect(kinds(Array(5).fill(tile(0.6)), [0, 0, 0, 0, 0])).toEqual(['dead'])
+    expect(kinds([tile(0.6), tile(0.7), tile(0.6), tile(0.7), tile(0.8)], [0, 0.2, 0, 0.2, 0.3])).toContain('periodic')
+    expect(kinds([tile(0.6), tile(0.65), tile(0.7), tile(0.75), tile(0.99, 0.01)], [0, 0.1, 0.2, 0.3, 0.9])).toEqual(['collapse', 'jump'])
   })
 })
