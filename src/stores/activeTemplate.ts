@@ -257,7 +257,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       if (variable.type === 'range' || variable.type === 'number') {
         const min = variable.min ?? 0
         const max = variable.max ?? 0
-        variablesRef.value[key] = utils.randomNumber(min, max)
+        variablesRef.value[key] = utils.randomNumber(min, max, variable.step)
         updates[key] = variablesRef.value[key]
       }
     })

@@ -10,8 +10,11 @@ import { rollPalette } from '~/lib/palette'
  * touching the generator's URL-synced state.
  */
 
-export function randomNumber(min: number, max: number) {
-  return parseFloat((Math.random() * (max - min + 1) + min).toFixed(2))
+/** Uniform value in [min, max], snapped to `step` when given (else 2 decimals). */
+export function randomNumber(min: number, max: number, step?: number) {
+  const raw = Math.random() * (max - min)
+  const offset = step ? Math.round(raw / step) * step : raw
+  return parseFloat(Math.min(min + offset, max).toFixed(step ? 4 : 2))
 }
 
 export function interpolateTemplate(template: string, variables: Record<string, string | number>) {
@@ -47,7 +50,7 @@ export function randomVariables(
 
   const next = Object.entries(variables).reduce((acc, [key, variable]) => {
     if ((variable.type === 'range' || variable.type === 'number') && numbers)
-      acc[key] = randomNumber(variable.min ?? 0, variable.max ?? 100)
+      acc[key] = randomNumber(variable.min ?? 0, variable.max ?? 100, variable.step)
     else
       acc[key] = variable.value
     return acc
