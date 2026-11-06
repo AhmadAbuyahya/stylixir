@@ -102,6 +102,15 @@ describe('buildFrame', () => {
     expect(still.pattern['background-size']).toBe('100px 100px')
   })
 
+  it('anchors dial motion at the frame centre, keeping the warp bleed', () => {
+    const moving = buildFrame({ template, variables, values, effects: { ...DEFAULT_EFFECTS, motion: 'breathe', warp: 20 } })
+    const b = warpBleed({ ...DEFAULT_EFFECTS, warp: 20 })
+    expect(moving.pattern.inset).toBe(`-${b}px calc(-50cqw - ${2 * b}px) calc(-50cqh - ${2 * b}px) -${b}px`)
+    expect(moving.pattern['border-left']).toBe(`calc(50cqw + ${b}px) solid transparent`)
+    expect(buildFrame({ template, variables, values, effects: { ...DEFAULT_EFFECTS, motion: 'breathe' }, animate: false }).pattern['border-left'])
+      .toBeUndefined()
+  })
+
   it('only animates the warp for flow', () => {
     const flow = buildFrame({ template, variables, values, effects: { ...DEFAULT_EFFECTS, motion: 'flow', warp: 30 } })
     expect(flow.filterMarkup).toContain('<animate attributeName="baseFrequency"')

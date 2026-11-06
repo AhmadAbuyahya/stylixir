@@ -56,12 +56,12 @@ onMounted(() => {
         </h1>
 
         <p class="mt-6 max-w-md text-lg text-white/70">
-          Stylixir builds backgrounds out of layered conic, radial and linear gradients doing all the work — no image files, no canvas, nothing to install. Mash shuffle for something new, or drag a slider until it's exactly yours.
+          Stylixir builds backgrounds from layered CSS gradients: no image files, no canvas, nothing to install. Hit Shuffle for something new, or drag a slider until it's exactly yours.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
           <RouterLink :to="generatorTo" class="items-center gap-2 px-6 py-3 text-base btn !flex">
-            Open the Generator
+            Open generator
             <div class="i-carbon-arrow-up-right" />
           </RouterLink>
           <button class="button px-5 py-3" @click="shuffleHero()">

@@ -9,11 +9,11 @@ const GITHUB_URL = 'https://github.com/ahmadabuyahya/stylixir'
         Stop picking stock backgrounds.
       </h2>
       <p class="mx-auto mt-4 max-w-md text-white/60">
-        Open the generator, mash shuffle a few times, and copy out whatever it lands on.
+        Open the generator, hit Shuffle a few times, and copy out whatever it lands on.
       </p>
       <div class="mt-8 flex items-center justify-center gap-3">
         <RouterLink to="/generator" class="items-center gap-2 px-6 py-3 text-base btn !flex">
-          Open the Generator
+          Open generator
           <div class="i-carbon-arrow-up-right" />
         </RouterLink>
       </div>

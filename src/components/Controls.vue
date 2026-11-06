@@ -17,9 +17,9 @@ const overlayLabels: Record<string, string> = {
   'radial-gradient-center': 'Vignette',
   'radial-gradient-center-out': 'Spotlight',
   'linear-gradient-inner': 'Letterbox',
-  'linear-gradient-outer': 'Center fade',
+  'linear-gradient-outer': 'Center fade, vertical',
   'linear-gradient-inner-horizontal': 'Pillarbox',
-  'linear-gradient-outer-horizontal': 'Center fade H',
+  'linear-gradient-outer-horizontal': 'Center fade, horizontal',
 }
 
 const tabs = [
@@ -182,7 +182,7 @@ const activeColor = computed(() =>
           <div class="section-head">
             <p>Finish</p>
             <button class="text-action" type="button" @click="activeTemplateStore.resetEffects">
-              Clear
+              Reset effects
             </button>
           </div>
           <div class="flex flex-col gap-1.5">
@@ -268,7 +268,7 @@ const activeColor = computed(() =>
         <div v-if="effectVariables.motion !== 'none'" class="mt-4 flex flex-col gap-1.5">
           <SliderRow
             v-model="effectVariables.speed"
-            label="Loop (s)"
+            label="Loop length (s)"
             :min="EFFECT_DIALS.speed.min"
             :max="EFFECT_DIALS.speed.max"
             :step="EFFECT_DIALS.speed.step"

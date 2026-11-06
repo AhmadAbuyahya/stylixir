@@ -65,7 +65,7 @@ onMounted(() => nextTick(scrollActiveIntoView))
           : ''"
         @click="activeTemplateStore.updateActiveTemplate(String(key))"
       >
-        <span class="absolute inset-0" :style="swatchStyle(String(key))" />
+        <span class="absolute inset-0" :style="[swatchStyle(String(key)), { zoom: 0.5 }]" />
         <span class="absolute inset-x-0 bottom-0 from-black/85 to-transparent bg-gradient-to-t px-2 py-1.5 font-mono text-10px leading-tight capitalize text-white/90">
           {{ label(String(key)) }}
         </span>

@@ -33,7 +33,7 @@ function styleFor(slug: string) {
           :to="`/generator?template=${slug}`"
           class="group relative aspect-square overflow-hidden border-1 border-white/10 rounded-lg transition-all duration-200 hover:scale-105 hover:border-teal-400/60"
         >
-          <div class="absolute inset-0" :style="styleFor(slug)" />
+          <div class="absolute inset-0" :style="[styleFor(slug), { zoom: 0.5 }]" />
           <span class="absolute inset-0 flex items-end from-black/85 via-black/5 to-transparent bg-gradient-to-t p-2">
             <span class="font-mono text-xs capitalize text-white/90">{{ slug.replace(/_/g, ' ') }}</span>
           </span>

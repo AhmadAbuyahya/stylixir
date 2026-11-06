@@ -35,7 +35,7 @@ useStyleTag(computed(() => frame.value.css))
 </script>
 
 <template>
-  <div class="absolute inset-0 isolate overflow-hidden">
+  <div class="absolute inset-0 isolate overflow-hidden" style="container-type: size">
     <div
       v-for="layer in layers"
       :key="layer"

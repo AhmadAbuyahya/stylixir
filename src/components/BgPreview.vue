@@ -16,13 +16,19 @@ let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
 const patternName = computed(() => activeTemplate.value.replace(/_/g, ' '))
 
-function copyStyle() {
+async function copyStyle() {
   const html = buildSnippet(activeTemplateStore.frame())
 
-  navigator.clipboard.writeText(html)
+  try {
+    await navigator.clipboard.writeText(html)
+  }
+  catch {
+    addToast({ variant: 'error', title: 'Couldn\'t copy the CSS. Allow clipboard access and try again.', id: Date.now() })
+    return
+  }
   addToast({
     variant: 'success',
-    title: 'Copied CSS',
+    title: 'CSS copied',
     id: Date.now(),
   })
   copied.value = true

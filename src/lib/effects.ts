@@ -338,6 +338,22 @@ function hasOverlay(overlay?: Record<string, string>) {
   return (overlay.background && overlay.background !== 'none') || (blur && !/blur\(0(px)?\)/.test(blur))
 }
 
+/**
+ * Tiles grow from the background origin, the pattern layer's top-left, so
+ * animated dials zoom out of that corner. A transparent top/left border
+ * (painted under, since background-clip is border-box) parks the origin at
+ * the frame's centre while the padding box keeps the frame's size, so `%`
+ * sizes and positions mean the same. `cq*` units need the frame to be a size
+ * container.
+ */
+function centeredOrigin(bleed: number): Record<string, string> {
+  return {
+    'inset': `-${bleed}px calc(-50cqw - ${2 * bleed}px) calc(-50cqh - ${2 * bleed}px) -${bleed}px`,
+    'border-top': `calc(50cqh + ${bleed}px) solid transparent`,
+    'border-left': `calc(50cqw + ${bleed}px) solid transparent`,
+  }
+}
+
 export function buildFrame(options: FrameOptions): PatternFrame {
   const {
     template,
@@ -383,6 +399,7 @@ export function buildFrame(options: FrameOptions): PatternFrame {
       position: 'absolute',
       inset: bleed ? `-${bleed}px` : '0',
       ...declarations,
+      ...(animatesDials(motion) ? centeredOrigin(bleed) : {}),
       ...(filters.length ? { filter: filters.join(' ') } : {}),
     },
     light: lightStyle(effects),
@@ -409,11 +426,12 @@ export function buildSnippet(frame: PatternFrame, className = 'background') {
 
   const rules = [
     rule(`.${className}`, {
-      position: 'relative',
-      overflow: 'hidden',
-      isolation: 'isolate',
-      width: '100%',
-      height: '100%',
+      'position': 'relative',
+      'overflow': 'hidden',
+      'isolation': 'isolate',
+      'container-type': 'size',
+      'width': '100%',
+      'height': '100%',
     }),
     ...layers.map(layer => rule(`.${className}__${layer}`, frame[layer]!)),
   ]

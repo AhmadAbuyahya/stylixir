@@ -9,7 +9,7 @@ const features = [
   {
     tag: 'Library',
     title: `${patternCount} patterns, and growing`,
-    body: 'Zigzags, braided lines, illusioned cubes, hearts, mesh — every one built from layered gradients, not a single external asset.',
+    body: 'Zigzags, braided lines, optical-illusion cubes, hearts, mesh — every one built from layered gradients, not a single external asset.',
   },
   {
     tag: 'Controls',
@@ -34,7 +34,7 @@ const features = [
   {
     tag: 'Output',
     title: 'Copy-paste, no build step',
-    body: 'One click copies ready-to-drop CSS and HTML. No image export, no canvas, nothing to install.',
+    body: 'One click copies the CSS and HTML, ready to paste. Need a file instead? Export a PNG, JPG or WebP.',
   },
 ]
 </script>

@@ -32,7 +32,7 @@ const GITHUB_URL = 'https://github.com/ahmadabuyahya/stylixir'
           to="/generator"
           class="ml-1 items-center gap-1.5 text-sm md:ml-3 btn !flex"
         >
-          Open Generator
+          Open generator
           <div class="i-carbon-arrow-up-right" />
         </RouterLink>
       </nav>

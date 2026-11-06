@@ -120,7 +120,7 @@ async function download() {
     addToast({ variant: 'success', title: 'Image downloaded', id: Date.now() })
   }
   catch {
-    addToast({ variant: 'error', title: 'Could not export the image', id: Date.now() })
+    addToast({ variant: 'error', title: 'Couldn\'t export the image. Try a smaller size or turn off 2×.', id: Date.now() })
   }
   finally {
     busy.value = false
@@ -139,7 +139,7 @@ async function copy() {
     }, 1600)
   }
   catch {
-    addToast({ variant: 'error', title: 'Could not copy the image', id: Date.now() })
+    addToast({ variant: 'error', title: 'Couldn\'t copy the image. Your browser may block this, so use Download instead.', id: Date.now() })
   }
   finally {
     busy.value = false
@@ -176,7 +176,7 @@ function onKeydown(event: KeyboardEvent) {
               Export
             </p>
             <h2 id="export-title" class="mt-1 font-federo text-2xl tracking-tight uppercase">
-              Save as image
+              Export image
             </h2>
           </div>
           <button
@@ -301,7 +301,7 @@ function onKeydown(event: KeyboardEvent) {
                 class="border-1 rounded-lg px-3 py-1.5 font-mono text-xs outline-none disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-teal-400"
                 :class="pixelRatio === 2 ? 'border-teal-400 bg-teal-400/10' : 'border-white/10'"
                 :disabled="!densityAllowed"
-                :title="densityAllowed ? 'Retina' : 'Too large for 2×'"
+                :title="densityAllowed ? 'Double resolution for sharp screens' : `2× would go past ${MAX_SIDE} px. Pick a smaller size.`"
                 @click="pixelRatio = 2"
               >
                 2×

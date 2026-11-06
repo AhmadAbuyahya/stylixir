@@ -5,7 +5,7 @@
 useHead({
   title: 'Stylixir - CSS Pattern Generator',
   meta: [
-    { name: 'description', content: 'Generate random patterns that are uniquely yours, using nothing but css!' },
+    { name: 'description', content: 'Make layered CSS background patterns. Shuffle, tune every color and size, then copy the code or export an image.' },
     {
       name: 'theme-color',
       content: () => isDark.value ? '#00aba9' : '#ffffff',
