@@ -1,4 +1,3 @@
-import tinycolor from 'tinycolor2'
 import type { Variables } from '~/types'
 import { interpolateTemplate } from '~/lib/pattern'
 
@@ -7,14 +6,17 @@ import { interpolateTemplate } from '~/lib/pattern'
  * displacement warp, soft lighting, and motion.
  *
  * Everything here still compiles down to plain HTML + CSS (plus one inline
- * SVG filter for warp), so "Copy CSS" keeps working. Motion is driven by
- * registered custom properties (`@property`), which lets the browser
- * interpolate a template's own dials — the pattern itself morphs, not just
- * its position.
+ * SVG filter for warp), so "Copy CSS" keeps working. Motion is four stackable
+ * channels — shape, color, move, liquid — each off at 0 and stronger towards
+ * 1. Shape and color animate the template's own dials through registered
+ * custom properties (`@property`), so the pattern itself morphs, not just its
+ * position.
  */
 
-export const motionTypes = ['none', 'breathe', 'morph', 'hue', 'flow'] as const
-export type MotionType = typeof motionTypes[number]
+export const colorModes = ['shift', 'swap'] as const
+export type ColorMode = typeof colorModes[number]
+export const moveModes = ['drift', 'spin'] as const
+export type MoveMode = typeof moveModes[number]
 
 export interface Effects {
   grain: number
@@ -22,9 +24,22 @@ export interface Effects {
   warp: number
   warpSize: number
   light: number
-  motion: MotionType
+  /** Seconds per cycle, shared by every motion channel. */
   speed: number
-  motionAmount: number
+  /** Dials swing out of sync. */
+  shape: number
+  /** Hue shift (oklch) or colors trading places. */
+  color: number
+  colorMode: ColorMode
+  /** Seamless drift by whole tiles, or a slow spin. */
+  move: number
+  moveMode: MoveMode
+  /** Drift heading in degrees, clockwise from east, in 45° steps. */
+  driftAngle: number
+  /** Churns the warp, bringing a soft one of its own when Warp is off. */
+  liquid: number
+  /** Dial keys shape motion leaves still. Unknown keys are ignored, so holds carry across patterns that share names. */
+  shapeHold: string[]
 }
 
 export const DEFAULT_EFFECTS: Effects = {
@@ -33,12 +48,27 @@ export const DEFAULT_EFFECTS: Effects = {
   warp: 0,
   warpSize: 4,
   light: 0,
-  motion: 'none',
   speed: 8,
-  motionAmount: 0.35,
+  shape: 0,
+  color: 0,
+  colorMode: 'shift',
+  move: 0,
+  moveMode: 'drift',
+  driftAngle: 315,
+  liquid: 0,
+  shapeHold: [],
 }
 
-type NumericEffect = Exclude<keyof Effects, 'motion'>
+/** What a motion channel jumps to when it is switched on. */
+export const CHANNEL_ON = 0.35
+export const motionChannels = ['shape', 'color', 'move', 'liquid'] as const
+export type MotionChannel = typeof motionChannels[number]
+
+export function isMoving(effects: Effects) {
+  return motionChannels.some(channel => effects[channel] > 0)
+}
+
+type NumericEffect = { [K in keyof Effects]: Effects[K] extends number ? K : never }[keyof Effects]
 
 /** URL key and range for every numeric dial, so parsing and the controls share one source. */
 export const EFFECT_DIALS: Record<NumericEffect, { param: string; min: number; max: number; step: number }> = {
@@ -48,10 +78,22 @@ export const EFFECT_DIALS: Record<NumericEffect, { param: string; min: number; m
   warpSize: { param: 'fxWarpSize', min: 1, max: 10, step: 0.1 },
   light: { param: 'fxLight', min: 0, max: 1, step: 0.01 },
   speed: { param: 'fxSpeed', min: 2, max: 30, step: 0.5 },
-  motionAmount: { param: 'fxAmount', min: 0.05, max: 1, step: 0.01 },
+  shape: { param: 'fxShape', min: 0, max: 1, step: 0.01 },
+  color: { param: 'fxColor', min: 0, max: 1, step: 0.01 },
+  move: { param: 'fxMove', min: 0, max: 1, step: 0.01 },
+  driftAngle: { param: 'fxDriftAngle', min: 0, max: 315, step: 45 },
+  liquid: { param: 'fxLiquid', min: 0, max: 1, step: 0.01 },
 }
 
-export const MOTION_PARAM = 'fxMotion'
+const EFFECT_CHOICES = {
+  colorMode: { param: 'fxColorMode', values: colorModes },
+  moveMode: { param: 'fxMoveMode', values: moveModes },
+} as const
+
+const SHAPE_HOLD_PARAM = 'fxShapeHold'
+
+/** Pre-channel links carried a single `fxMotion` preset and its `fxAmount`. */
+const LEGACY_PARAMS = ['fxMotion', 'fxAmount']
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -61,9 +103,24 @@ function round(value: number, digits = 3) {
   return Number(value.toFixed(digits))
 }
 
+function applyLegacyMotion(next: Effects, read: (param: string) => unknown) {
+  const motion = read('fxMotion')
+  const amount = parseFloat(String(read('fxAmount') ?? ''))
+  const strength = Number.isFinite(amount) ? clamp(amount, 0.05, 1) : CHANNEL_ON
+  if (motion === 'breathe' || motion === 'morph')
+    next.shape = strength
+  if (motion === 'morph')
+    next.color = strength
+  if (motion === 'hue')
+    next.color = 1
+  if (motion === 'flow')
+    next.liquid = CHANNEL_ON
+}
+
 /** Rehydrate effects from URL/query params, falling back to the current values. */
 export function parseEffects(read: (param: string) => unknown, fallback: Effects = DEFAULT_EFFECTS): Effects {
   const next = { ...fallback }
+  applyLegacyMotion(next, read)
   for (const [key, dial] of Object.entries(EFFECT_DIALS) as [NumericEffect, typeof EFFECT_DIALS[NumericEffect]][]) {
     const raw = read(dial.param)
     if (raw === undefined || raw === null || raw === '')
@@ -72,21 +129,41 @@ export function parseEffects(read: (param: string) => unknown, fallback: Effects
     if (Number.isFinite(parsed))
       next[key] = clamp(parsed, dial.min, dial.max)
   }
-  const motion = read(MOTION_PARAM)
-  if (typeof motion === 'string' && (motionTypes as readonly string[]).includes(motion))
-    next.motion = motion as MotionType
+  const colorMode = read(EFFECT_CHOICES.colorMode.param)
+  if ((colorModes as readonly unknown[]).includes(colorMode))
+    next.colorMode = colorMode as ColorMode
+  const moveMode = read(EFFECT_CHOICES.moveMode.param)
+  if ((moveModes as readonly unknown[]).includes(moveMode))
+    next.moveMode = moveMode as MoveMode
+  const hold = read(SHAPE_HOLD_PARAM)
+  if (typeof hold === 'string')
+    next.shapeHold = hold.split(',').filter(key => /^\w+$/.test(key))
   return next
 }
 
 export function effectsToParams(effects: Effects) {
-  const params: Record<string, string | number> = { [MOTION_PARAM]: effects.motion }
+  const params: Record<string, string | number> = {
+    [EFFECT_CHOICES.colorMode.param]: effects.colorMode,
+    [EFFECT_CHOICES.moveMode.param]: effects.moveMode,
+    [SHAPE_HOLD_PARAM]: effects.shapeHold.join(','),
+  }
   for (const [key, dial] of Object.entries(EFFECT_DIALS) as [NumericEffect, typeof EFFECT_DIALS[NumericEffect]][])
     params[dial.param] = effects[key]
   return params
 }
 
+/** Every URL key effects own, legacy ones included so resets clear them. */
 export function effectParamKeys() {
-  return [MOTION_PARAM, ...Object.values(EFFECT_DIALS).map(dial => dial.param)]
+  return [
+    ...Object.values(EFFECT_CHOICES).map(choice => choice.param),
+    SHAPE_HOLD_PARAM,
+    ...Object.values(EFFECT_DIALS).map(dial => dial.param),
+    ...LEGACY_PARAMS,
+  ]
+}
+
+export function legacyEffectParamKeys() {
+  return [...LEGACY_PARAMS]
 }
 
 // ---------------------------------------------------------------------------
@@ -168,9 +245,12 @@ export function warpFilterMarkup(effects: Effects, options: { id?: string; anima
   const f = warpFrequency(effects.warpSize)
   // Stretching the noise on each axis out of phase reads as liquid churn
   // rather than the whole field zooming from one corner.
-  const flow = (animate && effects.motion === 'flow')
+  // Liquid strength sets how far each axis stretches.
+  const hi = 1 + effects.liquid
+  const lo = 1 - 0.55 * effects.liquid
+  const flow = (animate && effects.liquid > 0)
     ? `<animate attributeName="baseFrequency" dur="${effects.speed}s" repeatCount="indefinite" `
-      + `values="${f} ${f};${round(f * 1.35, 5)} ${round(f * 0.8, 5)};${round(f * 0.85, 5)} ${round(f * 1.3, 5)};${f} ${f}"/>`
+      + `values="${f} ${f};${round(f * hi, 5)} ${round(f * lo, 5)};${round(f * lo, 5)} ${round(f * hi, 5)};${f} ${f}"/>`
     : ''
   return '<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">'
     + `<filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">`
@@ -183,23 +263,20 @@ export function warpFilterMarkup(effects: Effects, options: { id?: string; anima
 // Motion
 // ---------------------------------------------------------------------------
 
-/** Motions that animate the template's own dials through registered custom properties. */
-export function animatesDials(motion: MotionType) {
-  return motion === 'breathe' || motion === 'morph'
-}
-
 export function dialVar(key: string) {
   return `--sx-${key}`
 }
 
+const HUE_VAR = '--sx-hue'
 const PLACEHOLDER = /(-?)\{(\w+)\}(px|deg|%)?/g
 
 /**
  * Rewrites a template's `{key}` placeholders into `var(--sx-key)` references
  * so the dials can be animated. Units are folded into `calc()` because
- * `var(--x)px` is not valid CSS.
+ * `var(--x)px` is not valid CSS. `hue` wraps each color in a relative
+ * `oklch()` that adds `--sx-hue` to its hue, so a shift keeps lightness.
  */
-export function templateWithVars(template: Record<string, string>, variables: Variables) {
+export function templateWithVars(template: Record<string, string>, variables: Variables, options: { hue?: boolean } = {}) {
   return Object.entries(template).reduce((acc, [property, value]) => {
     acc[property] = value.replace(PLACEHOLDER, (match, sign: string, key: string, unit?: string) => {
       const variable = variables[key]
@@ -207,7 +284,7 @@ export function templateWithVars(template: Record<string, string>, variables: Va
         return match
       const ref = `var(${dialVar(key)})`
       if (variable.type === 'color')
-        return `${sign}${ref}${unit ?? ''}`
+        return `${sign}${options.hue ? `oklch(from ${ref} l c calc(h + var(${HUE_VAR})))` : ref}${unit ?? ''}`
       if (unit)
         return `calc(${ref} * ${sign}1${unit})`
       return sign ? `calc(${ref} * -1)` : ref
@@ -235,72 +312,203 @@ export function numberTarget(key: string, variable: Variables[string], value: nu
   return round(clamp(value + direction * span, min, max))
 }
 
-export function colorTarget(key: string, value: string, amount: number) {
-  const direction = hashKey(key) % 2 ? 1 : -1
-  const color = tinycolor(value).spin(direction * clamp(amount, 0, 1) * 120)
-  return color.getAlpha() < 1 ? color.toHex8String() : color.toHexString()
-}
-
 function rule(selector: string, declarations: Record<string, string>) {
   const body = Object.entries(declarations).map(([key, value]) => `  ${key}: ${value};`).join('\n')
   return `${selector} {\n${body}\n}`
 }
 
+function keyframes(name: string, stops: [string, Record<string, string>][]) {
+  const body = stops.map(([at, declarations]) => rule(`  ${at}`, declarations).replace(/\n/g, '\n  ')).join('\n')
+  return `@keyframes ${name} {\n${body}\n}`
+}
+
+function registerProperty(name: string, syntax: string, initial: string) {
+  return rule(`@property ${name}`, { 'syntax': `'${syntax}'`, 'inherits': 'false', 'initial-value': initial })
+}
+
+/** Alternating motions take half the cycle each way, so one round trip is one cycle. */
+function swing(effects: Effects) {
+  return `${round(effects.speed / 2, 2)}s ease-in-out infinite alternate`
+}
+
 interface MotionParts {
-  /** Extra declarations for the pattern layer (dial values + `animation`). */
-  declarations: Record<string, string>
+  /** Extra declarations for the pattern layer. */
+  declarations?: Record<string, string>
+  /** Entries for the layer's comma-separated `animation`. */
+  animations: string[]
   /** Global `@property` and `@keyframes` rules. */
-  css: string
+  css: string[]
 }
 
-function dialMotion(
-  variables: Variables,
-  values: Record<string, string | number>,
-  effects: Effects,
-  name: string,
-  breaking: boolean,
-): MotionParts {
-  const properties: string[] = []
-  const from: Record<string, string> = {}
-  const to: Record<string, string> = {}
-
-  for (const [key, variable] of Object.entries(variables)) {
+/** Every dial's resting value, so the `var()` references in the rewritten template resolve. */
+function dialValues(variables: Variables, values: Record<string, string | number>) {
+  return Object.entries(variables).reduce((acc, [key, variable]) => {
     const value = values[key] ?? variable.value
-    if (variable.type === 'color') {
-      const color = String(value)
-      properties.push(rule(`@property ${dialVar(key)}`, { 'syntax': '\'<color>\'', 'inherits': 'false', 'initial-value': 'transparent' }))
-      from[dialVar(key)] = color
-      to[dialVar(key)] = effects.motion === 'morph' ? colorTarget(key, color, effects.motionAmount) : color
-    }
-    else {
-      const number = Number(value)
-      properties.push(rule(`@property ${dialVar(key)}`, { 'syntax': '\'<number>\'', 'inherits': 'false', 'initial-value': '0' }))
-      from[dialVar(key)] = String(number)
-      to[dialVar(key)] = (variable.breaking && !breaking) ? String(number) : String(numberTarget(key, variable, number, effects.motionAmount))
-    }
-  }
+    acc[dialVar(key)] = variable.type === 'color' ? String(value) : String(Number(value))
+    return acc
+  }, {} as Record<string, string>)
+}
 
-  const keyframes = `@keyframes ${name}-dials {\n${rule('  from', from).replace(/\n/g, '\n  ')}\n${rule('  to', to).replace(/\n/g, '\n  ')}\n}`
+/**
+ * Each number dial swings on its own clock. Golden-ratio spaced periods and
+ * per-dial start offsets keep them from lining up, so the pattern wanders
+ * instead of pulsing.
+ */
+function shapeMotion(variables: Variables, values: Record<string, string | number>, effects: Effects, name: string, breaking: boolean): MotionParts {
+  const parts: MotionParts = { animations: [], css: [] }
+  let index = 0
+  for (const [key, variable] of Object.entries(variables)) {
+    if (variable.type === 'color' || (variable.breaking && !breaking) || effects.shapeHold.includes(key))
+      continue
+    const value = Number(values[key] ?? variable.value)
+    const target = numberTarget(key, variable, value, effects.shape)
+    if (target === value)
+      continue
+    const duration = round(effects.speed / 2 * (1 + (index++ * 0.618) % 1), 2)
+    const delay = round(-duration * (hashKey(key) % 100) / 100, 2)
+    const frames = `${name}-dial-${key}`
+    parts.css.push(
+      registerProperty(dialVar(key), '<number>', '0'),
+      keyframes(frames, [['from', { [dialVar(key)]: String(value) }], ['to', { [dialVar(key)]: String(target) }]]),
+    )
+    parts.animations.push(`${frames} ${duration}s ease-in-out ${delay}s infinite alternate`)
+  }
+  return parts
+}
+
+/** Hue drifts in oklch; full strength turns all the way round the wheel. */
+function hueMotion(effects: Effects, name: string): MotionParts {
+  const full = effects.color >= 1
+  const reach = round(effects.color * 180, 1)
+  const frames = `${name}-hue`
   return {
-    declarations: {
-      ...from,
-      animation: `${name}-dials ${round(effects.speed / 2, 2)}s ease-in-out infinite alternate`,
-    },
-    css: [...properties, keyframes].join('\n'),
+    animations: [full ? `${frames} ${effects.speed}s linear infinite` : `${frames} ${swing(effects)}`],
+    css: [
+      registerProperty(HUE_VAR, '<number>', '0'),
+      keyframes(frames, [['from', { [HUE_VAR]: full ? '0' : String(-reach) }], ['to', { [HUE_VAR]: full ? '360' : String(reach) }]]),
+    ],
   }
 }
 
-function hueMotion(effects: Effects, name: string): MotionParts {
-  return {
-    declarations: {
-      '--sx-hue': '0deg',
-      'animation': `${name}-hue ${effects.speed}s linear infinite`,
-    },
-    css: [
-      rule('@property --sx-hue', { 'syntax': '\'<angle>\'', 'inherits': 'false', 'initial-value': '0deg' }),
-      `@keyframes ${name}-hue {\n  to { --sx-hue: 360deg; }\n}`,
-    ].join('\n'),
+/** Colors trade places around the palette, holding between moves; strength shortens the hold. */
+function swapMotion(variables: Variables, values: Record<string, string | number>, keys: string[], effects: Effects, name: string): MotionParts {
+  const colors = keys.map(key => String(values[key] ?? variables[key].value))
+  const n = keys.length
+  const hold = 1 - clamp(effects.color, 0, 1)
+  const at = (step: number) => `${round(step / n * 100, 2)}%`
+  const state = (step: number) => Object.fromEntries(keys.map((key, i) => [dialVar(key), colors[(i + step) % n]]))
+  const stops: [string, Record<string, string>][] = []
+  for (let step = 0; step <= n; step++) {
+    stops.push([at(step), state(step)])
+    if (step < n && hold > 0)
+      stops.push([at(step + hold), state(step)])
   }
+  const frames = `${name}-swap`
+  return {
+    animations: [`${frames} ${round(effects.speed / 2 * n, 2)}s ease-in-out infinite`],
+    css: [...keys.map(key => registerProperty(dialVar(key), '<color>', 'transparent')), keyframes(frames, stops)],
+  }
+}
+
+function splitTop(value: string, separator: RegExp) {
+  const parts: string[] = []
+  let depth = 0
+  let current = ''
+  for (const char of value) {
+    if (char === '(')
+      depth++
+    else if (char === ')')
+      depth--
+    if (depth === 0 && separator.test(char)) {
+      if (current.trim())
+        parts.push(current.trim())
+      current = ''
+      continue
+    }
+    current += char
+  }
+  if (current.trim())
+    parts.push(current.trim())
+  return parts
+}
+
+/**
+ * The repeat period of a `background-size`: the largest layer on each axis,
+ * or undefined when any layer has no fixed size.
+ * shortcut: layers whose sizes are not multiples of each other get the largest, so the drift loop can seam; compute an LCM if that shows up.
+ */
+export function tileSize(backgroundSize?: string): [string, string] | undefined {
+  if (!backgroundSize)
+    return undefined
+  const widths = new Set<string>()
+  const heights = new Set<string>()
+  for (const layer of splitTop(backgroundSize, /,/)) {
+    const [width, height = 'auto'] = splitTop(layer, /\s/)
+    if ([width, height].some(token => /auto|cover|contain|%/.test(token)))
+      return undefined
+    widths.add(width)
+    heights.add(height)
+  }
+  if (!widths.size)
+    return undefined
+  const largest = (sizes: Set<string>) => sizes.size > 1 ? `max(${[...sizes].join(', ')})` : [...sizes][0]
+  return [largest(widths), largest(heights)]
+}
+
+const DRIFT_MAX_TILES = 4
+
+/**
+ * Slides the pattern by whole tiles, so the loop's jump back lands on an
+ * identical frame. Works while shape motion resizes the tiles too, since the
+ * distance tracks the live tile size.
+ */
+function driftMotion(effects: Effects, name: string, backgroundSize?: string): MotionParts {
+  const radians = effects.driftAngle * Math.PI / 180
+  const dx = Math.round(Math.cos(radians))
+  const dy = Math.round(Math.sin(radians))
+  const tile = tileSize(backgroundSize)
+  const tiles = Math.max(1, Math.round(effects.move * DRIFT_MAX_TILES))
+  // Without a fixed tile size there is no seamless period, so the drift sways instead of looping.
+  const [w, h] = tile
+    ? tile.map(length => tiles > 1 ? `calc(${tiles} * ${length})` : length)
+    : [`${round(effects.move * 30, 1)}cqmin`, `${round(effects.move * 30, 1)}cqmin`]
+  const offset = (direction: number, length: string) => direction === 0 ? '0px' : direction > 0 ? length : `calc(-1 * ${length})`
+  // Overhang the trailing edges so the gap the drift opens is still painted.
+  const declarations: Record<string, string> = {}
+  if (dx)
+    declarations[dx > 0 ? 'margin-left' : 'margin-right'] = `calc(-1 * ${w})`
+  if (dy)
+    declarations[dy > 0 ? 'margin-top' : 'margin-bottom'] = `calc(-1 * ${h})`
+  const frames = `${name}-drift`
+  return {
+    declarations,
+    animations: [tile ? `${frames} ${effects.speed}s linear infinite` : `${frames} ${swing(effects)}`],
+    css: [keyframes(frames, [['from', { translate: '0px 0px' }], ['to', { translate: `${offset(dx, w)} ${offset(dy, h)}` }]])],
+  }
+}
+
+/** Rocks around the frame centre; full strength turns all the way round. */
+function spinMotion(effects: Effects, name: string, pad: string): MotionParts {
+  const full = effects.move >= 1
+  const reach = round(effects.move * 90, 1)
+  const frames = `${name}-spin`
+  return {
+    // The layer's top-left sits `pad` outside the frame on both axes.
+    declarations: { 'transform-origin': `calc(50cqw + ${pad}) calc(50cqh + ${pad})` },
+    animations: [full ? `${frames} ${effects.speed}s linear infinite` : `${frames} ${swing(effects)}`],
+    css: [keyframes(frames, [['from', { rotate: full ? '0deg' : `${-reach}deg` }], ['to', { rotate: full ? '360deg' : `${reach}deg` }]])],
+  }
+}
+
+const LIQUID_WARP = 80
+
+/** The effects a frame actually renders: no motion when still, and liquid's own warp when Warp is off. */
+function liveEffects(effects: Effects, animate: boolean): Effects {
+  if (!animate)
+    return { ...effects, shape: 0, color: 0, move: 0, liquid: 0 }
+  if (effects.liquid > 0 && effects.warp <= 0)
+    return { ...effects, warp: round(effects.liquid * LIQUID_WARP) }
+  return effects
 }
 
 // ---------------------------------------------------------------------------
@@ -330,7 +538,7 @@ export interface FrameOptions {
   filterId?: string
   /** Prefix for keyframe names, so several frames can share a document. */
   name?: string
-  /** Let breathe/morph swing breaking dials too (wild shapes). */
+  /** Let shape motion swing breaking dials too (wild shapes). */
   breaking?: boolean
 }
 
@@ -341,19 +549,23 @@ function hasOverlay(overlay?: Record<string, string>) {
   return (overlay.background && overlay.background !== 'none') || (blur && !/blur\(0(px)?\)/.test(blur))
 }
 
+function negate(length: string) {
+  return length.startsWith('calc(') ? `calc(-1 * ${length})` : `-${length}`
+}
+
 /**
  * Tiles grow from the background origin, the pattern layer's top-left, so
  * animated dials zoom out of that corner. A transparent top/left border
  * (painted under, since background-clip is border-box) parks the origin at
  * the frame's centre while the padding box keeps the frame's size, so `%`
  * sizes and positions mean the same. `cq*` units need the frame to be a size
- * container.
+ * container. `pad` is how far the layer overhangs each edge.
  */
-function centeredOrigin(bleed: number): Record<string, string> {
+function centeredOrigin(pad: string): Record<string, string> {
   return {
-    'inset': `-${bleed}px calc(-50cqw - ${2 * bleed}px) calc(-50cqh - ${2 * bleed}px) -${bleed}px`,
-    'border-top': `calc(50cqh + ${bleed}px) solid transparent`,
-    'border-left': `calc(50cqw + ${bleed}px) solid transparent`,
+    'inset': `${negate(pad)} calc(-50cqw - 2 * ${pad}) calc(-50cqh - 2 * ${pad}) ${negate(pad)}`,
+    'border-top': `calc(50cqh + ${pad}) solid transparent`,
+    'border-left': `calc(50cqw + ${pad}) solid transparent`,
   }
 }
 
@@ -370,15 +582,22 @@ export function buildFrame(options: FrameOptions): PatternFrame {
     breaking = false,
   } = options
 
-  const motion = animate ? effects.motion : 'none'
-  const bleed = warpBleed(effects)
+  const fx = liveEffects(effects, animate)
+  const bleed = warpBleed(fx)
+  const spin = fx.move > 0 && fx.moveMode === 'spin'
+  // A spinning layer must cover the frame's diagonal at every angle; half the longer side past each edge is enough.
+  const pad = spin ? `calc(${bleed}px + 50cqmax)` : `${bleed}px`
+  const colorKeys = Object.keys(variables).filter(key => variables[key].type === 'color')
+  const hue = fx.color > 0 && (fx.colorMode === 'shift' || colorKeys.length < 2)
 
+  const parts: MotionParts[] = []
   let declarations: Record<string, string>
-  let css = ''
-  if (animatesDials(motion)) {
-    const parts = dialMotion(variables, values, effects, name, breaking)
-    declarations = { ...templateWithVars(template, variables), ...parts.declarations }
-    css = parts.css
+  if (fx.shape > 0 || fx.color > 0) {
+    declarations = { ...templateWithVars(template, variables, { hue }), ...dialValues(variables, values) }
+    if (fx.shape > 0)
+      parts.push(shapeMotion(variables, values, fx, name, breaking))
+    if (fx.color > 0)
+      parts.push(hue ? hueMotion(fx, name) : swapMotion(variables, values, colorKeys, fx, name))
   }
   else {
     declarations = Object.entries(template).reduce((acc, [property, value]) => {
@@ -386,33 +605,28 @@ export function buildFrame(options: FrameOptions): PatternFrame {
       return acc
     }, {} as Record<string, string>)
   }
+  if (fx.move > 0)
+    parts.push(spin ? spinMotion(fx, name, pad) : driftMotion(fx, name, declarations['background-size']))
 
-  if (motion === 'hue') {
-    const parts = hueMotion(effects, name)
-    Object.assign(declarations, parts.declarations)
-    css = parts.css
-  }
-
-  const filters = [
-    effects.warp > 0 ? `url(#${filterId})` : '',
-    motion === 'hue' ? 'hue-rotate(var(--sx-hue))' : '',
-  ].filter(Boolean)
+  const animations = parts.flatMap(part => part.animations)
 
   return {
     pattern: {
       position: 'absolute',
-      inset: bleed ? `-${bleed}px` : '0',
+      inset: (bleed || spin) ? negate(pad) : '0',
       ...declarations,
-      ...(animatesDials(motion) ? centeredOrigin(bleed) : {}),
-      ...(filters.length ? { filter: filters.join(' ') } : {}),
+      ...(fx.shape > 0 ? centeredOrigin(pad) : {}),
+      ...Object.assign({}, ...parts.map(part => part.declarations)),
+      ...(fx.warp > 0 ? { filter: `url(#${filterId})` } : {}),
+      ...(animations.length ? { animation: animations.join(', ') } : {}),
     },
-    light: lightStyle(effects),
+    light: lightStyle(fx),
     overlay: hasOverlay(overlay)
       ? { 'position': 'absolute', 'inset': '0', 'pointer-events': 'none', ...overlay }
       : undefined,
-    grain: grainStyle(effects),
-    filterMarkup: warpFilterMarkup(effects, { id: filterId, animate }),
-    css,
+    grain: grainStyle(fx),
+    filterMarkup: warpFilterMarkup(fx, { id: filterId, animate }),
+    css: parts.flatMap(part => part.css).join('\n'),
   }
 }
 

@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useDebounceFn, useUrlSearchParams } from '@vueuse/core'
 import { buildOverlayBackground } from '~/lib/overlays'
-import { DEFAULT_EFFECTS, type Effects, type FrameOptions, buildFrame, effectParamKeys, effectsToParams, parseEffects } from '~/lib/effects'
+import { DEFAULT_EFFECTS, type Effects, type FrameOptions, buildFrame, effectParamKeys, effectsToParams, legacyEffectParamKeys, parseEffects } from '~/lib/effects'
 import {
   defaultVariables,
   generateCss,
@@ -175,6 +175,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       key => queryValue(route.query[key]) ?? getParam(key),
       effectVariables.value,
     )
+    // Old single-preset motion links are translated above; drop their keys so they cannot shadow later edits.
+    legacyEffectParamKeys().forEach(key => deleteParam(key))
   }
 
   const initializeFromUrl = () => {

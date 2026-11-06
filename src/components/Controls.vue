@@ -3,7 +3,7 @@ import startCase from 'lodash.startcase'
 import { storeToRefs } from 'pinia'
 import ColorInput from './ColorInput.vue'
 import SliderRow from './SliderRow.vue'
-import { DEFAULT_EFFECTS, EFFECT_DIALS, type Effects, type MotionType, motionTypes } from '~/lib/effects'
+import { CHANNEL_ON, DEFAULT_EFFECTS, EFFECT_DIALS, type Effects, type MotionChannel, isMoving } from '~/lib/effects'
 import { overlayTypes } from '~/lib/overlays'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 
@@ -50,20 +50,34 @@ const visibleEffectDials = computed(() =>
   effectDials.filter(dial => !dial.show || dial.show(effectVariables.value)),
 )
 
-const motionLabels: Record<MotionType, string> = {
-  none: 'Still',
-  breathe: 'Breathe',
-  morph: 'Morph',
-  hue: 'Hue cycle',
-  flow: 'Flow',
+const motionChannelInfo: { key: MotionChannel; label: string; hint: string }[] = [
+  { key: 'shape', label: 'Shape', hint: 'Dials wander, each on its own clock.' },
+  { key: 'color', label: 'Color', hint: 'Colors shift hue or trade places.' },
+  { key: 'move', label: 'Move', hint: 'The pattern drifts or spins.' },
+  { key: 'liquid', label: 'Liquid', hint: 'The surface churns like water.' },
+]
+
+const colorModeLabels = { shift: 'Shift hue', swap: 'Swap colors' } as const
+const moveModeLabels = { drift: 'Drift', spin: 'Spin' } as const
+const directions = [
+  { angle: 270, icon: 'i-carbon-arrow-up', label: 'Up' },
+  { angle: 315, icon: 'i-carbon-arrow-up-right', label: 'Up right' },
+  { angle: 0, icon: 'i-carbon-arrow-right', label: 'Right' },
+  { angle: 45, icon: 'i-carbon-arrow-down-right', label: 'Down right' },
+  { angle: 90, icon: 'i-carbon-arrow-down', label: 'Down' },
+  { angle: 135, icon: 'i-carbon-arrow-down-left', label: 'Down left' },
+  { angle: 180, icon: 'i-carbon-arrow-left', label: 'Left' },
+  { angle: 225, icon: 'i-carbon-arrow-up-left', label: 'Up left' },
+]
+
+function toggleShapeHold(key: string) {
+  const hold = effectVariables.value.shapeHold
+  // A new array each time, so DEFAULT_EFFECTS' shared one is never mutated.
+  effectVariables.value.shapeHold = hold.includes(key) ? hold.filter(held => held !== key) : [...hold, key]
 }
 
-const motionHints: Record<MotionType, string> = {
-  none: 'Pick a motion to bring the pattern to life.',
-  breathe: 'The pattern\'s own dials swing back and forth.',
-  morph: 'Shape and colors drift toward a sibling roll.',
-  hue: 'Every color rotates around the wheel.',
-  flow: 'The warp churns like liquid.',
+function toggleChannel(channel: MotionChannel) {
+  effectVariables.value[channel] = effectVariables.value[channel] > 0 ? 0 : CHANNEL_ON
 }
 
 const hasBreakingVars = computed(() =>
@@ -115,7 +129,7 @@ const activeColor = computed(() =>
         >
           {{ tab.label }}
           <span
-            v-if="(tab.id === 'motion' && effectVariables.motion !== 'none')
+            v-if="(tab.id === 'motion' && isMoving(effectVariables))
               || (tab.id === 'effects' && (effectVariables.grain > 0 || effectVariables.warp > 0 || effectVariables.light > 0))"
             class="tab-dot"
             aria-hidden="true"
@@ -259,50 +273,111 @@ const activeColor = computed(() =>
       </template>
 
       <template v-else>
-        <div class="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Motion">
-          <button
-            v-for="motion in motionTypes"
-            :key="motion"
-            type="button"
-            role="radio"
-            class="motion-option"
-            :class="{ 'motion-option-active': effectVariables.motion === motion }"
-            :aria-checked="effectVariables.motion === motion"
-            @click="effectVariables.motion = motion"
-          >
-            {{ motionLabels[motion] }}
-          </button>
-        </div>
-        <p class="mt-2 font-mono text-10px text-white/35">
-          <template v-if="effectVariables.motion === 'flow' && effectVariables.warp <= 0">
-            Flow moves the warp. Turn Warp up on the Effects tab to see it.
-          </template>
-          <template v-else>
-            {{ motionHints[effectVariables.motion] }}
-          </template>
-          <template v-if="effectVariables.motion !== 'none' && reducedMotion === 'reduce'">
+        <p class="mb-3 font-mono text-10px text-white/35">
+          Stack as many as you like.
+          <template v-if="isMoving(effectVariables) && reducedMotion === 'reduce'">
             Paused here because your system asks for reduced motion.
           </template>
         </p>
 
-        <div v-if="effectVariables.motion !== 'none'" class="mt-4 flex flex-col gap-1.5">
+        <section v-for="channel in motionChannelInfo" :key="channel.key" class="mb-3">
+          <button
+            type="button"
+            class="motion-option w-full flex items-baseline justify-between gap-2 px-3 text-left"
+            :class="{ 'motion-option-active': effectVariables[channel.key] > 0 }"
+            :aria-pressed="effectVariables[channel.key] > 0"
+            @click="toggleChannel(channel.key)"
+          >
+            <span>{{ channel.label }}</span>
+            <span class="font-mono text-10px opacity-60">{{ channel.hint }}</span>
+          </button>
+
+          <div v-if="effectVariables[channel.key] > 0" class="mt-2 flex flex-col gap-1.5 pl-1">
+            <div v-if="channel.key === 'shape' && shapeVars.length" class="flex flex-wrap gap-1.5" role="group" aria-label="Dials to animate">
+              <button
+                v-for="[key] in shapeVars"
+                :key="key"
+                type="button"
+                class="motion-option px-2"
+                :class="{ 'motion-option-active': !effectVariables.shapeHold.includes(key) }"
+                :aria-pressed="!effectVariables.shapeHold.includes(key)"
+                @click="toggleShapeHold(key)"
+              >
+                {{ startCase(String(key)) }}
+              </button>
+            </div>
+            <div v-if="channel.key === 'color'" class="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Color motion">
+              <button
+                v-for="(label, mode) in colorModeLabels"
+                :key="mode"
+                type="button"
+                role="radio"
+                class="motion-option"
+                :class="{ 'motion-option-active': effectVariables.colorMode === mode }"
+                :aria-checked="effectVariables.colorMode === mode"
+                @click="effectVariables.colorMode = mode"
+              >
+                {{ label }}
+              </button>
+            </div>
+            <div v-if="channel.key === 'move'" class="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Move motion">
+              <button
+                v-for="(label, mode) in moveModeLabels"
+                :key="mode"
+                type="button"
+                role="radio"
+                class="motion-option"
+                :class="{ 'motion-option-active': effectVariables.moveMode === mode }"
+                :aria-checked="effectVariables.moveMode === mode"
+                @click="effectVariables.moveMode = mode"
+              >
+                {{ label }}
+              </button>
+            </div>
+            <div
+              v-if="channel.key === 'move' && effectVariables.moveMode === 'drift'"
+              class="grid grid-cols-8 gap-1"
+              role="radiogroup"
+              aria-label="Drift direction"
+            >
+              <button
+                v-for="direction in directions"
+                :key="direction.angle"
+                type="button"
+                role="radio"
+                class="motion-option grid place-items-center"
+                :class="{ 'motion-option-active': effectVariables.driftAngle === direction.angle }"
+                :aria-checked="effectVariables.driftAngle === direction.angle"
+                :aria-label="direction.label"
+                :title="direction.label"
+                @click="effectVariables.driftAngle = direction.angle"
+              >
+                <div :class="direction.icon" />
+              </button>
+            </div>
+            <SliderRow
+              v-model="effectVariables[channel.key]"
+              :label="channel.key === 'color' && effectVariables.colorMode === 'swap' ? 'Pace' : channel.key === 'move' && effectVariables.moveMode === 'drift' ? 'Distance' : 'Amount'"
+              :min="0.05"
+              :max="EFFECT_DIALS[channel.key].max"
+              :step="EFFECT_DIALS[channel.key].step"
+              :default-value="CHANNEL_ON"
+              percent
+            />
+            <p v-if="channel.key === 'liquid' && effectVariables.warp <= 0" class="font-mono text-10px text-white/35">
+              Brings a soft warp of its own. Turn Warp up on the Effects tab for deeper ripples.
+            </p>
+          </div>
+        </section>
+
+        <div v-if="isMoving(effectVariables)" class="mt-4 flex flex-col gap-1.5">
           <SliderRow
             v-model="effectVariables.speed"
-            label="Loop length (s)"
+            label="Cycle (s)"
             :min="EFFECT_DIALS.speed.min"
             :max="EFFECT_DIALS.speed.max"
             :step="EFFECT_DIALS.speed.step"
             :default-value="DEFAULT_EFFECTS.speed"
-          />
-          <SliderRow
-            v-if="effectVariables.motion === 'breathe' || effectVariables.motion === 'morph'"
-            v-model="effectVariables.motionAmount"
-            label="Amount"
-            :min="EFFECT_DIALS.motionAmount.min"
-            :max="EFFECT_DIALS.motionAmount.max"
-            :step="EFFECT_DIALS.motionAmount.step"
-            :default-value="DEFAULT_EFFECTS.motionAmount"
-            percent
           />
         </div>
       </template>
