@@ -13,6 +13,8 @@ export interface Variable {
   max?: number
   step?: number
   role?: ColorRole
+  /** Reshapes the motif instead of just scaling it; hidden and left at default unless wild shapes is on. */
+  breaking?: boolean
 }
 
 export interface Variables {

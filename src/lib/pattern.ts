@@ -38,18 +38,19 @@ export function defaultVariables(variables: Variables) {
 /**
  * A fresh random roll for a template's variables.
  * Colors are rolled as one related palette (not independent random hexes).
+ * Breaking dials stay at their defaults unless `breaking` is set.
  */
 export function randomVariables(
   template: Template | Variables,
-  options: { colors?: boolean; numbers?: boolean } = {},
+  options: { colors?: boolean; numbers?: boolean; breaking?: boolean } = {},
 ) {
-  const { colors = true, numbers = true } = options
+  const { colors = true, numbers = true, breaking = false } = options
   const isTemplate = 'variables' in template && 'template' in template
   const variables = isTemplate ? template.variables : template
   const harmony = isTemplate ? template.harmony : undefined
 
   const next = Object.entries(variables).reduce((acc, [key, variable]) => {
-    if ((variable.type === 'range' || variable.type === 'number') && numbers)
+    if ((variable.type === 'range' || variable.type === 'number') && numbers && (breaking || !variable.breaking))
       acc[key] = randomNumber(variable.min ?? 0, variable.max ?? 100, variable.step)
     else
       acc[key] = variable.value

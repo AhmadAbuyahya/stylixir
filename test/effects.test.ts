@@ -5,6 +5,7 @@ import {
   buildFrame,
   buildSnippet,
   colorTarget,
+  dialVar,
   effectsToParams,
   numberTarget,
   parseEffects,
@@ -109,6 +110,16 @@ describe('buildFrame', () => {
     expect(moving.pattern['border-left']).toBe(`calc(50cqw + ${b}px) solid transparent`)
     expect(buildFrame({ template, variables, values, effects: { ...DEFAULT_EFFECTS, motion: 'breathe' }, animate: false }).pattern['border-left'])
       .toBeUndefined()
+  })
+
+  it('holds breaking dials still under breathe unless wild shapes is on', () => {
+    const wildVars: Variables = { ...variables, step: { ...variables.step, breaking: true } }
+    const effects = { ...DEFAULT_EFFECTS, motion: 'breathe' as const, motionAmount: 1 }
+    const keyframe = (breaking: boolean) => buildFrame({ template, variables: wildVars, values, effects, breaking }).css
+      .match(/to \{[^}]*\}/)![0]
+    expect(keyframe(false)).toContain(`${dialVar('step')}: 4;`)
+    expect(keyframe(true)).not.toContain(`${dialVar('step')}: 4;`)
+    expect(keyframe(false)).not.toContain(`${dialVar('size')}: 100;`)
   })
 
   it('only animates the warp for flow', () => {

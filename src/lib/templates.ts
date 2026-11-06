@@ -38,6 +38,7 @@ const templates: Templates = {
       },
       position: {
         type: 'range',
+        breaking: true,
         value: 0.5,
         min: 0,
         max: 1,
@@ -81,12 +82,14 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 0,
         max: 360,
       },
       degree1: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 10,
         max: 90,
@@ -121,12 +124,14 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 0,
         max: 360,
       },
       tanValue: {
         type: 'range',
+        breaking: true,
         value: 0.577,
         min: 0.4,
         max: 0.8,
@@ -153,6 +158,7 @@ const templates: Templates = {
       },
       degree: {
         type: 'range',
+        breaking: true,
         value: 26,
         min: 0,
         max: 360,
@@ -181,6 +187,7 @@ const templates: Templates = {
       colorLight: { type: 'color', value: '#f2f2f2' },
       cubeRatio: {
         type: 'range',
+        breaking: true,
         value: 1.732,
         min: 1,
         max: 4,
@@ -188,6 +195,7 @@ const templates: Templates = {
       },
       angleSize: {
         type: 'range',
+        breaking: true,
         value: 120,
         min: 10,
         max: 180,
@@ -228,12 +236,14 @@ const templates: Templates = {
       },
       position1: {
         type: 'range',
+        breaking: true,
         value: 47,
         min: 25,
         max: 75,
       },
       position2: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 25,
         max: 75,
@@ -266,12 +276,14 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 15,
         max: 45,
       },
       tanFactor: {
         type: 'range',
+        breaking: true,
         value: 0.577,
         min: 0.4,
         max: 0.8,
@@ -306,6 +318,7 @@ const templates: Templates = {
       },
       radius1: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 35,
         max: 55,
@@ -337,18 +350,21 @@ const templates: Templates = {
       },
       topAngle: {
         type: 'range',
+        breaking: true,
         value: 150,
         min: 120,
         max: 180,
       },
       bottomAngle: {
         type: 'range',
+        breaking: true,
         value: -30,
         min: -60,
         max: 0,
       },
       sqrtFactor: {
         type: 'range',
+        breaking: true,
         value: 1.4142,
         min: 1.2,
         max: 1.6,
@@ -451,6 +467,7 @@ const templates: Templates = {
       size: size(120, 60, 200, 10),
       lobe: {
         type: 'range',
+        breaking: true,
         value: 25.4,
         min: 16,
         max: 30,
@@ -487,6 +504,7 @@ const templates: Templates = {
       },
       position1: {
         type: 'range',
+        breaking: true,
         value: 33,
         min: 20,
         max: 45,
@@ -494,6 +512,7 @@ const templates: Templates = {
       },
       position2: {
         type: 'range',
+        breaking: true,
         value: 66,
         min: 55,
         max: 80,
@@ -501,6 +520,7 @@ const templates: Templates = {
       },
       degree: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -580,6 +600,7 @@ const templates: Templates = {
       },
       gapFactor: {
         type: 'range',
+        breaking: true,
         value: 10,
         min: 4,
         max: 20,
@@ -587,6 +608,7 @@ const templates: Templates = {
       },
       pointAngle: {
         type: 'range',
+        breaking: true,
         value: 36,
         min: 22,
         max: 48,
@@ -594,6 +616,7 @@ const templates: Templates = {
       },
       rotation: {
         type: 'range',
+        breaking: true,
         value: 0,
         min: 0,
         max: 72,
@@ -601,6 +624,7 @@ const templates: Templates = {
       },
       offsetY: {
         type: 'range',
+        breaking: true,
         value: 0.35,
         min: 0.2,
         max: 0.5,
@@ -638,6 +662,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 15,
         max: 75,
@@ -645,6 +670,7 @@ const templates: Templates = {
       },
       outerPos: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 60,
         max: 85,
@@ -652,6 +678,7 @@ const templates: Templates = {
       },
       innerPos: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 40,
@@ -659,6 +686,7 @@ const templates: Templates = {
       },
       splitAngle: {
         type: 'range',
+        breaking: true,
         value: 225,
         min: 180,
         max: 270,
@@ -698,6 +726,7 @@ const templates: Templates = {
       },
       bandStart: {
         type: 'range',
+        breaking: true,
         value: 10,
         min: 4,
         max: 18,
@@ -705,6 +734,7 @@ const templates: Templates = {
       },
       bandMid: {
         type: 'range',
+        breaking: true,
         value: 19,
         min: 12,
         max: 30,
@@ -712,6 +742,7 @@ const templates: Templates = {
       },
       bevelA: {
         type: 'range',
+        breaking: true,
         value: 145,
         min: 120,
         max: 170,
@@ -719,6 +750,7 @@ const templates: Templates = {
       },
       bevelB: {
         type: 'range',
+        breaking: true,
         value: 35,
         min: 15,
         max: 55,
@@ -726,6 +758,7 @@ const templates: Templates = {
       },
       heightRatio: {
         type: 'range',
+        breaking: true,
         value: 0.667,
         min: 0.45,
         max: 0.9,
@@ -758,6 +791,7 @@ const templates: Templates = {
       },
       tilt: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 115,
         max: 155,
@@ -765,6 +799,7 @@ const templates: Templates = {
       },
       bandStart: {
         type: 'range',
+        breaking: true,
         value: 8,
         min: 4,
         max: 12,
@@ -772,6 +807,7 @@ const templates: Templates = {
       },
       bandEnd: {
         type: 'range',
+        breaking: true,
         value: 17,
         min: 14,
         max: 26,
@@ -779,6 +815,7 @@ const templates: Templates = {
       },
       bandGap: {
         type: 'range',
+        breaking: true,
         value: 58,
         min: 48,
         max: 68,
@@ -809,6 +846,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 90,
         max: 180,
@@ -816,6 +854,7 @@ const templates: Templates = {
       },
       cut: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 60,
         max: 120,
@@ -823,6 +862,7 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 35,
         max: 65,
@@ -851,6 +891,7 @@ const templates: Templates = {
       },
       fromA: {
         type: 'range',
+        breaking: true,
         value: -45,
         min: -75,
         max: -15,
@@ -858,6 +899,7 @@ const templates: Templates = {
       },
       fromB: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 105,
         max: 165,
@@ -865,6 +907,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 60,
         max: 120,
@@ -872,6 +915,7 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 35,
         max: 65,
@@ -909,6 +953,7 @@ const templates: Templates = {
       },
       from: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 30,
         max: 90,
@@ -916,6 +961,7 @@ const templates: Templates = {
       },
       accentX: {
         type: 'range',
+        breaking: true,
         value: 62.5,
         min: 50,
         max: 75,
@@ -923,6 +969,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 40,
         max: 80,
@@ -953,6 +1000,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -960,6 +1008,7 @@ const templates: Templates = {
       },
       wedgeA: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 70,
         max: 110,
@@ -967,6 +1016,7 @@ const templates: Templates = {
       },
       wedgeB: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 110,
         max: 160,
@@ -974,6 +1024,7 @@ const templates: Templates = {
       },
       endAngle: {
         type: 'range',
+        breaking: true,
         value: 225,
         min: 200,
         max: 250,
@@ -1009,6 +1060,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -1016,6 +1068,7 @@ const templates: Templates = {
       },
       step: {
         type: 'range',
+        breaking: true,
         value: 8,
         min: 6,
         max: 10,
@@ -1050,6 +1103,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 82,
@@ -1057,6 +1111,7 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
+        breaking: true,
         value: 20.71,
         min: 14,
         max: 28,
@@ -1064,6 +1119,7 @@ const templates: Templates = {
       },
       corner: {
         type: 'range',
+        breaking: true,
         value: 29.29,
         min: 22,
         max: 36,
@@ -1093,6 +1149,7 @@ const templates: Templates = {
       },
       slope: {
         type: 'range',
+        breaking: true,
         value: 2,
         min: 1.2,
         max: 3.5,
@@ -1100,6 +1157,7 @@ const templates: Templates = {
       },
       heightRatio: {
         type: 'range',
+        breaking: true,
         value: 1,
         min: 0.65,
         max: 1.35,
@@ -1140,6 +1198,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1147,6 +1206,7 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
+        breaking: true,
         value: 10,
         min: 5,
         max: 22,
@@ -1186,6 +1246,7 @@ const templates: Templates = {
       },
       tipAngle: {
         type: 'range',
+        breaking: true,
         value: 63.43,
         min: 45,
         max: 80,
@@ -1193,6 +1254,7 @@ const templates: Templates = {
       },
       faceY: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1200,6 +1262,7 @@ const templates: Templates = {
       },
       facePos: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -1237,6 +1300,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -1244,6 +1308,7 @@ const templates: Templates = {
       },
       faceWedge: {
         type: 'range',
+        breaking: true,
         value: 120,
         min: 100,
         max: 140,
@@ -1251,6 +1316,7 @@ const templates: Templates = {
       },
       ridgeDiv: {
         type: 'range',
+        breaking: true,
         value: 6,
         min: 4.5,
         max: 8,
@@ -1278,6 +1344,7 @@ const templates: Templates = {
       },
       pos: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -1285,6 +1352,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1292,6 +1360,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -1338,6 +1407,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 30,
         max: 60,
@@ -1371,6 +1441,7 @@ const templates: Templates = {
       },
       outer: {
         type: 'range',
+        breaking: true,
         value: 40,
         min: 30,
         max: 50,
@@ -1378,6 +1449,7 @@ const templates: Templates = {
       },
       inner: {
         type: 'range',
+        breaking: true,
         value: 20,
         min: 12,
         max: 28,
@@ -1385,6 +1457,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1392,6 +1465,7 @@ const templates: Templates = {
       },
       link: {
         type: 'range',
+        breaking: true,
         value: 0.9,
         min: 0.75,
         max: 0.98,
@@ -1399,6 +1473,7 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
+        breaking: true,
         value: 0.7,
         min: 0.55,
         max: 0.85,
@@ -1429,6 +1504,7 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
+        breaking: true,
         value: 87.5,
         min: 75,
         max: 95,
@@ -1436,6 +1512,7 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -1476,6 +1553,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 6,
         min: 4.5,
         max: 8,
@@ -1508,6 +1586,7 @@ const templates: Templates = {
       },
       petalA: {
         type: 'range',
+        breaking: true,
         value: 27,
         min: 20,
         max: 35,
@@ -1515,6 +1594,7 @@ const templates: Templates = {
       },
       petalB: {
         type: 'range',
+        breaking: true,
         value: 29,
         min: 22,
         max: 38,
@@ -1529,6 +1609,7 @@ const templates: Templates = {
       },
       spread: {
         type: 'range',
+        breaking: true,
         value: 16,
         min: 10,
         max: 22,
@@ -1564,6 +1645,7 @@ const templates: Templates = {
       },
       oval: {
         type: 'range',
+        breaking: true,
         value: 35.36,
         min: 28,
         max: 42,
@@ -1571,6 +1653,7 @@ const templates: Templates = {
       },
       strokeStart: {
         type: 'range',
+        breaking: true,
         value: 66,
         min: 55,
         max: 75,
@@ -1646,6 +1729,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 116.56,
         min: 95,
         max: 140,
@@ -1653,6 +1737,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -1660,6 +1745,7 @@ const templates: Templates = {
       },
       cut: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 70,
         max: 110,
@@ -1696,6 +1782,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -1703,6 +1790,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -1738,6 +1826,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1745,6 +1834,7 @@ const templates: Templates = {
       },
       step: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -1752,6 +1842,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 120,
         max: 150,
@@ -1766,6 +1857,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 20,
         max: 35,
@@ -1802,6 +1894,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 22,
         max: 38,
@@ -1809,6 +1902,7 @@ const templates: Templates = {
       },
       face: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 75,
         max: 105,
@@ -1816,6 +1910,7 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
+        breaking: true,
         value: 28.86,
         min: 24,
         max: 34,
@@ -1849,6 +1944,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1856,6 +1952,7 @@ const templates: Templates = {
       },
       radial: {
         type: 'range',
+        breaking: true,
         value: 65,
         min: 50,
         max: 80,
@@ -1891,6 +1988,7 @@ const templates: Templates = {
       },
       fromA: {
         type: 'range',
+        breaking: true,
         value: 150,
         min: 120,
         max: 180,
@@ -1898,6 +1996,7 @@ const templates: Templates = {
       },
       fromB: {
         type: 'range',
+        breaking: true,
         value: -30,
         min: -60,
         max: 0,
@@ -1981,6 +2080,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 45,
         max: 75,
@@ -1988,6 +2088,7 @@ const templates: Templates = {
       },
       tipFrom: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 15,
         max: 45,
@@ -1995,6 +2096,7 @@ const templates: Templates = {
       },
       tipY: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -2047,6 +2149,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -2084,6 +2187,7 @@ const templates: Templates = {
       },
       petal: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -2091,6 +2195,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -2127,6 +2232,7 @@ const templates: Templates = {
       },
       strokeStart: {
         type: 'range',
+        breaking: true,
         value: 46,
         min: 38,
         max: 52,
@@ -2134,6 +2240,7 @@ const templates: Templates = {
       },
       ringStart: {
         type: 'range',
+        breaking: true,
         value: 22,
         min: 16,
         max: 28,
@@ -2358,6 +2465,7 @@ const templates: Templates = {
       },
       fill: {
         type: 'range',
+        breaking: true,
         value: 35,
         min: 25,
         max: 48,
@@ -2429,6 +2537,7 @@ const templates: Templates = {
       size: size(56, 28, 100, 2),
       radius: {
         type: 'range',
+        breaking: true,
         value: 100,
         min: 50,
         max: 100,
@@ -2469,6 +2578,7 @@ const templates: Templates = {
       },
       fill: {
         type: 'range',
+        breaking: true,
         value: 49,
         min: 40,
         max: 55,
@@ -2476,6 +2586,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 0,
         max: 90,
@@ -2516,6 +2627,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 80,
         min: 20,
         max: 104,
@@ -2585,6 +2697,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 120,
         max: 150,
@@ -2592,6 +2705,7 @@ const templates: Templates = {
       },
       cutStart: {
         type: 'range',
+        breaking: true,
         value: 18.75,
         min: 12,
         max: 24,
@@ -2599,6 +2713,7 @@ const templates: Templates = {
       },
       cutEnd: {
         type: 'range',
+        breaking: true,
         value: 31.25,
         min: 26,
         max: 38,
@@ -2643,6 +2758,7 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
+        breaking: true,
         value: 28,
         min: 22,
         max: 36,
@@ -2650,6 +2766,7 @@ const templates: Templates = {
       },
       cell: {
         type: 'range',
+        breaking: true,
         value: 40,
         min: 30,
         max: 50,
@@ -2690,6 +2807,7 @@ const templates: Templates = {
       },
       ring: {
         type: 'range',
+        breaking: true,
         value: 70,
         min: 55,
         max: 82,
@@ -2753,6 +2871,7 @@ const templates: Templates = {
       },
       rx: {
         type: 'range',
+        breaking: true,
         value: 36,
         min: 28,
         max: 45,
@@ -2760,6 +2879,7 @@ const templates: Templates = {
       },
       ry: {
         type: 'range',
+        breaking: true,
         value: 72,
         min: 58,
         max: 85,
@@ -2767,6 +2887,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 30,
         max: 60,
@@ -2841,6 +2962,7 @@ const templates: Templates = {
       },
       ovalX: {
         type: 'range',
+        breaking: true,
         value: 37.5,
         min: 28,
         max: 48,
@@ -2848,6 +2970,7 @@ const templates: Templates = {
       },
       ovalY: {
         type: 'range',
+        breaking: true,
         value: 12.5,
         min: 8,
         max: 18,
@@ -2855,6 +2978,7 @@ const templates: Templates = {
       },
       anchor: {
         type: 'range',
+        breaking: true,
         value: 62.5,
         min: 50,
         max: 75,
@@ -2862,6 +2986,7 @@ const templates: Templates = {
       },
       cut: {
         type: 'range',
+        breaking: true,
         value: 32,
         min: 24,
         max: 40,
@@ -2966,6 +3091,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 60,
         max: 85,
@@ -2973,6 +3099,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 15,
         max: 75,
@@ -2999,6 +3126,7 @@ const templates: Templates = {
       },
       a: {
         type: 'range',
+        breaking: true,
         value: 135,
         min: 110,
         max: 155,
@@ -3006,6 +3134,7 @@ const templates: Templates = {
       },
       b: {
         type: 'range',
+        breaking: true,
         value: 270,
         min: 240,
         max: 300,
@@ -3013,6 +3142,7 @@ const templates: Templates = {
       },
       c: {
         type: 'range',
+        breaking: true,
         value: 315,
         min: 290,
         max: 340,
@@ -3046,6 +3176,7 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 60,
         max: 88,
@@ -3053,6 +3184,7 @@ const templates: Templates = {
       },
       tipY: {
         type: 'range',
+        breaking: true,
         value: 12.5,
         min: 6,
         max: 20,
@@ -3060,6 +3192,7 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -3067,6 +3200,7 @@ const templates: Templates = {
       },
       cut: {
         type: 'range',
+        breaking: true,
         value: 62.5,
         min: 50,
         max: 75,
@@ -3112,6 +3246,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -3119,6 +3254,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 45,
         max: 75,
@@ -3152,6 +3288,7 @@ const templates: Templates = {
       },
       ringA: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 50,
         max: 68,
@@ -3230,6 +3367,7 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 60,
         max: 85,
@@ -3260,6 +3398,7 @@ const templates: Templates = {
       },
       rx: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -3267,6 +3406,7 @@ const templates: Templates = {
       },
       ry: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 35,
         max: 65,
@@ -3293,6 +3433,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 30,
         max: 60,
@@ -3324,6 +3465,7 @@ const templates: Templates = {
       },
       petal: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -3366,6 +3508,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 45,
         min: 15,
         max: 75,
@@ -3401,6 +3544,7 @@ const templates: Templates = {
       },
       from: {
         type: 'range',
+        breaking: true,
         value: -30,
         min: -50,
         max: -10,
@@ -3408,6 +3552,7 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
+        breaking: true,
         value: 240,
         min: 200,
         max: 280,
@@ -3415,6 +3560,7 @@ const templates: Templates = {
       },
       posA: {
         type: 'range',
+        breaking: true,
         value: 90,
         min: 80,
         max: 95,
@@ -3422,6 +3568,7 @@ const templates: Templates = {
       },
       posB: {
         type: 'range',
+        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -3429,6 +3576,7 @@ const templates: Templates = {
       },
       posC: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -3436,6 +3584,7 @@ const templates: Templates = {
       },
       posD: {
         type: 'range',
+        breaking: true,
         value: 40,
         min: 30,
         max: 50,
@@ -3491,6 +3640,7 @@ const templates: Templates = {
       },
       stretch: {
         type: 'range',
+        breaking: true,
         value: 2,
         min: 0.6,
         max: 5,
@@ -3520,6 +3670,7 @@ const templates: Templates = {
       },
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 5,
         max: 45,
@@ -3612,6 +3763,7 @@ const templates: Templates = {
       size: size(29, 14, 58, 1),
       dot: {
         type: 'range',
+        breaking: true,
         value: 100,
         min: 80,
         max: 125,
@@ -3699,6 +3851,7 @@ const templates: Templates = {
       },
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 4,
         max: 46,
@@ -3719,6 +3872,7 @@ const templates: Templates = {
       size: size(160, 80, 320, 5),
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 9,
         max: 41,
@@ -3757,6 +3911,7 @@ const templates: Templates = {
       },
       shift: {
         type: 'range',
+        breaking: true,
         value: 0.5,
         min: 0,
         max: 1,
@@ -3845,6 +4000,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 12.5,
         min: 7,
         max: 17,
@@ -3865,6 +4021,7 @@ const templates: Templates = {
       size: size(76, 38, 152, 2),
       point: {
         type: 'range',
+        breaking: true,
         value: 80,
         min: 55,
         max: 100,
@@ -3962,6 +4119,7 @@ const templates: Templates = {
       },
       lightX: {
         type: 'range',
+        breaking: true,
         value: 40,
         min: 15,
         max: 85,
@@ -3969,6 +4127,7 @@ const templates: Templates = {
       },
       lightY: {
         type: 'range',
+        breaking: true,
         value: 30,
         min: 15,
         max: 85,
@@ -4024,6 +4183,7 @@ const templates: Templates = {
       size: size(150, 75, 300, 5),
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 5,
         max: 30,
@@ -4065,6 +4225,7 @@ const templates: Templates = {
       },
       angle: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 20,
         max: 85,
@@ -4297,6 +4458,7 @@ const templates: Templates = {
       },
       round: {
         type: 'range',
+        breaking: true,
         value: 49,
         min: 20,
         max: 70,
@@ -4317,6 +4479,7 @@ const templates: Templates = {
       size: size(90, 44, 180, 2),
       notch: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 10,
         max: 60,
@@ -4369,6 +4532,7 @@ const templates: Templates = {
       },
       radius: {
         type: 'range',
+        breaking: true,
         value: 64,
         min: 20,
         max: 90,
@@ -4401,6 +4565,7 @@ const templates: Templates = {
       },
       depth: {
         type: 'range',
+        breaking: true,
         value: 35,
         min: 5,
         max: 42,
@@ -4436,6 +4601,7 @@ const templates: Templates = {
       },
       pill: {
         type: 'range',
+        breaking: true,
         value: 70,
         min: 45,
         max: 80,
@@ -4477,6 +4643,7 @@ const templates: Templates = {
       size: size(62, 30, 124, 2),
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 8,
         max: 50,
@@ -4534,6 +4701,7 @@ const templates: Templates = {
       size: size(120, 60, 240, 5),
       inset: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 12,
         max: 38,
@@ -4666,6 +4834,7 @@ const templates: Templates = {
       },
       tilt: {
         type: 'range',
+        breaking: true,
         value: 15,
         min: 0,
         max: 45,
@@ -4730,6 +4899,7 @@ const templates: Templates = {
       },
       arc: {
         type: 'range',
+        breaking: true,
         value: 35,
         min: 15,
         max: 70,
@@ -4757,6 +4927,7 @@ const templates: Templates = {
       size: size(104, 52, 208, 2),
       wave: {
         type: 'range',
+        breaking: true,
         value: 35,
         min: 24,
         max: 40,
@@ -5052,6 +5223,7 @@ const templates: Templates = {
       size: size(150, 75, 300, 5),
       shift: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 8,
         max: 50,
@@ -5221,6 +5393,7 @@ const templates: Templates = {
       size: size(50, 24, 100, 2),
       radius: {
         type: 'range',
+        breaking: true,
         value: 100,
         min: 70,
         max: 128,
@@ -5409,6 +5582,7 @@ const templates: Templates = {
       },
       body: {
         type: 'range',
+        breaking: true,
         value: 24,
         min: 4,
         max: 48,
@@ -5429,6 +5603,7 @@ const templates: Templates = {
       size: size(30, 15, 60, 1),
       petal: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 35,
         max: 60,
@@ -5626,6 +5801,7 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
+        breaking: true,
         value: 33.3,
         min: 5,
         max: 80,
@@ -5644,6 +5820,7 @@ const templates: Templates = {
       size: size(104, 52, 208, 2),
       shift: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 0,
         max: 50,
@@ -5706,6 +5883,7 @@ const templates: Templates = {
       },
       corner: {
         type: 'range',
+        breaking: true,
         value: 17.67,
         min: 2,
         max: 30,
@@ -5764,6 +5942,7 @@ const templates: Templates = {
       },
       dot: {
         type: 'range',
+        breaking: true,
         value: 34,
         min: 10,
         max: 48,

@@ -76,7 +76,7 @@ export function usePatternAudit() {
   }
 
   function shuffleLiveValues() {
-    liveValues.value = randomVariables(draft.value, { colors: false, numbers: true })
+    liveValues.value = randomVariables(draft.value, { colors: false, numbers: true, breaking: true })
   }
 
   function syncStubVariablesFromPlaceholders() {

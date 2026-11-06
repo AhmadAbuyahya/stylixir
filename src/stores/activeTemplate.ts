@@ -120,6 +120,17 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
   const effectVariables = ref<Effects>({ ...DEFAULT_EFFECTS })
 
+  /** Shows, shuffles and animates breaking dials too. A viewer preference, so it lives in storage, not the URL. */
+  const storedWildShapes = useStorage('stylixir-wild-shapes', false)
+  // Starts off and loads after mount so the prerendered controls hydrate cleanly.
+  const wildShapes = ref(false)
+  onMounted(() => {
+    wildShapes.value = storedWildShapes.value
+  })
+  watch(wildShapes, (wild) => {
+    storedWildShapes.value = wild
+  })
+
   function initVariablesRef() {
     const defs = templates[activeTemplate.value]?.variables || {}
     variablesRef.value = Object.entries(defs).reduce((acc, [key, variable]) => {
@@ -210,6 +221,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       values: variablesRef.value,
       effects: effectVariables.value,
       overlay: overlay ? overlayStyle.value : undefined,
+      breaking: wildShapes.value,
       ...rest,
     })
   }
@@ -257,12 +269,24 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
       if (variable.type === 'range' || variable.type === 'number') {
         const min = variable.min ?? 0
         const max = variable.max ?? 0
-        variablesRef.value[key] = utils.randomNumber(min, max, variable.step)
+        variablesRef.value[key] = (variable.breaking && !wildShapes.value)
+          ? variable.value
+          : utils.randomNumber(min, max, variable.step)
         updates[key] = variablesRef.value[key]
       }
     })
     updateUrlParams(updates)
   }
+
+  // Turning wild shapes off puts the hidden breaking dials back to their defaults.
+  watch(wildShapes, (wild) => {
+    if (wild)
+      return
+    Object.entries(variables.value).forEach(([key, variable]) => {
+      if (variable.breaking)
+        variablesRef.value[key] = variable.value
+    })
+  })
 
   function randomizeColors() {
     if (!isClient.value)
@@ -347,6 +371,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeNumberValues,
     randomizeColors,
     randomizeAll,
+    wildShapes,
     overlayVariables,
     overlayStyle,
     effectVariables,

@@ -33,7 +33,7 @@ type TabId = typeof tabs[number]['id']
 const activeTab = ref<TabId>('pattern')
 
 const activeTemplateStore = useActiveTemplateStore()
-const { variables, variablesRef, overlayVariables, effectVariables } = storeToRefs(activeTemplateStore)
+const { variables, variablesRef, overlayVariables, effectVariables, wildShapes } = storeToRefs(activeTemplateStore)
 const reducedMotion = usePreferredReducedMotion()
 
 type EffectDialKey = keyof typeof EFFECT_DIALS
@@ -66,8 +66,14 @@ const motionHints: Record<MotionType, string> = {
   flow: 'The warp churns like liquid.',
 }
 
+const hasBreakingVars = computed(() =>
+  Object.values(variables.value).some(variable => variable.breaking),
+)
+// A breaking dial a shared link moved off its default stays visible, so nothing hidden is in effect.
 const shapeVars = computed(() =>
-  Object.entries(variables.value).filter(([, variable]) => variable.type !== 'color'),
+  Object.entries(variables.value).filter(([key, variable]) =>
+    variable.type !== 'color'
+    && (!variable.breaking || wildShapes.value || variablesRef.value[key] !== variable.value)),
 )
 const colorVars = computed(() =>
   Object.entries(variables.value).filter(([, variable]) => variable.type === 'color'),
@@ -128,9 +134,23 @@ const activeColor = computed(() =>
         <section v-if="shapeVars.length" class="mb-6">
           <div class="section-head">
             <p>Shape</p>
-            <button type="button" class="icon-action" title="Shuffle shape" aria-label="Shuffle shape" @click="activeTemplateStore.randomizeNumberValues">
-              <div class="i-carbon-shuffle" />
-            </button>
+            <div class="flex items-center gap-1">
+              <button
+                v-if="hasBreakingVars"
+                type="button"
+                class="wild-toggle"
+                :class="{ 'wild-toggle-on': wildShapes }"
+                :aria-pressed="wildShapes"
+                title="Show and shuffle dials that reshape the pattern"
+                @click="wildShapes = !wildShapes"
+              >
+                <span class="wild-toggle-track" aria-hidden="true" />
+                Wild
+              </button>
+              <button type="button" class="icon-action" title="Shuffle shape" aria-label="Shuffle shape" @click="activeTemplateStore.randomizeNumberValues">
+                <div class="i-carbon-shuffle" />
+              </button>
+            </div>
           </div>
           <div class="flex flex-col gap-1.5">
             <SliderRow
@@ -351,6 +371,7 @@ const activeColor = computed(() =>
 
 .tab:focus-visible,
 .icon-action:focus-visible,
+.wild-toggle:focus-visible,
 .text-action:focus-visible,
 .swatch:focus-visible,
 .motion-option:focus-visible,
@@ -398,6 +419,57 @@ const activeColor = computed(() =>
 .icon-action:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
+}
+
+.wild-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  border-radius: 0.35rem;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.wild-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.wild-toggle-on {
+  color: #5eead4;
+}
+
+.wild-toggle-track {
+  position: relative;
+  width: 1.4rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 0.15s ease;
+}
+
+.wild-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 0.1rem;
+  left: 0.1rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.wild-toggle-on .wild-toggle-track {
+  background: #2dd4bf;
+}
+
+.wild-toggle-on .wild-toggle-track::after {
+  transform: translateX(0.6rem);
 }
 
 .text-action {
@@ -464,6 +536,9 @@ const activeColor = computed(() =>
   .desk-action,
   .tab,
   .icon-action,
+  .wild-toggle,
+  .wild-toggle-track,
+  .wild-toggle-track::after,
   .swatch,
   .motion-option {
     transition: none;

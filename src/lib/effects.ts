@@ -258,6 +258,7 @@ function dialMotion(
   values: Record<string, string | number>,
   effects: Effects,
   name: string,
+  breaking: boolean,
 ): MotionParts {
   const properties: string[] = []
   const from: Record<string, string> = {}
@@ -275,7 +276,7 @@ function dialMotion(
       const number = Number(value)
       properties.push(rule(`@property ${dialVar(key)}`, { 'syntax': '\'<number>\'', 'inherits': 'false', 'initial-value': '0' }))
       from[dialVar(key)] = String(number)
-      to[dialVar(key)] = String(numberTarget(key, variable, number, effects.motionAmount))
+      to[dialVar(key)] = (variable.breaking && !breaking) ? String(number) : String(numberTarget(key, variable, number, effects.motionAmount))
     }
   }
 
@@ -329,6 +330,8 @@ export interface FrameOptions {
   filterId?: string
   /** Prefix for keyframe names, so several frames can share a document. */
   name?: string
+  /** Let breathe/morph swing breaking dials too (wild shapes). */
+  breaking?: boolean
 }
 
 function hasOverlay(overlay?: Record<string, string>) {
@@ -364,6 +367,7 @@ export function buildFrame(options: FrameOptions): PatternFrame {
     animate = true,
     filterId = WARP_FILTER_ID,
     name = 'stylixir',
+    breaking = false,
   } = options
 
   const motion = animate ? effects.motion : 'none'
@@ -372,7 +376,7 @@ export function buildFrame(options: FrameOptions): PatternFrame {
   let declarations: Record<string, string>
   let css = ''
   if (animatesDials(motion)) {
-    const parts = dialMotion(variables, values, effects, name)
+    const parts = dialMotion(variables, values, effects, name, breaking)
     declarations = { ...templateWithVars(template, variables), ...parts.declarations }
     css = parts.css
   }
