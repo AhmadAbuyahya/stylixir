@@ -2932,12 +2932,12 @@ const templates: Templates = {
 
   'waves': {
     template: {
-      '--_s': '{ovalX}% {ovalY}% at {anchor}%',
+      '--_s': '37.5% {stretch}% at 62.5%',
       '--_g': '34% 99%,#0000 101%',
-      '--g1': 'radial-gradient(var(--_s) 100%,#0000 {cut}%,{colorOne} var(--_g))',
-      '--g2': 'radial-gradient(var(--_s) 0,#0000 {cut}%,{colorOne} var(--_g))',
-      '--g3': 'radial-gradient(var(--_s) 100%,#0000 {cut}%,{colorTwo} var(--_g))',
-      '--g4': 'radial-gradient(var(--_s) 0,#0000 {cut}%,{colorTwo} var(--_g))',
+      '--g1': 'radial-gradient(var(--_s) 100%,#0000 32%,{colorOne} var(--_g))',
+      '--g2': 'radial-gradient(var(--_s) 0,#0000 32%,{colorOne} var(--_g))',
+      '--g3': 'radial-gradient(var(--_s) 100%,#0000 32%,{colorTwo} var(--_g))',
+      '--g4': 'radial-gradient(var(--_s) 0,#0000 32%,{colorTwo} var(--_g))',
       'background': `
         var(--g1),
         var(--g2) 0 calc(3*{size}px),
@@ -2960,37 +2960,12 @@ const templates: Templates = {
         type: 'color',
         value: '#45ADA8',
       },
-      ovalX: {
+      stretch: {
         type: 'range',
-        breaking: true,
-        value: 37.5,
-        min: 28,
-        max: 48,
-        step: 0.5,
-      },
-      ovalY: {
-        type: 'range',
-        breaking: true,
         value: 12.5,
-        min: 8,
-        max: 18,
+        min: 9,
+        max: 16,
         step: 0.5,
-      },
-      anchor: {
-        type: 'range',
-        breaking: true,
-        value: 62.5,
-        min: 50,
-        max: 75,
-        step: 0.5,
-      },
-      cut: {
-        type: 'range',
-        breaking: true,
-        value: 32,
-        min: 24,
-        max: 40,
-        step: 1,
       },
     },
   },
@@ -3288,24 +3263,23 @@ const templates: Templates = {
       },
       ringA: {
         type: 'range',
-        breaking: true,
         value: 60,
-        min: 50,
-        max: 68,
+        min: 37,
+        max: 73,
         step: 1,
       },
       ringB: {
         type: 'range',
         value: 77,
-        min: 70,
-        max: 85,
+        min: 59,
+        max: 68,
         step: 1,
       },
       stroke: {
         type: 'range',
         value: 2,
         min: 1,
-        max: 4,
+        max: 10,
         step: 0.5,
       },
     },
@@ -4750,13 +4724,13 @@ const templates: Templates = {
   },
   'wavy_lines_circles': {
     template: {
-      '--c': ',#0000 {inner}%,{colorOne} calc({inner}% + 1%) 93%,#0000 94%',
+      '--c': ',#0000 calc(65.5% - {weight}%/2),{colorOne} calc(66.5% - {weight}%/2) calc(66.5% + {weight}%/2),#0000 calc(67.5% + {weight}%/2)',
       '--_s': 'calc(1.5*{size}px)/calc(4*{size}px) calc(3*{size}px)',
       'background': `radial-gradient(calc(1.5*{size}px) at 37.5%   0%var(--c))
          calc(-.5*{size}px) var(--_s),
         radial-gradient(calc(1.5*{size}px) at 37.5% 100%var(--c))
          calc(1.5*{size}px) var(--_s),
-        radial-gradient(25% calc(50%/3),#0000 96%,{colorTwo})
+        radial-gradient(25% calc(50%/3),#0000 calc({dot}% - 4%),{colorTwo} {dot}%)
          0 0/calc(2*{size}px) calc(3*{size}px),
         repeating-conic-gradient({colorThree} 0 25%,{colorFour} 0 50%)
          0 0/calc(4*{size}px) calc(6*{size}px)`,
@@ -4779,11 +4753,18 @@ const templates: Templates = {
         type: 'color',
         value: '#373b44',
       },
-      inner: {
+      weight: {
         type: 'range',
-        value: 39,
-        min: 5,
-        max: 85,
+        value: 53,
+        min: 8,
+        max: 66,
+        step: 1,
+      },
+      dot: {
+        type: 'range',
+        value: 100,
+        min: 30,
+        max: 125,
         step: 1,
       },
     },

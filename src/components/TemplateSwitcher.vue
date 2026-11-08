@@ -4,6 +4,7 @@ import { buildStyle, defaultVariables } from '~/lib/pattern'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 
 const activeTemplateStore = useActiveTemplateStore()
+const isDev = import.meta.env.DEV
 
 function swatchStyle(slug: string) {
   return buildStyle(slug, templates, defaultVariables(templates[slug].variables))
@@ -44,6 +45,7 @@ onMounted(() => nextTick(scrollActiveIntoView))
         <Logo class="h-full w-auto" />
       </RouterLink>
       <RouterLink
+        v-if="isDev"
         :to="{ path: '/audit', query: { template: activeTemplateStore.activeTemplate } }"
         class="shrink-0 border-1 border-white/12 rounded-md px-2 py-1 font-mono text-10px tracking-wider uppercase text-white/55 transition hover:border-teal-400/40 hover:text-teal-200"
         title="Open pattern audit"

@@ -19,8 +19,11 @@ useHead({
     },
   ],
 })
+
+const isDev = import.meta.env.DEV
 </script>
 
 <template>
   <RouterView />
+  <FpsCounter v-if="isDev" />
 </template>

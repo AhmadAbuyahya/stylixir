@@ -19,6 +19,7 @@ declare module '@vue/runtime-core' {
     ExportDialog: typeof import('./components/ExportDialog.vue')['default']
     FeatureGrid: typeof import('./components/home/FeatureGrid.vue')['default']
     Footer: typeof import('./components/Footer.vue')['default']
+    FpsCounter: typeof import('./components/FpsCounter.vue')['default']
     HomeCta: typeof import('./components/home/HomeCta.vue')['default']
     HomeHero: typeof import('./components/home/HomeHero.vue')['default']
     HomeNav: typeof import('./components/home/HomeNav.vue')['default']

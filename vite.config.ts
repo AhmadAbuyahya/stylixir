@@ -20,7 +20,7 @@ import VueMacros from 'unplugin-vue-macros/vite'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import { auditPromotePlugin } from './vite-plugin-audit-promote'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       '~/': `${path.resolve(__dirname, 'src')}/`,
@@ -39,6 +39,8 @@ export default defineConfig({
     // https://github.com/hannoeru/vite-plugin-pages
     Pages({
       extensions: ['vue', 'md'],
+      // audit pages are dev tools
+      exclude: ['node_modules', '.git', '**/__*__/**', ...(command === 'build' ? ['audit*.vue'] : [])],
     }),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
@@ -173,4 +175,4 @@ export default defineConfig({
     // TODO: workaround until they support native ESM
     noExternal: ['workbox-window', /vue-i18n/],
   },
-})
+}))
