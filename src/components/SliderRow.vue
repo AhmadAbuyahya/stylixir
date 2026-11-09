@@ -169,4 +169,31 @@ function reset() {
 .slider-field:focus {
   border-color: var(--ink);
 }
+
+/* A 14px thumb is too small to catch with a finger. */
+@media (pointer: coarse) {
+  .slider-row {
+    grid-template-columns: 6rem minmax(0, 1fr) 4rem;
+    min-height: 44px;
+  }
+
+  .slider-track {
+    height: 36px;
+  }
+
+  .slider-track::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -10.5px;
+  }
+
+  .slider-track::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  .slider-field {
+    height: 36px;
+  }
+}
 </style>

@@ -631,9 +631,31 @@ const colorVars = computed(() => Object.entries(variables.value).filter(([, vari
     right: 0;
     bottom: 0;
     width: auto;
-    max-height: 70dvh;
+    /* Leaves the top half for the pattern, so a dial's effect shows while it moves. */
+    max-height: 52svh;
     border-radius: 16px 16px 0 0;
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (pointer: coarse) {
+  .icon-btn-sm {
+    width: 40px;
+    height: 40px;
+  }
+
+  .switch,
+  .select {
+    height: 40px;
+  }
+
+  .text-btn {
+    padding: 11px 10px;
+  }
+
+  .chip,
+  .segment {
+    min-height: 40px;
   }
 }
 </style>

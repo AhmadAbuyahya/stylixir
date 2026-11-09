@@ -304,6 +304,8 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   position: fixed;
   z-index: 50;
   inset: 0;
+  /* Same Firefox Android toolbar fix as the studio. */
+  height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,7 +324,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   position: relative;
   width: 100%;
   max-width: 30rem;
-  max-height: 92dvh;
+  max-height: 92svh;
   overflow-y: auto;
   padding: 18px 20px 20px;
   border-radius: 16px;
@@ -573,7 +575,17 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   .export-sheet {
     max-width: none;
     border-radius: 16px 16px 0 0;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    padding-bottom: 0;
+  }
+
+  /* The sheet scrolls on phones; keep Download in reach instead of below the fold. */
+  .export-actions {
+    position: sticky;
+    bottom: 0;
+    margin: 0 -20px;
+    padding: 12px 20px max(16px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--sheet);
   }
 }
 </style>

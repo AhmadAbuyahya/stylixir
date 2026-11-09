@@ -85,6 +85,14 @@ function unpresent() {
     exitFullscreen()
 }
 
+function tapCanvas() {
+  if (bare.value)
+    unpresent()
+  // On phones Tune is a bottom sheet, so a tap on the pattern above it dismisses it.
+  else if (window.matchMedia('(max-width: 720px)').matches)
+    tuneOpen.value = false
+}
+
 watch(isFullscreen, (full) => {
   if (!full)
     bare.value = false
@@ -131,7 +139,7 @@ onMounted(() => {
 
 <template>
   <div class="studio" :class="{ 'is-bare': bare }" :style="dye">
-    <div class="canvas" @click="bare && unpresent()">
+    <div class="canvas" @click="tapCanvas">
       <PatternLayers />
     </div>
 
@@ -170,8 +178,8 @@ onMounted(() => {
           <span class="i-carbon-sun dark:i-carbon-moon" aria-hidden="true" />
         </button>
         <template v-if="isDev">
-          <span class="tool-sep" aria-hidden="true" />
-          <RouterLink class="tool" :to="{ path: '/audit', query: { template: store.activeTemplate } }" title="Audit this pattern's dials (dev only)">
+          <span class="tool-sep tool-wide-only" aria-hidden="true" />
+          <RouterLink class="tool tool-wide-only" :to="{ path: '/audit', query: { template: store.activeTemplate } }" title="Audit this pattern's dials (dev only)">
             <span class="i-carbon-debug" aria-hidden="true" />
             <span class="tool-label">Audit</span>
           </RouterLink>
@@ -227,6 +235,8 @@ meta:
 .studio {
   position: fixed;
   inset: 0;
+  /* Firefox Android sizes fixed boxes as if its toolbar were hidden, which put the bottom under the toolbar. Wins over bottom: 0. */
+  height: 100svh;
   overflow: hidden;
   color: var(--ink);
 }
@@ -266,6 +276,8 @@ meta:
   left: 16px;
   right: 16px;
   display: flex;
+  /* Larger system text (Firefox Android applies it) drops the tools to a second row instead of off the edge. */
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
@@ -303,6 +315,7 @@ meta:
   display: flex;
   align-items: center;
   gap: 2px;
+  margin-left: auto;
   padding: 4px;
 }
 
