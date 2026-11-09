@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: string | number | null | undefined
+  label?: string
 }>()
 
 const emit = defineEmits<{
@@ -32,22 +33,96 @@ function updateColor(value: string) {
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <label class="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden border-1 border-white/10 rounded-md">
-      <span class="absolute inset-0" :style="{ background: colorValue }" />
+  <div class="color-row">
+    <label class="chip" :title="label ? `Pick ${label.toLowerCase()}` : 'Pick a color'">
+      <span class="chip-fill" :style="{ background: colorValue }" />
       <input
         v-model="colorValue"
         type="color"
-        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        class="chip-input"
+        :aria-label="label ? `${label} picker` : 'Color picker'"
         @input="updateColor(colorValue)"
       >
     </label>
+    <span v-if="label" class="color-label">{{ label }}</span>
     <input
       v-model="colorValue"
       type="text"
       spellcheck="false"
-      class="min-w-0 flex-1 border-1 border-white/10 rounded-md bg-#141414 px-2.5 py-2 font-mono text-xs text-white outline-none focus:border-teal-400"
+      class="hex"
+      :aria-label="label ? `${label} hex` : 'Hex color'"
       @change="updateColor(colorValue)"
     >
   </div>
 </template>
+
+<style scoped>
+.color-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 6.5rem;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+
+.chip {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+}
+
+.chip-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+}
+
+.chip-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chip:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.color-label {
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hex {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Martian Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  text-transform: lowercase;
+  outline: none;
+}
+
+.hex:focus {
+  border-color: var(--ink);
+}
+
+.color-row:not(:has(.color-label)) {
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+</style>

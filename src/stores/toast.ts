@@ -16,6 +16,8 @@ export const useToastStore = defineStore('toast', () => {
     toasts.value.push(next)
     if (toasts.value.length > MAX_TOASTS)
       toasts.value.splice(0, toasts.value.length - MAX_TOASTS)
+    if (typeof window !== 'undefined')
+      window.setTimeout(() => clearToast(next.id), next.variant === 'error' ? 6000 : 2400)
   }
 
   function clearToast(id: number) {

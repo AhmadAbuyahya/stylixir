@@ -4,12 +4,13 @@ function escapeTemplateLiteral(value: string) {
   return value.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
 }
 
+/** Always quoted, as nearly every key in templates.ts is. */
 function formatCssPropertyKey(key: string) {
-  return /^[a-zA-Z_]\w*$/.test(key) ? key : `'${key}'`
+  return `'${key}'`
 }
 
 function formatVariableBlock(name: string, variable: Variable): string {
-  if (name === 'size' && variable.type === 'range') {
+  if (name === 'size' && variable.type === 'range' && !variable.breaking) {
     const step = variable.step !== undefined ? `, ${variable.step}` : ''
     return `      size: size(${variable.value}, ${variable.min}, ${variable.max}${step}),`
   }
@@ -29,8 +30,11 @@ function formatVariableBlock(name: string, variable: Variable): string {
   const lines = [
     `      ${name}: {`,
     `        type: '${variable.type}',`,
-    `        value: ${variable.value},`,
   ]
+  // Same spot templates.ts uses, so a promote doesn't reshuffle untouched dials.
+  if (variable.breaking)
+    lines.push('        breaking: true,')
+  lines.push(`        value: ${variable.value},`)
 
   if (variable.min !== undefined)
     lines.push(`        min: ${variable.min},`)
@@ -49,7 +53,8 @@ function formatVariableBlock(name: string, variable: Variable): string {
 export function formatTemplateEntry(slug: string, draft: Template): string {
   const templateBlock = Object.entries(draft.template)
     .map(([key, value]) => {
-      const css = `\`${escapeTemplateLiteral(value)}\``
+      // templates.ts quotes one-line CSS with '…' and multi-line CSS with `…`; match it so promotes stay minimal.
+      const css = /[\n'\\`]|\$\{/.test(value) ? `\`${escapeTemplateLiteral(value)}\`` : `'${value}'`
       return `      ${formatCssPropertyKey(key)}: ${css},`
     })
     .join('\n')
@@ -228,7 +233,8 @@ export function replaceTemplateEntry(
   const range = findTemplateEntryRange(source, slug)
 
   if (range) {
-    const before = source.slice(0, range.start)
+    // Drop the entry's own indent, which the formatted entry brings back.
+    const before = source.slice(0, range.start).replace(/[ \t]+$/, '')
     const after = source.slice(range.end)
     const prefix = before.endsWith('\n') ? '' : '\n'
     const suffix = after.startsWith('\n') ? '' : '\n'

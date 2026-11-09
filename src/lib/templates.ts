@@ -48,7 +48,7 @@ const templates: Templates = {
         type: 'range',
         value: 75,
         min: 64,
-        max: 95,
+        max: 86,
         step: 1,
       },
     },
@@ -3263,6 +3263,7 @@ const templates: Templates = {
       },
       ringA: {
         type: 'range',
+        breaking: true,
         value: 60,
         min: 37,
         max: 73,

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   findMatchingBrace,
@@ -17,6 +18,33 @@ describe('audit promote', () => {
     })
     expect(entry).toContain('size: size(40, 10, 80, 2),')
     expect(entry).toContain('\'background-size\':')
+  })
+
+  it('keeps the wild (breaking) flag when formatting', () => {
+    const entry = formatTemplateEntry('demo', {
+      template: { background: '{angle}deg {size}px' },
+      variables: {
+        size: { type: 'range', value: 40, min: 10, max: 80, breaking: true },
+        angle: { type: 'range', breaking: true, value: 45, min: 0, max: 90, step: 1 },
+        weight: { type: 'range', value: 5, min: 1, max: 9 },
+      },
+    })
+    expect(entry).toContain('angle: {\n        type: \'range\',\n        breaking: true,\n        value: 45,')
+    expect(entry).not.toContain('size(40')
+    expect(entry.match(/breaking: true/g)).toHaveLength(2)
+  })
+
+  it('round-trips every wild flag in templates.ts', () => {
+    for (const [slug, entry] of Object.entries(templates)) {
+      const wild = Object.values(entry.variables).filter(variable => variable.breaking).length
+      expect(formatTemplateEntry(slug, entry).match(/breaking: true/g)?.length ?? 0, slug).toBe(wild)
+    }
+  })
+
+  it('leaves templates.ts untouched when promoting an unchanged pattern', () => {
+    const source = readFileSync('src/lib/templates.ts', 'utf8')
+    // zigzag mixes '…' and `…` CSS values and has a wild dial, so it covers the quirks promote used to rewrite.
+    expect(replaceTemplateEntry(source, 'zigzag', templates.zigzag)).toBe(source)
   })
 
   it('finds matching braces through template literals with interpolation', () => {

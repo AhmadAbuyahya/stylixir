@@ -170,7 +170,7 @@ async function revert() {
     <header class="shrink-0 border-b-1 border-white/10 bg-#0d0d0d/90 backdrop-blur-md">
       <div class="mx-auto max-w-1600px flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
         <div class="flex flex-wrap items-center gap-3">
-          <RouterLink to="/" class="font-federo text-lg text-white/90">
+          <RouterLink to="/" class="font-display text-lg text-white/90">
             Stylixir
           </RouterLink>
           <span class="hidden text-white/20 sm:inline">/</span>
@@ -227,7 +227,7 @@ async function revert() {
 
         <template v-if="current">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h1 class="font-federo text-xl capitalize">
+            <h1 class="font-display text-xl capitalize">
               {{ current.slug.replace(/_/g, ' ') }}
               <span class="ml-2 rounded-full px-2 py-0.5 align-middle font-mono text-10px normal-case" :class="kindClass[current.status]">
                 {{ current.status }}

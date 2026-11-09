@@ -7,10 +7,14 @@ import {
   extractPlaceholders,
   flagSweep,
   inlineVariableInTemplate,
+  parseLiteral,
+  replacedSegment,
   sampleRange,
+  suggestVariableName,
   validateAuditDraft,
 } from '~/lib/audit'
 import templates from '~/lib/templates'
+import { usePatternAudit } from '~/composables/usePatternAudit'
 
 describe('audit helpers', () => {
   it('extracts placeholders from template properties', () => {
@@ -108,5 +112,54 @@ describe('diffTemplateEntry', () => {
     expect(diff.changed).toBe(true)
     expect(diff.cssChanged).toEqual(['background-position'])
     expect(kinds).toMatchObject({ width: 'changed', position: 'removed', extra: 'added', size: 'same' })
+  })
+})
+
+describe('making dials from CSS values', () => {
+  it('reads a number and its unit into a dial', () => {
+    expect(parseLiteral('45deg')).toEqual({ number: '45', unit: 'deg', variable: { type: 'range', value: 45, min: 0, max: 360, step: 1 } })
+    expect(parseLiteral(' 37.5% ')).toMatchObject({ number: '37.5', unit: '%', variable: { value: 37.5, min: 0, max: 100, step: 0.1 } })
+    expect(parseLiteral('0.25')).toMatchObject({ variable: { value: 0.25, min: 0, max: 1, step: 0.01 } })
+    expect(parseLiteral('12px')).toMatchObject({ variable: { value: 12, min: 0, max: 24, step: 1 } })
+    expect(parseLiteral('-8px')).toMatchObject({ variable: { value: -8, min: -16, max: 0 } })
+    expect(parseLiteral('{size}')).toBeNull()
+    expect(parseLiteral('calc(2px)')).toBeNull()
+  })
+
+  it('suggests an unused name from the unit', () => {
+    expect(suggestVariableName('deg', ['angle', 'angle2'])).toBe('angle3')
+    expect(suggestVariableName('%', [])).toBe('stop')
+    expect(suggestVariableName('', [])).toBe('amount')
+  })
+
+  it('finds what a placeholder was typed over', () => {
+    expect(replacedSegment('rotate(45deg)', 'rotate({angle}deg)')).toEqual({ removed: '45', inserted: '{angle}' })
+  })
+
+  it('turns a selected number into a dial, keeping the unit, or links it to an existing one', () => {
+    const audit = usePatternAudit()
+    const css = 'linear-gradient(45deg, red 30%, blue 0)'
+    audit.draft.value = { template: { background: css }, variables: {} }
+    const at = css.indexOf('45deg')
+    expect(audit.convertToVariable('background', at, at + 5, 'angle')).toBe('created')
+    expect(audit.draft.value.template.background).toBe('linear-gradient({angle}deg, red 30%, blue 0)')
+    expect(audit.draft.value.variables.angle).toEqual({ type: 'range', value: 45, min: 0, max: 360, step: 1 })
+
+    const stop = audit.draft.value.template.background.indexOf('30%')
+    expect(audit.convertToVariable('background', stop, stop + 3, 'angle')).toBe('linked')
+    expect(audit.draft.value.template.background).toBe('linear-gradient({angle}deg, red {angle}%, blue 0)')
+    expect(Object.keys(audit.draft.value.variables)).toEqual(['angle'])
+  })
+
+  it('creates one dial when typing ends, not one per keystroke', () => {
+    const audit = usePatternAudit()
+    const before = 'rotate(45deg)'
+    audit.draft.value = { template: { transform: before }, variables: {} }
+    for (const typed of ['{}', '{a}', '{an}', '{ang}', '{angl}', '{angle}'])
+      audit.updateTemplateProperty('transform', `rotate(${typed}deg)`)
+    expect(audit.draft.value.variables).toEqual({})
+
+    expect(audit.commitTemplateProperty('transform', before)).toEqual(['angle'])
+    expect(audit.draft.value.variables).toEqual({ angle: { type: 'range', value: 45, min: 0, max: 360, step: 1 } })
   })
 })

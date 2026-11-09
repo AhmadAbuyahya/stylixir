@@ -88,6 +88,65 @@ export function createStubVariable(name: string, type: Variable['type'] = 'range
   }
 }
 
+export interface LiteralDial {
+  /** The number as written (the part a placeholder replaces); any unit stays in the CSS. */
+  number: string
+  unit: string
+  variable: Variable
+}
+
+function rangeFor(value: number, unit: string): [number, number] {
+  if (unit === '%')
+    return [0, 100]
+  if (unit === 'deg')
+    return [0, 360]
+  if (!unit && value > 0 && value <= 1)
+    return [0, 1]
+  if (value < 0)
+    return [value * 2, 0]
+  return [0, value === 0 ? 10 : value * 2]
+}
+
+/**
+ * Reads a CSS number like `45deg`, `37.5%` or `0.25` and proposes a dial for it:
+ * the number as default, a range wide enough to explore, and a step matching its decimals.
+ */
+export function parseLiteral(literal: string): LiteralDial | null {
+  const match = /^(-?\d*\.?\d+)([a-z%]*)$/i.exec(literal.trim())
+  if (!match)
+    return null
+  const [, number, rawUnit] = match
+  const value = Number(number)
+  const unit = rawUnit.toLowerCase()
+  const decimals = number.split('.')[1]?.length ?? 0
+  const step = decimals ? Number((10 ** -decimals).toFixed(decimals)) : 1
+  let [min, max] = rangeFor(value, unit)
+  min = Math.min(min, value)
+  max = Math.max(max, value)
+  return { number, unit, variable: { type: 'range', value, min, max, step } }
+}
+
+/** A short, unused name for a dial, guessed from its unit. */
+export function suggestVariableName(unit: string, taken: Iterable<string>) {
+  const base = (unit === 'deg' || unit === 'turn') ? 'angle' : unit === '%' ? 'stop' : unit ? 'length' : 'amount'
+  const used = new Set(taken)
+  let name = base
+  for (let i = 2; used.has(name); i++)
+    name = `${base}${i}`
+  return name
+}
+
+/** The one stretch of text that differs between two versions of a string. */
+export function replacedSegment(before: string, after: string) {
+  let start = 0
+  while (start < before.length && start < after.length && before[start] === after[start])
+    start++
+  let end = 0
+  while (end < before.length - start && end < after.length - start && before[before.length - 1 - end] === after[after.length - 1 - end])
+    end++
+  return { removed: before.slice(start, before.length - end), inserted: after.slice(start, after.length - end) }
+}
+
 /** Replace every `{name}` placeholder in template CSS with a literal value. */
 export function inlineVariableInTemplate(
   template: Record<string, string>,

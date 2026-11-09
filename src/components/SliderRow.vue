@@ -19,6 +19,9 @@ const id = `slider-${Math.random().toString(36).slice(2, 8)}`
 const value = computed(() => Number(props.modelValue ?? props.min))
 const scale = computed(() => props.percent ? 100 : 1)
 
+/** Filled share of the track, for the ink fill. */
+const fill = computed(() => `${((value.value - props.min) / ((props.max - props.min) || 1)) * 100}%`)
+
 const fieldValue = computed(() => {
   const n = value.value * scale.value
   return Number.isInteger(n) ? n : Number(n.toFixed(2))
@@ -40,8 +43,8 @@ function reset() {
   <div class="slider-row">
     <label
       :for="id"
-      class="truncate font-mono text-11px text-white/60"
-      :title="defaultValue !== undefined ? `${label} — double-click to reset` : label"
+      class="slider-label"
+      :title="defaultValue !== undefined ? `${label} (double-click to reset)` : label"
       @dblclick="reset"
     >{{ label }}</label>
     <input
@@ -52,6 +55,7 @@ function reset() {
       :step="step ?? 'any'"
       :value="value"
       class="slider-track"
+      :style="{ '--fill': fill }"
       @input="commit(($event.target as HTMLInputElement).value)"
     >
     <input
@@ -70,45 +74,83 @@ function reset() {
 <style scoped>
 .slider-row {
   display: grid;
-  grid-template-columns: 5.75rem minmax(0, 1fr) 3.25rem;
+  grid-template-columns: 6rem minmax(0, 1fr) 3.25rem;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 1.75rem;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.slider-label {
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
 }
 
 .slider-track {
   width: 100%;
-  height: 4px;
-  padding: 0;
+  height: 20px;
+  margin: 0;
   appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider-track::-webkit-slider-runnable-track {
+  height: 3px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  accent-color: #2dd4bf;
+  background: linear-gradient(var(--ink) 0 0) 0 / var(--fill) 100% no-repeat, var(--line);
+}
+
+.slider-track::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(var(--ink) 0 0) 0 / var(--fill) 100% no-repeat, var(--line);
 }
 
 .slider-track::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
+  margin-top: -5.5px;
+  border: 2px solid var(--sheet);
   border-radius: 999px;
-  background: #2dd4bf;
-  cursor: pointer;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+  transition: transform 0.12s ease;
+}
+
+.slider-track::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--sheet);
+  border-radius: 999px;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.slider-track:active::-webkit-slider-thumb {
+  transform: scale(1.2);
 }
 
 .slider-track:focus-visible {
-  outline: 2px solid #2dd4bf;
-  outline-offset: 4px;
+  outline-offset: 0;
+  border-radius: 4px;
 }
 
 .slider-field {
   width: 100%;
-  padding: 0.25rem 0.35rem;
+  height: 26px;
+  padding: 0 6px;
   border: 1px solid transparent;
-  border-radius: 0.35rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
+  border-radius: 6px;
+  background: var(--wash);
+  color: var(--ink);
+  font-family: 'Martian Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
   text-align: right;
   outline: none;
   appearance: textfield;
@@ -121,10 +163,10 @@ function reset() {
 }
 
 .slider-field:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--line);
 }
 
 .slider-field:focus {
-  border-color: #2dd4bf;
+  border-color: var(--ink);
 }
 </style>

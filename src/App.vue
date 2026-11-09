@@ -3,12 +3,12 @@
 // you can use this to manipulate the document head in any components,
 // they will be rendered correctly in the html results with vite-ssg
 useHead({
-  title: 'Stylixir - CSS Pattern Generator',
+  title: 'Stylixir · Pattern wallpaper generator',
   meta: [
-    { name: 'description', content: 'Make layered CSS background patterns. Shuffle, tune every color and size, then copy the code or export an image.' },
+    { name: 'description', content: 'Make pattern wallpapers for your desktop, phone or tablet. Shuffle through 157 designs, tune the colors and shape, then download a sharp image at any size.' },
     {
       name: 'theme-color',
-      content: () => isDark.value ? '#00aba9' : '#ffffff',
+      content: () => isDark.value ? '#111111' : '#efefeb',
     },
   ],
   link: [

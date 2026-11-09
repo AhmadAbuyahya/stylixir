@@ -11,13 +11,12 @@ export interface SizePreset {
 }
 
 export const SIZE_PRESETS: SizePreset[] = [
-  { id: 'square', label: 'Square', hint: '1080 × 1080', width: 1080, height: 1080 },
-  { id: 'hd', label: 'HD', hint: '1920 × 1080', width: 1920, height: 1080 },
-  { id: 'qhd', label: 'QHD', hint: '2560 × 1440', width: 2560, height: 1440 },
-  { id: 'uhd', label: '4K', hint: '3840 × 2160', width: 3840, height: 2160 },
-  { id: 'story', label: 'Story', hint: '1080 × 1920', width: 1080, height: 1920 },
+  { id: 'hd', label: 'HD desktop', hint: '1920 × 1080', width: 1920, height: 1080 },
+  { id: 'qhd', label: 'QHD desktop', hint: '2560 × 1440', width: 2560, height: 1440 },
+  { id: 'uhd', label: '4K desktop', hint: '3840 × 2160', width: 3840, height: 2160 },
+  { id: 'ultrawide', label: 'Ultrawide', hint: '3440 × 1440', width: 3440, height: 1440 },
   { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 1170, height: 2532 },
-  { id: 'og', label: 'Open Graph', hint: '1200 × 630', width: 1200, height: 630 },
+  { id: 'tablet', label: 'Tablet', hint: '2048 × 2732', width: 2048, height: 2732 },
 ]
 
 export const MAX_SIDE = 7680

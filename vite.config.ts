@@ -106,6 +106,7 @@ export default defineConfig(({ command }) => ({
       manifest: {
         name: 'Stylixir',
         short_name: 'Stylixir',
+        description: 'Make pattern wallpapers for any screen.',
         theme_color: '#ffffff',
         icons: [
           {

@@ -11,8 +11,8 @@ import {
 
 export default defineConfig({
   shortcuts: [
-    ['btn', 'px-4 py-1 rounded inline-block bg-teal-700 text-white cursor-pointer !outline-none hover:bg-teal-800 disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50'],
-    ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
+    ['btn', 'px-4 py-1 rounded-lg inline-block bg-[var(--ink)] text-[var(--paper)] cursor-pointer !outline-none disabled:cursor-default disabled:opacity-50'],
+    ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100'],
   ],
   presets: [
     presetUno(),
@@ -25,15 +25,10 @@ export default defineConfig({
     presetWebFonts({
       provider: 'google',
       fonts: {
-        sans: 'DM Sans',
-        serif: 'DM Serif Display',
-        mono: 'DM Mono',
-        federo: [
-          {
-            name: 'Federo',
-            weights: ['400', '500', '700'],
-          },
-        ],
+        // Bolt-end stamp: condensed mill lettering for pattern names.
+        display: [{ name: 'Big Shoulders Display', weights: ['700', '800', '900'] }],
+        sans: [{ name: 'Schibsted Grotesk', weights: ['400', '500', '600'] }],
+        mono: [{ name: 'Martian Mono', weights: ['400', '500'] }],
       },
     }),
   ],

@@ -92,6 +92,12 @@ function applyPreset(id: string) {
   height.value = preset.height
 }
 
+// Someone downloading from a phone most likely wants a lock-screen size.
+onMounted(() => {
+  if (window.matchMedia('(max-width: 720px)').matches)
+    applyPreset('phone')
+})
+
 function onWidth(event: Event) {
   width.value = clampDimension(Number((event.target as HTMLInputElement).value))
 }
@@ -117,10 +123,10 @@ async function download() {
   try {
     const blob = await render()
     downloadBlob(blob, filename.value)
-    addToast({ variant: 'success', title: 'Image downloaded', id: Date.now() })
+    addToast({ variant: 'success', title: 'Wallpaper downloaded', id: Date.now() })
   }
   catch {
-    addToast({ variant: 'error', title: 'Couldn\'t export the image. Try a smaller size or turn off 2×.', id: Date.now() })
+    addToast({ variant: 'error', title: 'Couldn\'t make the wallpaper. Try a smaller size or turn off 2×.', id: Date.now() })
   }
   finally {
     busy.value = false
@@ -133,7 +139,7 @@ async function copy() {
     const blob = await render()
     await copyImageBlob(blob)
     copied.value = true
-    addToast({ variant: 'success', title: 'Image copied', id: Date.now() })
+    addToast({ variant: 'success', title: 'Wallpaper copied', id: Date.now() })
     window.setTimeout(() => {
       copied.value = false
     }, 1600)
@@ -146,205 +152,428 @@ async function copy() {
   }
 }
 
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape')
+// On the window, since focus stays on the button that opened the dialog.
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (props.open && event.key === 'Escape')
     close()
-}
+})
 </script>
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="export-title"
-      @keydown="onKeydown"
-    >
-      <button
-        class="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        type="button"
-        aria-label="Close export"
-        @click="close"
-      />
+    <Transition name="sheet">
+      <div
+        v-if="open"
+        class="export"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-title"
+      >
+        <button class="export-scrim" type="button" aria-label="Close" @click="close" />
 
-      <div class="relative max-h-[92dvh] max-w-lg w-full overflow-y-auto border-1 border-white/10 rounded-2xl bg-#0d0d0d p-5 text-left text-white shadow-2xl sm:p-6">
-        <div class="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <p class="font-mono text-10px tracking-widest uppercase text-teal-400/80">
-              Export
-            </p>
-            <h2 id="export-title" class="mt-1 font-federo text-2xl tracking-tight uppercase">
-              Export image
+        <div class="export-sheet">
+          <header class="export-head">
+            <h2 id="export-title" class="export-title">
+              Download wallpaper
             </h2>
-          </div>
-          <button
-            class="text-xl icon-btn"
-            type="button"
-            title="Close"
-            @click="close"
-          >
-            <div class="i-carbon-close" />
-          </button>
-        </div>
-
-        <div class="mb-5 h-40 flex items-center justify-center overflow-hidden border-1 border-white/10 rounded-xl bg-#141414 p-3">
-          <div
-            class="relative max-h-full max-w-full overflow-hidden border-1 border-white/10 rounded-md"
-            :style="{
-              aspectRatio: `${width} / ${height}`,
-              width: width >= height ? '100%' : 'auto',
-              height: height > width ? '100%' : 'auto',
-            }"
-          >
-            <PatternLayers :animate="false" :overlay="includeOverlay" />
-          </div>
-        </div>
-
-        <section class="mb-5">
-          <p class="mb-2 font-mono text-10px tracking-widest uppercase text-teal-400/80">
-            Size
-          </p>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button
-              v-for="preset in SIZE_PRESETS"
-              :key="preset.id"
-              type="button"
-              class="border-1 rounded-lg px-2 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-teal-400"
-              :class="selectedPreset === preset.id
-                ? 'border-teal-400 bg-teal-400/10'
-                : 'border-white/10 hover:border-white/25'"
-              @click="applyPreset(preset.id)"
-            >
-              <span class="block text-xs">{{ preset.label }}</span>
-              <span class="block font-mono text-10px text-white/40">{{ preset.hint }}</span>
+            <button class="export-x" type="button" title="Close (Esc)" aria-label="Close" @click="close">
+              <span class="i-carbon-close" aria-hidden="true" />
             </button>
-          </div>
-          <div class="grid grid-cols-[1fr_auto_1fr] mt-3 items-center gap-2">
-            <label class="font-mono text-xs text-white/50">
-              W
-              <input
-                :value="width"
-                type="number"
-                min="1"
-                :max="MAX_SIDE"
-                class="mt-1 w-full border-1 border-white/10 rounded-md bg-#141414 px-2 py-1.5 font-mono text-xs text-white outline-none focus:border-teal-400"
-                @change="onWidth"
-              >
-            </label>
-            <span class="mt-5 text-white/30">×</span>
-            <label class="font-mono text-xs text-white/50">
-              H
-              <input
-                :value="height"
-                type="number"
-                min="1"
-                :max="MAX_SIDE"
-                class="mt-1 w-full border-1 border-white/10 rounded-md bg-#141414 px-2 py-1.5 font-mono text-xs text-white outline-none focus:border-teal-400"
-                @change="onHeight"
-              >
-            </label>
-          </div>
-        </section>
+          </header>
 
-        <section class="mb-5">
-          <p class="mb-2 font-mono text-10px tracking-widest uppercase text-teal-400/80">
-            Format
-          </p>
-          <div class="flex gap-1.5">
-            <button
-              v-for="option in (['png', 'jpeg', 'webp'] as ImageFormat[])"
-              :key="option"
-              type="button"
-              class="flex-1 border-1 rounded-lg py-2 font-mono text-xs uppercase outline-none transition-colors focus-visible:ring-2 focus-visible:ring-teal-400"
-              :class="format === option
-                ? 'border-teal-400 bg-teal-400/10 text-teal-200'
-                : 'border-white/10 text-white/70 hover:border-white/25'"
-              @click="format = option"
+          <div class="export-preview">
+            <div
+              class="export-frame"
+              :style="{
+                aspectRatio: `${width} / ${height}`,
+                width: width >= height ? '100%' : 'auto',
+                height: height > width ? '100%' : 'auto',
+              }"
             >
-              {{ option === 'jpeg' ? 'JPG' : option }}
-            </button>
-          </div>
-          <div v-if="format !== 'png'" class="mt-3">
-            <label class="mb-1.5 flex items-baseline justify-between font-mono text-xs text-white/60">
-              Quality
-              <span class="text-white/40">{{ Math.round(quality * 100) }}%</span>
-            </label>
-            <input
-              v-model.number="quality"
-              type="range"
-              min="0.5"
-              max="1"
-              step="0.02"
-              class="w-full accent-teal-400"
-            >
-          </div>
-        </section>
-
-        <section class="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p class="mb-2 font-mono text-10px tracking-widest uppercase text-teal-400/80">
-              Density
-            </p>
-            <div class="flex gap-1.5">
-              <button
-                type="button"
-                class="border-1 rounded-lg px-3 py-1.5 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-                :class="pixelRatio === 1 ? 'border-teal-400 bg-teal-400/10' : 'border-white/10'"
-                @click="pixelRatio = 1"
-              >
-                1×
-              </button>
-              <button
-                type="button"
-                class="border-1 rounded-lg px-3 py-1.5 font-mono text-xs outline-none disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-teal-400"
-                :class="pixelRatio === 2 ? 'border-teal-400 bg-teal-400/10' : 'border-white/10'"
-                :disabled="!densityAllowed"
-                :title="densityAllowed ? 'Double resolution for sharp screens' : `2× would go past ${MAX_SIDE} px. Pick a smaller size.`"
-                @click="pixelRatio = 2"
-              >
-                2×
-              </button>
+              <PatternLayers :animate="false" :overlay="includeOverlay" />
             </div>
           </div>
-          <label class="mt-4 flex items-center gap-2 font-mono text-xs text-white/70">
-            <input
-              v-model="includeOverlay"
-              type="checkbox"
-              class="accent-teal-400"
-            >
-            Include overlay
-          </label>
-        </section>
 
-        <p class="mb-4 font-mono text-xs text-white/40">
-          {{ filename }}
-          <span class="text-white/25">·</span>
-          {{ outputLabel }}
-        </p>
+          <section class="export-group">
+            <h3 class="eyebrow">
+              Screen
+            </h3>
+            <div class="presets">
+              <button
+                v-for="preset in SIZE_PRESETS"
+                :key="preset.id"
+                type="button"
+                class="option"
+                :aria-pressed="selectedPreset === preset.id"
+                @click="applyPreset(preset.id)"
+              >
+                <span class="option-name">{{ preset.label }}</span>
+                <span class="option-hint">{{ preset.hint }}</span>
+              </button>
+            </div>
+            <div class="dims">
+              <label class="dim">
+                <span class="eyebrow">Width</span>
+                <input :value="width" type="number" min="1" :max="MAX_SIDE" class="input" @change="onWidth">
+              </label>
+              <span class="dims-x" aria-hidden="true">×</span>
+              <label class="dim">
+                <span class="eyebrow">Height</span>
+                <input :value="height" type="number" min="1" :max="MAX_SIDE" class="input" @change="onHeight">
+              </label>
+            </div>
+          </section>
 
-        <div class="flex flex-col gap-2 sm:flex-row">
-          <button
-            class="button flex-1 px-4 py-2.5"
-            type="button"
-            :disabled="busy"
-            @click="copy"
-          >
-            <div :class="copied ? 'i-carbon-checkmark' : 'i-carbon-copy'" />
-            {{ copied ? 'Copied' : 'Copy image' }}
-          </button>
-          <button
-            class="flex-1 items-center justify-center gap-2 px-4 py-2.5 btn !flex"
-            type="button"
-            :disabled="busy"
-            @click="download"
-          >
-            <div :class="busy ? 'i-carbon-renew' : 'i-carbon-download'" />
-            {{ busy ? 'Rendering…' : 'Download' }}
-          </button>
+          <section class="export-group">
+            <h3 class="eyebrow">
+              Format
+            </h3>
+            <div class="row">
+              <button
+                v-for="option in (['png', 'jpeg', 'webp'] as ImageFormat[])"
+                :key="option"
+                type="button"
+                class="option option-mono"
+                :aria-pressed="format === option"
+                @click="format = option"
+              >
+                {{ option === 'jpeg' ? 'JPG' : option.toUpperCase() }}
+              </button>
+            </div>
+            <SliderRow
+              v-if="format !== 'png'"
+              v-model="quality"
+              label="Quality"
+              :min="0.5"
+              :max="1"
+              :step="0.02"
+              :default-value="0.92"
+              percent
+            />
+          </section>
+
+          <section class="export-group export-split">
+            <div>
+              <h3 class="eyebrow">
+                Density
+              </h3>
+              <div class="row">
+                <button type="button" class="option option-mono" :aria-pressed="pixelRatio === 1" @click="pixelRatio = 1">
+                  1×
+                </button>
+                <button
+                  type="button"
+                  class="option option-mono"
+                  :aria-pressed="pixelRatio === 2"
+                  :disabled="!densityAllowed"
+                  :title="densityAllowed ? 'Double resolution for sharp screens' : `2× would go past ${MAX_SIDE} px. Pick a smaller size.`"
+                  @click="pixelRatio = 2"
+                >
+                  2×
+                </button>
+              </div>
+            </div>
+            <label class="check">
+              <input v-model="includeOverlay" type="checkbox">
+              Include overlay
+            </label>
+          </section>
+
+          <p class="export-file">
+            {{ filename }} · {{ outputLabel }}
+          </p>
+
+          <div class="export-actions">
+            <button class="action" type="button" :disabled="busy" @click="copy">
+              <span :class="copied ? 'i-carbon-checkmark' : 'i-carbon-copy'" aria-hidden="true" />
+              {{ copied ? 'Copied' : 'Copy image' }}
+            </button>
+            <button class="action action-ink" type="button" :disabled="busy" @click="download">
+              <span :class="busy ? 'i-carbon-renew animate-spin' : 'i-carbon-download'" aria-hidden="true" />
+              {{ busy ? 'Rendering…' : 'Download' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+.export {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--ink);
+}
+
+.export-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.export-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 18px 20px 20px;
+  border-radius: 16px;
+  background: var(--sheet);
+  box-shadow: var(--lift);
+}
+
+.export-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.export-title {
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.export-x {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.export-x:hover {
+  background: var(--wash);
+  color: var(--ink);
+}
+
+.export-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 10rem;
+  margin-bottom: 18px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--wash);
+}
+
+.export-frame {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
+}
+
+.export-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.export-group .eyebrow {
+  color: var(--ink);
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.row .option {
+  flex: 1;
+}
+
+.option {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.option:hover {
+  border-color: var(--muted);
+}
+
+.option[aria-pressed='true'] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.option:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.option-mono {
+  min-width: 56px;
+  text-align: center;
+  font-family: 'Martian Mono', monospace;
+  font-size: 11px;
+}
+
+.option-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.option-hint {
+  display: block;
+  font-family: 'Martian Mono', monospace;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+.dims {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 8px;
+}
+
+.dim {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dims-x {
+  padding-bottom: 8px;
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Martian Mono', monospace;
+  font-size: 12px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--ink);
+}
+
+.export-split {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  font-size: 13px;
+  accent-color: var(--ink);
+}
+
+.export-file {
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+  font-family: 'Martian Mono', monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.export-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.action:hover {
+  background: var(--wash);
+}
+
+.action-ink,
+.action-ink:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+.action:active {
+  transform: scale(0.97);
+}
+
+.action:disabled {
+  opacity: 0.6;
+}
+
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.sheet-enter-active .export-sheet,
+.sheet-leave-active .export-sheet {
+  transition: transform 0.24s var(--ease-out);
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-from .export-sheet,
+.sheet-leave-to .export-sheet {
+  transform: translateY(12px) scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .export {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .export-sheet {
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+</style>

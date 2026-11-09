@@ -1,9 +1,5 @@
 <template>
-  <main
-    text="center gray-700 dark:gray-200"
-  >
-    <!-- px-4 py-10 -->
+  <main>
     <RouterView />
-    <Footer />
   </main>
 </template>

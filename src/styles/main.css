@@ -1,5 +1,31 @@
 @import './markdown.css';
-@import url('https://fonts.googleapis.com/css2?family=Federo&display=swap');
+
+/* Chrome is neutral paper and ink; the pattern supplies all the color. */
+:root {
+  --paper: #efefeb;
+  --sheet: #ffffff;
+  --ink: #131313;
+  --muted: #6b6a66;
+  --line: rgb(19 19 19 / 0.12);
+  --wash: rgb(19 19 19 / 0.05);
+  /* Overwritten per pattern by the studio: its most saturated color. */
+  --dye: #131313;
+  --dye-ink: #ffffff;
+  --lift: 0 1px 2px rgb(0 0 0 / 0.1), 0 10px 28px -10px rgb(0 0 0 / 0.3);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+html.dark {
+  --paper: #111111;
+  --sheet: #1b1b1a;
+  --ink: #efeeea;
+  --muted: #9b9a95;
+  --line: rgb(239 238 234 / 0.14);
+  --wash: rgb(239 238 234 / 0.06);
+  --lift: 0 0 0 1px rgb(239 238 234 / 0.08), 0 12px 32px -10px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
 
 html,
 body,
@@ -9,9 +35,65 @@ body,
   padding: 0;
 }
 
-html.dark {
-  background: #121212;
-  color-scheme: dark;
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Pinking-shear edges, cut with the same conic gradients the patterns are made of. */
+.pinked-bottom,
+.pinked-top {
+  --tooth: 10px;
+}
+
+.pinked-bottom {
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth) calc(var(--tooth) / 2) repeat-x,
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) / 2 + 1px) no-repeat;
+}
+
+.pinked-top {
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--tooth) calc(var(--tooth) / 2) repeat-x,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--tooth) / 2 + 1px) no-repeat;
+}
+
+.eyebrow {
+  font-family: 'Martian Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5em;
+  padding: 0.1em 0.4em;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-family: 'Martian Mono', ui-monospace, monospace;
+  font-size: 9px;
+  line-height: 1.4;
+  opacity: 0.7;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 #nprogress {
@@ -19,8 +101,7 @@ html.dark {
 }
 
 #nprogress .bar {
-  background: rgb(13,148,136);
-  opacity: 0.75;
+  background: var(--ink);
   position: fixed;
   z-index: 1031;
   top: 0;
@@ -29,10 +110,10 @@ html.dark {
   height: 2px;
 }
 
-.button {
-  @apply bg-transparent text-white rounded-lg p-2 transition-colors duration-200 ease-in-out flex gap-2 items-center justify-center border-1 border-white/15;
-}
-
-.button:hover {
-  @apply bg-white/5 border-white/25;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -27,6 +27,8 @@ const {
   loadSlug,
   resetDraft,
   updateTemplateProperty,
+  commitTemplateProperty,
+  convertToVariable,
   addTemplateProperty,
   removeTemplateProperty,
   addVariable,
@@ -37,6 +39,7 @@ const {
 } = usePatternAudit()
 
 const route = useRoute()
+const router = useRouter()
 const { addToast } = useToastStore()
 
 const search = ref('')
@@ -50,14 +53,67 @@ onMounted(() => {
     loadSlug(fromQuery)
 })
 
+const bookNumber = (s: string) => String(slugs.value.indexOf(s) + 1).padStart(3, '0')
+const wildCount = (s: string) => Object.values(templates[s].variables).filter(v => v.breaking).length
+
 const filteredSlugs = computed(() => {
-  const q = search.value.trim().toLowerCase()
+  const q = search.value.trim().toLowerCase().replace(/^no\.?\s*/, '')
   if (!q)
     return slugs.value
-  return slugs.value.filter(s => s.includes(q) || s.replace(/_/g, ' ').includes(q))
+  return slugs.value.filter(s => s.includes(q) || s.replace(/_/g, ' ').includes(q) || bookNumber(s).includes(q))
 })
 
 const dirty = computed(() => isDraftDirty(slug.value, draft.value, templates))
+/** Set right before the post-promote reload, so the unsaved-changes guard stays quiet. */
+let leaving = false
+
+function confirmDiscard() {
+  // eslint-disable-next-line no-alert -- a native confirm is enough for a dev-only page
+  return !dirty.value || leaving || window.confirm(`Discard your unsaved changes to ${slug.value.replace(/_/g, ' ')}?`)
+}
+
+function goTo(next: string) {
+  if (next === slug.value || !templates[next] || !confirmDiscard())
+    return
+  loadSlug(next)
+  // Keeps the pattern in the URL, so a reload or a shared link lands on it.
+  router.replace({ query: { template: next } })
+}
+
+/** Steps through the visible list, so a search narrows what [ and ] walk through. */
+function step(by: number) {
+  const list = filteredSlugs.value.length ? filteredSlugs.value : slugs.value
+  const at = list.indexOf(slug.value)
+  const next = at < 0 ? (by > 0 ? 0 : list.length - 1) : (at + by + list.length) % list.length
+  goTo(list[next])
+}
+
+watch(slug, async (current) => {
+  await nextTick()
+  document.querySelector(`[data-slug="${current}"]`)?.scrollIntoView({ block: 'nearest' })
+})
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    promoteDraft()
+    return
+  }
+  const target = event.target as HTMLElement
+  if (event.metaKey || event.ctrlKey || event.altKey || target.closest('input, textarea, select, [contenteditable]'))
+    return
+  if (event.key === ']')
+    step(1)
+  else if (event.key === '[')
+    step(-1)
+})
+
+useEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+  if (dirty.value && !leaving)
+    event.preventDefault()
+})
+
+onBeforeRouteLeave(() => confirmDiscard())
 
 const canPromote = computed(() =>
   dirty.value && validation.value.ok && !promoting.value,
@@ -76,6 +132,7 @@ const shapeVariables = computed(() =>
     v.type !== 'color' && key !== 'size',
   ),
 )
+const wildShapeCount = computed(() => shapeVariables.value.filter(([, v]) => v.breaking).length)
 
 const unusedAuditVariables = computed(() =>
   validation.value.unusedVariables.filter((key) => {
@@ -101,12 +158,38 @@ function previewTriplet(varName: string) {
   }
 }
 
+type Triplet = NonNullable<ReturnType<typeof previewTriplet>>
+
+/** Min / default / max previews per dial, built once per draft change instead of per render call. */
+const triplets = computed(() => Object.fromEntries(
+  shapeVariables.value.flatMap(([key]) => {
+    const triplet = previewTriplet(key)
+    return triplet ? [[key, triplet]] : []
+  }),
+) as Record<string, Triplet>)
+
 function formatMissingPlaceholders(names: string[]) {
   return names.map(n => `{${n}}`).join(', ')
 }
 
 function handleCssUpdate(property: string, value: string) {
   updateTemplateProperty(property, value)
+}
+
+function handleCssCommit(property: string, before: string) {
+  const created = commitTemplateProperty(property, before)
+  if (created.length)
+    addToast({ id: Date.now(), variant: 'success', title: `Added dial ${created.map(name => `{${name}}`).join(', ')}` })
+}
+
+function handleMakeVariable(property: string, start: number, end: number, name: string) {
+  const result = convertToVariable(property, start, end, name)
+  if (result === 'created')
+    addToast({ id: Date.now(), variant: 'success', title: `Made {${name}} a dial, default ${draft.value.variables[name].value}` })
+  else if (result === 'linked')
+    addToast({ id: Date.now(), variant: 'success', title: `Linked to the {${name}} dial` })
+  else
+    addToast({ id: Date.now(), variant: 'warning', title: 'Select a plain number, like 45, 12px or 37.5%' })
 }
 
 function handleAddProperty(property: string) {
@@ -182,6 +265,7 @@ async function promoteDraft() {
 
     addToast({ id: Date.now(), variant: 'success', title: `Promoted ${slug.value} → templates.ts` })
     // Let Vite HMR pick up the file write, then re-sync the draft baseline.
+    leaving = true
     setTimeout(() => window.location.reload(), 400)
   }
   catch {
@@ -202,17 +286,29 @@ async function promoteDraft() {
     <header class="shrink-0 border-b-1 border-white/10 bg-#0d0d0d/90 backdrop-blur-md">
       <div class="mx-auto max-w-1600px flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
         <div class="flex flex-wrap items-center gap-3">
-          <RouterLink to="/" class="font-federo text-lg text-white/90">
+          <RouterLink :to="{ path: '/', query: { template: slug } }" class="font-display text-lg text-white/90">
             Stylixir
           </RouterLink>
           <span class="hidden text-white/20 sm:inline">/</span>
           <p class="font-mono text-xs tracking-widest uppercase text-teal-400/90">
             Pattern audit
           </p>
+          <div class="audit-stepper" role="group" aria-label="Step through patterns">
+            <button type="button" title="Previous pattern ( [ )" aria-label="Previous pattern" @click="step(-1)">
+              <div class="i-carbon-chevron-left" />
+            </button>
+            <span>No. {{ bookNumber(slug) }} / {{ slugs.length }}</span>
+            <button type="button" title="Next pattern ( ] )" aria-label="Next pattern" @click="step(1)">
+              <div class="i-carbon-chevron-right" />
+            </button>
+          </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <RouterLink :to="{ path: '/generator', query: { template: slug } }" class="audit-link-btn">
-            Generator
+          <RouterLink :to="{ path: '/', query: { template: slug } }" class="audit-link-btn">
+            Open in studio
+          </RouterLink>
+          <RouterLink to="/audit-review" class="audit-link-btn" title="Compare every changed pattern against main">
+            Review changes
           </RouterLink>
           <button type="button" class="audit-link-btn" :disabled="!dirty" @click="resetDraft">
             Reset draft
@@ -229,7 +325,7 @@ async function promoteDraft() {
             class="audit-primary-btn"
             :disabled="!canPromote"
             :class="{ 'opacity-50': !canPromote }"
-            title="Write this draft into src/lib/templates.ts (dev server only)"
+            title="Write this draft into src/lib/templates.ts (⌘S / Ctrl+S)"
             @click="promoteDraft"
           >
             <div :class="promoting ? 'i-carbon-circle-dash animate-spin' : 'i-carbon-checkmark'" />
@@ -245,7 +341,7 @@ async function promoteDraft() {
         <input
           v-model="search"
           class="audit-input"
-          placeholder="Search patterns…"
+          placeholder="Search name or number…"
           spellcheck="false"
         >
         <div class="min-h-0 flex-1 overflow-y-auto border-1 border-white/8 rounded-xl bg-white/2 lg:max-h-full">
@@ -253,11 +349,15 @@ async function promoteDraft() {
             v-for="s in filteredSlugs"
             :key="s"
             type="button"
-            class="block w-full border-b-1 border-white/5 px-3 py-2 text-left font-mono text-11px transition"
+            :data-slug="s"
+            :aria-current="s === slug || undefined"
+            class="w-full flex items-baseline gap-2 border-b-1 border-white/5 px-3 py-2 text-left font-mono text-11px transition"
             :class="s === slug ? 'bg-teal-500/15 text-teal-200' : 'text-white/55 hover:bg-white/5 hover:text-white/80'"
-            @click="loadSlug(s)"
+            @click="goTo(s)"
           >
-            {{ s.replace(/_/g, ' ') }}
+            <span class="shrink-0 text-white/30">{{ bookNumber(s) }}</span>
+            <span class="min-w-0 flex-1">{{ s.replace(/_/g, ' ') }}</span>
+            <span v-if="wildCount(s)" class="shrink-0 text-amber-300/70" :title="`${wildCount(s)} wild dial${wildCount(s) > 1 ? 's' : ''}`">{{ wildCount(s) }}w</span>
           </button>
         </div>
       </aside>
@@ -265,7 +365,7 @@ async function promoteDraft() {
       <!-- CSS editor -->
       <section class="min-h-0 flex flex-col gap-3 lg:max-h-[calc(100dvh-5rem)] lg:w-[38%] lg:overflow-y-auto">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <h1 class="font-federo text-xl capitalize">
+          <h1 class="font-display text-xl capitalize">
             {{ slug.replace(/_/g, ' ') }}
           </h1>
           <span
@@ -304,7 +404,10 @@ async function promoteDraft() {
 
         <AuditCssEditor
           :template="draft.template"
+          :variable-names="Object.keys(draft.variables)"
           @update="handleCssUpdate"
+          @commit="handleCssCommit"
+          @make-variable="handleMakeVariable"
           @add-property="handleAddProperty"
           @remove-property="removeTemplateProperty"
         />
@@ -333,30 +436,11 @@ async function promoteDraft() {
           </div>
         </div>
 
-        <AuditAddVariable @add="handleAddVariable">
-          <template #missing="{ quickAdd }">
-            <div v-if="validation.missingInVariables.length" class="mt-3 border-t-1 border-white/8 pt-3">
-              <p class="mb-2 text-10px tracking-wider uppercase text-white/40">
-                Quick define from CSS
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="missing in validation.missingInVariables"
-                  :key="missing"
-                  type="button"
-                  class="audit-chip"
-                  @click="quickAdd(missing)"
-                >
-                  {{ missing }}
-                </button>
-              </div>
-            </div>
-          </template>
-        </AuditAddVariable>
-
         <div v-if="shapeVariables.length" class="flex flex-col gap-3">
           <p class="font-mono text-10px tracking-widest uppercase text-teal-400/80">
-            Shape variables · min / default / max
+            Dials · {{ shapeVariables.length }}
+            <span v-if="wildShapeCount" class="text-amber-300/80">· {{ wildShapeCount }} wild</span>
+            <span class="text-white/30">· min / default / max</span>
           </p>
           <AuditVariableRow
             v-for="[key, variable] in shapeVariables"
@@ -370,16 +454,39 @@ async function promoteDraft() {
           >
             <template #previews>
               <div
-                v-if="previewTriplet(key)"
+                v-if="triplets[key]"
                 class="grid grid-cols-3 gap-2"
               >
-                <AuditPreviewTile label="Min" accent="min" :style="previewTriplet(key)?.min" />
-                <AuditPreviewTile label="Default" accent="default" :style="previewTriplet(key)?.default" />
-                <AuditPreviewTile label="Max" accent="max" :style="previewTriplet(key)?.max" />
+                <AuditPreviewTile label="Min" accent="min" :style="triplets[key].min" />
+                <AuditPreviewTile label="Default" accent="default" :style="triplets[key].default" />
+                <AuditPreviewTile label="Max" accent="max" :style="triplets[key].max" />
               </div>
             </template>
           </AuditVariableRow>
         </div>
+        <details class="audit-details" :open="validation.missingInVariables.length > 0">
+          <summary>Add a variable</summary>
+          <AuditAddVariable @add="handleAddVariable">
+            <template #missing="{ quickAdd }">
+              <div v-if="validation.missingInVariables.length" class="mt-3 border-t-1 border-white/8 pt-3">
+                <p class="mb-2 text-10px tracking-wider uppercase text-white/40">
+                  Quick define from CSS
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="missing in validation.missingInVariables"
+                    :key="missing"
+                    type="button"
+                    class="audit-chip"
+                    @click="quickAdd(missing)"
+                  >
+                    {{ missing }}
+                  </button>
+                </div>
+              </div>
+            </template>
+          </AuditAddVariable>
+        </details>
       </section>
     </div>
 
@@ -393,7 +500,7 @@ async function promoteDraft() {
         <div class="max-h-[85vh] max-w-3xl w-full flex flex-col overflow-hidden border-1 border-white/10 rounded-2xl bg-#121212 shadow-2xl">
           <div class="flex items-center justify-between gap-3 border-b-1 border-white/10 px-4 py-3">
             <div>
-              <p class="font-federo text-lg">
+              <p class="font-display text-lg">
                 Manual export
               </p>
               <p class="text-xs text-white/45">
@@ -506,6 +613,46 @@ meta:
   font-size: 11px;
   color: rgb(255 255 255 / 0.75);
   cursor: pointer;
+}
+
+.audit-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.audit-stepper button {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.35rem;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.audit-stepper button:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: white;
+}
+
+.audit-details > summary {
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.45);
+}
+
+.audit-details > summary:hover {
+  color: rgb(153 246 228);
 }
 
 .audit-chip:hover {

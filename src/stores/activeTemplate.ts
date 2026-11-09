@@ -241,6 +241,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
 
     // Drop every previous dial so same-named keys (size, colorOne, …) cannot
     // leak into the next pattern via route.query or search params.
+    // Unflushed writes from the old pattern would bring them back, so drop those too.
+    pendingParams = {}
     clearDialParams()
     activeTemplate.value = slug
     variablesRef.value = defaultVariables(templates[slug].variables)
@@ -248,8 +250,8 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     // Overlay and effects belong to the canvas, not the pattern — carry them over.
     updateUrlParams({ ...overlayVariables.value, ...effectsToParams(effectVariables.value) })
 
-    if (route.path === '/generator')
-      router.replace({ path: '/generator', query: { template: slug } })
+    if (route.path === '/')
+      router.replace({ path: '/', query: { template: slug } })
   }
 
   function reset() {
@@ -314,7 +316,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   }
 
   function applyTemplateFromRoute() {
-    if (!isClient.value || route.path !== '/generator')
+    if (!isClient.value || route.path !== '/')
       return
 
     const slug = templateSlugFromRoute()
