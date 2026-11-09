@@ -125,4 +125,24 @@ function updateColor(value: string) {
 .color-row:not(:has(.color-label)) {
   grid-template-columns: 28px minmax(0, 1fr);
 }
+
+@media (pointer: coarse) {
+  .color-row {
+    grid-template-columns: 40px minmax(0, 1fr) 7.5rem;
+    min-height: 48px;
+  }
+
+  .color-row:not(:has(.color-label)) {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .chip {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hex {
+    height: 40px;
+  }
+}
 </style>

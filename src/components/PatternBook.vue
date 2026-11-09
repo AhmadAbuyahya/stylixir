@@ -235,6 +235,15 @@ watch(() => props.open, async (open) => {
     padding: 14px 16px;
   }
 
+  /* The long subtitle pushed Close onto its own row, and this header is sticky. */
+  .book-heading .eyebrow {
+    display: none;
+  }
+
+  .book-title {
+    font-size: 28px;
+  }
+
   .book-search {
     order: 3;
     width: 100%;

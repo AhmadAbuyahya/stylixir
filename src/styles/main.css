@@ -47,6 +47,20 @@ body {
   outline-offset: 2px;
 }
 
+/* Buttons press-scale on :active already; the gray flash on top looks broken. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS zooms the page into any field under 16px on focus, and this fixed layout never zooms back out. */
+@media (pointer: coarse) {
+  input:not([type='range'], [type='checkbox'], [type='color']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Pinking-shear edges, cut with the same conic gradients the patterns are made of. */
 .pinked-bottom,
 .pinked-top {
