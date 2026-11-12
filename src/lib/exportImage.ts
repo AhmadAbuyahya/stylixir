@@ -49,6 +49,22 @@ export function canUsePixelRatio(width: number, height: number, pixelRatio: numb
   return w <= MAX_SIDE && h <= MAX_SIDE && w * h <= MAX_PIXELS
 }
 
+/**
+ * The device's screen in physical pixels, scaled down (keeping its shape) to fit
+ * the export limits. iOS reports `screen` in portrait whatever the rotation, so the
+ * caller says which way the screen is turned.
+ */
+export function screenSize(screenWidth: number, screenHeight: number, devicePixelRatio: number, landscape: boolean) {
+  const long = Math.max(screenWidth, screenHeight) * devicePixelRatio
+  const short = Math.min(screenWidth, screenHeight) * devicePixelRatio
+  const scale = Math.min(1, MAX_SIDE / long, Math.sqrt(MAX_PIXELS / (long * short)))
+  // Floor once scaled so rounding can never push the result past a limit.
+  const fit = (side: number) => clampDimension(scale < 1 ? Math.floor(side * scale) : side)
+  return landscape
+    ? { width: fit(long), height: fit(short) }
+    : { width: fit(short), height: fit(long) }
+}
+
 export function exportFilename(slug: string, width: number, height: number, format: ImageFormat, pixelRatio: number) {
   const safe = slug.replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '') || 'pattern'
   const ratio = pixelRatio === 2 ? '@2x' : ''

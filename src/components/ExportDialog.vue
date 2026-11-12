@@ -4,12 +4,14 @@ import {
   type ImageFormat,
   MAX_SIDE,
   SIZE_PRESETS,
+  type SizePreset,
   canUsePixelRatio,
   clampDimension,
   copyImageBlob,
   downloadBlob,
   exportFilename,
   renderPatternBlob,
+  screenSize,
 } from '~/lib/exportImage'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 import { useToastStore } from '~/stores/toast'
@@ -38,12 +40,24 @@ const pixelRatio = ref<1 | 2>(1)
 const includeOverlay = ref(true)
 const busy = ref(false)
 const copied = ref(false)
+// Measured when the dialog opens: `screen` does not exist during prerender.
+const screenPreset = ref<SizePreset>()
+const canShare = ref(false)
+// An image whose share was refused because rendering outlasted the tap.
+const pendingShare = ref<File>()
 
+const presets = computed(() => screenPreset.value ? [screenPreset.value, ...SIZE_PRESETS] : SIZE_PRESETS)
+
+const chosenPreset = ref('')
+
+// A 3× iPhone's screen equals the Phone preset, so remember which one was tapped.
 const selectedPreset = computed(() => {
-  return SIZE_PRESETS.find(preset => preset.width === width.value && preset.height === height.value)?.id ?? 'custom'
+  const matches = presets.value.filter(preset => preset.width === width.value && preset.height === height.value)
+  return (matches.find(preset => preset.id === chosenPreset.value) ?? matches[0])?.id ?? 'custom'
 })
 
-const densityAllowed = computed(() => canUsePixelRatio(width.value, height.value, 2))
+// "This screen" is already in physical pixels, so 2× would only upscale past the display.
+const densityAllowed = computed(() => selectedPreset.value !== 'screen' && canUsePixelRatio(width.value, height.value, 2))
 
 const filename = computed(() =>
   exportFilename(activeTemplate.value, width.value, height.value, format.value, pixelRatio.value),
@@ -55,9 +69,16 @@ const outputLabel = computed(() => {
 })
 
 watch(() => props.open, (open) => {
-  if (!open)
+  if (!open) {
+    pendingShare.value = undefined
     return
+  }
   copied.value = false
+  const size = screenSize(screen.width, screen.height, window.devicePixelRatio || 1, matchMedia('(orientation: landscape)').matches)
+  screenPreset.value = { id: 'screen', label: 'This screen', hint: `${size.width} × ${size.height}`, ...size }
+  applyPreset('screen')
+  canShare.value = matchMedia('(pointer: coarse)').matches
+    && !!navigator.canShare?.({ files: [new File([], 'wallpaper.png', { type: 'image/png' })] })
   if (!densityAllowed.value)
     pixelRatio.value = 1
 })
@@ -65,6 +86,10 @@ watch(() => props.open, (open) => {
 watch(densityAllowed, (allowed) => {
   if (!allowed)
     pixelRatio.value = 1
+})
+
+watch([filename, quality, includeOverlay], () => {
+  pendingShare.value = undefined
 })
 
 watch(() => props.open, (open) => {
@@ -85,18 +110,13 @@ function close() {
 }
 
 function applyPreset(id: string) {
-  const preset = SIZE_PRESETS.find(item => item.id === id)
+  const preset = presets.value.find(item => item.id === id)
   if (!preset)
     return
+  chosenPreset.value = id
   width.value = preset.width
   height.value = preset.height
 }
-
-// Someone downloading from a phone most likely wants a lock-screen size.
-onMounted(() => {
-  if (window.matchMedia('(max-width: 720px)').matches)
-    applyPreset('phone')
-})
 
 function onWidth(event: Event) {
   width.value = clampDimension(Number((event.target as HTMLInputElement).value))
@@ -131,6 +151,50 @@ async function download() {
   finally {
     busy.value = false
   }
+}
+
+async function shareFile(file: File) {
+  try {
+    await navigator.share({ files: [file] })
+    pendingShare.value = undefined
+  }
+  catch (error) {
+    const name = (error as DOMException).name
+    if (name === 'AbortError') {
+      pendingShare.value = undefined
+    }
+    else if (name === 'NotAllowedError' && !pendingShare.value) {
+      pendingShare.value = file
+      addToast({ variant: 'info', title: 'Wallpaper ready. Tap Save image to finish.', id: Date.now() })
+    }
+    else {
+      pendingShare.value = undefined
+      downloadBlob(file, file.name)
+      addToast({ variant: 'warning', title: 'Couldn\'t open sharing, so the wallpaper was downloaded instead.', id: Date.now() })
+    }
+  }
+}
+
+async function share() {
+  if (pendingShare.value)
+    return shareFile(pendingShare.value)
+  busy.value = true
+  let file: File
+  try {
+    const blob = await render()
+    file = new File([blob], filename.value, { type: blob.type })
+  }
+  catch {
+    addToast({ variant: 'error', title: 'Couldn\'t make the wallpaper. Try a smaller size or turn off 2×.', id: Date.now() })
+    return
+  }
+  finally {
+    busy.value = false
+  }
+  if (navigator.canShare({ files: [file] }))
+    return shareFile(file)
+  downloadBlob(file, file.name)
+  addToast({ variant: 'success', title: 'Wallpaper downloaded', id: Date.now() })
 }
 
 async function copy() {
@@ -200,7 +264,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
             </h3>
             <div class="presets">
               <button
-                v-for="preset in SIZE_PRESETS"
+                v-for="preset in presets"
                 :key="preset.id"
                 type="button"
                 class="option"
@@ -266,7 +330,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
                   class="option option-mono"
                   :aria-pressed="pixelRatio === 2"
                   :disabled="!densityAllowed"
-                  :title="densityAllowed ? 'Double resolution for sharp screens' : `2× would go past ${MAX_SIDE} px. Pick a smaller size.`"
+                  :title="densityAllowed ? 'Double resolution for sharp screens' : selectedPreset === 'screen' ? 'This screen is already at full resolution.' : `2× would go past ${MAX_SIDE} px. Pick a smaller size.`"
                   @click="pixelRatio = 2"
                 >
                   2×
@@ -283,7 +347,18 @@ useEventListener('keydown', (event: KeyboardEvent) => {
             {{ filename }} · {{ outputLabel }}
           </p>
 
-          <div class="export-actions">
+          <!-- On phones the share sheet's Save Image puts it in Photos; a download lands in Files. -->
+          <div v-if="canShare" class="export-actions">
+            <button class="action" type="button" :disabled="busy" @click="download">
+              <span class="i-carbon-download" aria-hidden="true" />
+              Download
+            </button>
+            <button class="action action-ink" type="button" :disabled="busy" @click="share">
+              <span :class="busy ? 'i-carbon-renew animate-spin' : 'i-carbon-share'" aria-hidden="true" />
+              {{ busy ? 'Rendering…' : 'Save image' }}
+            </button>
+          </div>
+          <div v-else class="export-actions">
             <button class="action" type="button" :disabled="busy" @click="copy">
               <span :class="copied ? 'i-carbon-checkmark' : 'i-carbon-copy'" aria-hidden="true" />
               {{ copied ? 'Copied' : 'Copy image' }}
