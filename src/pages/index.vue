@@ -48,10 +48,9 @@ function go(step: number) {
   store.updateActiveTemplate(slugs[(index.value + step + slugs.length) % slugs.length])
 }
 
-async function shuffle() {
+function shuffle() {
+  // Switching templates resets the dials synchronously, so the roll lands on the new pattern.
   store.updateActiveTemplate(randomTemplateSlug(templates, store.activeTemplate))
-  // The store resets dials to defaults in a watcher; roll after it has run.
-  await nextTick()
   store.randomizeAll()
 }
 
@@ -131,7 +130,8 @@ onMounted(() => {
   if (window.matchMedia('(min-width: 1100px)').matches)
     tuneOpen.value = true
   // A bare visit opens on a fresh roll; shared links keep theirs. Runs after the store reads the URL.
-  const shared = new URLSearchParams(location.search).has('template') || location.hash.includes('template=')
+  const search = new URLSearchParams(location.search)
+  const shared = search.has('p') || search.has('template') || location.hash.includes('template=')
   if (!shared)
     setTimeout(shuffle, 0)
 })

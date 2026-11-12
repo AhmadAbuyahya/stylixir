@@ -78,16 +78,6 @@ export function randomTemplateSlug(templates: Templates, exclude?: string | stri
   return keys[Math.floor(Math.random() * keys.length)] ?? Object.keys(templates)[0]
 }
 
-/** Query object for opening the generator on a specific roll (slug + every dial). */
-export function patternToQuery(slug: string, variables: Record<string, string | number>) {
-  return {
-    template: slug,
-    ...Object.fromEntries(
-      Object.entries(variables).map(([key, value]) => [key, valueToParam(value)]),
-    ),
-  }
-}
-
 /** Store colors without `#` so a raw `#rrggbb` cannot truncate the query at the hash. */
 export function valueToParam(value: string | number) {
   const raw = String(value)
