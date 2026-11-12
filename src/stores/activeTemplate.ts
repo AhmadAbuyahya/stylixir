@@ -7,10 +7,14 @@ import {
   generateCss,
   interpolateTemplate,
   randomNumber,
+  randomTemplateSlug,
   randomVariables,
 } from '~/lib/pattern'
+import { parseKept, pushHistory, removeKept, toggleKept } from '~/lib/looks'
 import { DEFAULT_OVERLAY, type Look, type Overlay, decodeRecipe, encodeRecipe, isTemplate, lookFromParams } from '~/lib/recipe'
 import templates from '~/lib/templates'
+
+const KEPT_KEY = 'stylixir-kept'
 
 // Utility functions
 const utils = {
@@ -76,6 +80,73 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     if (look)
       applyLook(look)
     return !!look
+  }
+
+  /** Looks from before each jump, newest last. In memory only. */
+  const undoStack = ref<string[]>([])
+  const canUndo = computed(() => undoStack.value.length > 0)
+  let jumpDepth = 0
+
+  // Wraps a public action that replaces the look wholesale. Composites nest (randomizeAll calls
+  // randomizeColors), so only the outermost call records, holding the look from before it began.
+  function jump<A extends unknown[], R>(action: (...args: A) => R) {
+    return (...args: A): R => {
+      const before = recipe.value
+      jumpDepth++
+      try {
+        return action(...args)
+      }
+      finally {
+        jumpDepth--
+        if (!jumpDepth && recipe.value !== before)
+          undoStack.value = pushHistory(undoStack.value, before)
+      }
+    }
+  }
+
+  function undo() {
+    const previous = undoStack.value.at(-1)
+    if (previous === undefined)
+      return
+    undoStack.value = undoStack.value.slice(0, -1)
+    applyRecipe(previous)
+  }
+
+  /** Recipes the person kept, newest first. Entries for unknown patterns stay stored; the Book just skips them. */
+  const kept = ref<string[]>([])
+  const isKept = computed(() => kept.value.includes(recipe.value))
+
+  // Not useStorage: it writes its parsed value back, which would wipe a stored value we could not read.
+  function readKept() {
+    try {
+      return parseKept(localStorage.getItem(KEPT_KEY))
+    }
+    catch {
+      return [] // Storage blocked.
+    }
+  }
+
+  // Re-reads first, so a look kept in another tab is not lost.
+  function changeKept(change: (list: string[]) => string[]) {
+    kept.value = change(readKept())
+    try {
+      localStorage.setItem(KEPT_KEY, JSON.stringify(kept.value))
+    }
+    catch {}
+  }
+
+  // Loads after mount, like wildShapes, so the prerendered markup hydrates cleanly.
+  onMounted(() => {
+    kept.value = readKept()
+  })
+
+  function toggleKeep() {
+    changeKept(list => toggleKept(list, recipe.value))
+    return isKept.value
+  }
+
+  function unkeep(entry: string) {
+    changeKept(list => removeKept(list, entry))
   }
 
   // Written straight to history, like useUrlSearchParams did, so dial drags don't run router navigations.
@@ -216,6 +287,12 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     randomizeNumberValues()
   }
 
+  function shuffle() {
+    // Switching templates resets the dials synchronously, so the roll lands on the new pattern.
+    updateActiveTemplate(randomTemplateSlug(templates, activeTemplate.value))
+    randomizeAll()
+  }
+
   function applyTemplateFromRoute() {
     if (!isClient.value || route.path !== '/')
       return
@@ -246,19 +323,27 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
     variables,
     style,
     css,
-    updateActiveTemplate,
+    updateActiveTemplate: jump(updateActiveTemplate),
     applyTemplateFromRoute,
     recipe,
-    applyRecipe,
-    reset,
-    randomizeNumberValues,
-    randomizeColors,
-    randomizeAll,
+    applyRecipe: jump(applyRecipe),
+    undoStack,
+    canUndo,
+    undo,
+    kept,
+    isKept,
+    toggleKeep,
+    unkeep,
+    reset: jump(reset),
+    randomizeNumberValues: jump(randomizeNumberValues),
+    randomizeColors: jump(randomizeColors),
+    randomizeAll: jump(randomizeAll),
+    shuffle: jump(shuffle),
     wildShapes,
     overlayVariables,
     overlayStyle,
     effectVariables,
-    resetEffects,
+    resetEffects: jump(resetEffects),
     frame,
   }
 })
