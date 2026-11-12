@@ -6,17 +6,20 @@ export interface SizePreset {
   id: string
   label: string
   hint: string
+  /** Layout size in CSS pixels, so the pattern keeps the scale it has on that screen. */
   width: number
   height: number
+  /** Render ratio, the screen's pixel density. The file is `renderSize(width, height, scale)`. */
+  scale: number
 }
 
 export const SIZE_PRESETS: SizePreset[] = [
-  { id: 'hd', label: 'HD desktop', hint: '1920 × 1080', width: 1920, height: 1080 },
-  { id: 'qhd', label: 'QHD desktop', hint: '2560 × 1440', width: 2560, height: 1440 },
-  { id: 'uhd', label: '4K desktop', hint: '3840 × 2160', width: 3840, height: 2160 },
-  { id: 'ultrawide', label: 'Ultrawide', hint: '3440 × 1440', width: 3440, height: 1440 },
-  { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 1170, height: 2532 },
-  { id: 'tablet', label: 'Tablet', hint: '2048 × 2732', width: 2048, height: 2732 },
+  { id: 'hd', label: 'HD desktop', hint: '1920 × 1080', width: 1920, height: 1080, scale: 1 },
+  { id: 'qhd', label: 'QHD desktop', hint: '2560 × 1440', width: 2560, height: 1440, scale: 1 },
+  { id: 'uhd', label: '4K desktop', hint: '3840 × 2160', width: 3840, height: 2160, scale: 1 },
+  { id: 'ultrawide', label: 'Ultrawide', hint: '3440 × 1440', width: 3440, height: 1440, scale: 1 },
+  { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 390, height: 844, scale: 3 },
+  { id: 'tablet', label: 'Tablet', hint: '2048 × 2732', width: 1024, height: 1366, scale: 2 },
 ]
 
 export const MAX_SIDE = 7680
@@ -27,7 +30,7 @@ export interface ExportSpec {
   height: number
   format: ImageFormat
   quality: number
-  pixelRatio: 1 | 2
+  pixelRatio: number
   slug: string
   /** A still frame (no motion); leave its overlay out to export without one. */
   frame: PatternFrame
@@ -39,30 +42,36 @@ export function clampDimension(value: number) {
   return Math.min(MAX_SIDE, Math.max(1, Math.round(value)))
 }
 
+/** The file's real pixel size: html-to-image sets `canvas.width = width * ratio`, which the browser truncates. */
+export function renderSize(width: number, height: number, pixelRatio: number) {
+  return {
+    width: Math.trunc(clampDimension(width) * pixelRatio),
+    height: Math.trunc(clampDimension(height) * pixelRatio),
+  }
+}
+
 export function outputPixels(width: number, height: number, pixelRatio: number) {
   return clampDimension(width) * clampDimension(height) * pixelRatio * pixelRatio
 }
 
 export function canUsePixelRatio(width: number, height: number, pixelRatio: number) {
-  const w = clampDimension(width) * pixelRatio
-  const h = clampDimension(height) * pixelRatio
+  const { width: w, height: h } = renderSize(width, height, pixelRatio)
   return w <= MAX_SIDE && h <= MAX_SIDE && w * h <= MAX_PIXELS
 }
 
 /**
- * The device's screen in physical pixels, scaled down (keeping its shape) to fit
- * the export limits. iOS reports `screen` in portrait whatever the rotation, so the
- * caller says which way the screen is turned.
+ * The device's screen as a CSS layout size plus a render ratio, so the export looks
+ * like the screen at its physical resolution. A screen past the export limits keeps
+ * its layout and gets a lower ratio. iOS reports `screen` in portrait whatever the
+ * rotation, so the caller says which way the screen is turned.
  */
 export function screenSize(screenWidth: number, screenHeight: number, devicePixelRatio: number, landscape: boolean) {
-  const long = Math.max(screenWidth, screenHeight) * devicePixelRatio
-  const short = Math.min(screenWidth, screenHeight) * devicePixelRatio
-  const scale = Math.min(1, MAX_SIDE / long, Math.sqrt(MAX_PIXELS / (long * short)))
-  // Floor once scaled so rounding can never push the result past a limit.
-  const fit = (side: number) => clampDimension(scale < 1 ? Math.floor(side * scale) : side)
+  const long = clampDimension(Math.max(screenWidth, screenHeight))
+  const short = clampDimension(Math.min(screenWidth, screenHeight))
+  const scale = Math.min(devicePixelRatio, MAX_SIDE / long, Math.sqrt(MAX_PIXELS / (long * short)))
   return landscape
-    ? { width: fit(long), height: fit(short) }
-    : { width: fit(short), height: fit(long) }
+    ? { width: long, height: short, scale }
+    : { width: short, height: long, scale }
 }
 
 export function exportFilename(slug: string, width: number, height: number, format: ImageFormat, pixelRatio: number) {

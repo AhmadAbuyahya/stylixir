@@ -11,6 +11,7 @@ import {
   downloadBlob,
   exportFilename,
   renderPatternBlob,
+  renderSize,
   screenSize,
 } from '~/lib/exportImage'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
@@ -36,6 +37,8 @@ const width = ref(1920)
 const height = ref(1080)
 const format = ref<ImageFormat>('png')
 const quality = ref(0.92)
+// The preset's pixel density; a typed size is in plain pixels.
+const scale = ref(1)
 const pixelRatio = ref<1 | 2>(1)
 const includeOverlay = ref(true)
 const busy = ref(false)
@@ -52,20 +55,25 @@ const chosenPreset = ref('')
 
 // A 3× iPhone's screen equals the Phone preset, so remember which one was tapped.
 const selectedPreset = computed(() => {
-  const matches = presets.value.filter(preset => preset.width === width.value && preset.height === height.value)
+  const matches = presets.value.filter(preset =>
+    preset.width === width.value && preset.height === height.value && preset.scale === scale.value)
   return (matches.find(preset => preset.id === chosenPreset.value) ?? matches[0])?.id ?? 'custom'
 })
 
-// "This screen" is already in physical pixels, so 2× would only upscale past the display.
-const densityAllowed = computed(() => selectedPreset.value !== 'screen' && canUsePixelRatio(width.value, height.value, 2))
+// "This screen" is already at the display's full resolution, so 2× would only upscale past it.
+const densityAllowed = computed(() => selectedPreset.value !== 'screen' && canUsePixelRatio(width.value, height.value, scale.value * 2))
 
+// What the size fields show: the file's pixels before 2×.
+const baseSize = computed(() => renderSize(width.value, height.value, scale.value))
+
+// Only "This screen" can have a fractional scale and it has no 2×, so `@2x` is always exactly double.
 const filename = computed(() =>
-  exportFilename(activeTemplate.value, width.value, height.value, format.value, pixelRatio.value),
+  exportFilename(activeTemplate.value, baseSize.value.width, baseSize.value.height, format.value, pixelRatio.value),
 )
 
 const outputLabel = computed(() => {
-  const ratio = densityAllowed.value ? pixelRatio.value : 1
-  return `${width.value * ratio} × ${height.value * ratio} px`
+  const size = renderSize(width.value, height.value, scale.value * (densityAllowed.value ? pixelRatio.value : 1))
+  return `${size.width} × ${size.height} px`
 })
 
 watch(() => props.open, (open) => {
@@ -75,7 +83,8 @@ watch(() => props.open, (open) => {
   }
   copied.value = false
   const size = screenSize(screen.width, screen.height, window.devicePixelRatio || 1, matchMedia('(orientation: landscape)').matches)
-  screenPreset.value = { id: 'screen', label: 'This screen', hint: `${size.width} × ${size.height}`, ...size }
+  const pixels = renderSize(size.width, size.height, size.scale)
+  screenPreset.value = { id: 'screen', label: 'This screen', hint: `${pixels.width} × ${pixels.height}`, ...size }
   applyPreset('screen')
   canShare.value = matchMedia('(pointer: coarse)').matches
     && !!navigator.canShare?.({ files: [new File([], 'wallpaper.png', { type: 'image/png' })] })
@@ -116,14 +125,20 @@ function applyPreset(id: string) {
   chosenPreset.value = id
   width.value = preset.width
   height.value = preset.height
+  scale.value = preset.scale
 }
 
+// Typing a size leaves the preset: both sides become plain pixels, the untouched one keeping what it showed.
 function onWidth(event: Event) {
+  height.value = baseSize.value.height
   width.value = clampDimension(Number((event.target as HTMLInputElement).value))
+  scale.value = 1
 }
 
 function onHeight(event: Event) {
+  width.value = baseSize.value.width
   height.value = clampDimension(Number((event.target as HTMLInputElement).value))
+  scale.value = 1
 }
 
 async function render() {
@@ -132,7 +147,7 @@ async function render() {
     height: height.value,
     format: format.value,
     quality: quality.value,
-    pixelRatio: densityAllowed.value ? pixelRatio.value : 1,
+    pixelRatio: scale.value * (densityAllowed.value ? pixelRatio.value : 1),
     slug: activeTemplate.value,
     frame: store.frame({ animate: false, overlay: includeOverlay.value }),
   })
@@ -165,7 +180,7 @@ async function shareFile(file: File) {
     }
     else if (name === 'NotAllowedError' && !pendingShare.value) {
       pendingShare.value = file
-      addToast({ variant: 'info', title: 'Wallpaper ready. Tap Save image to finish.', id: Date.now() })
+      addToast({ variant: 'info', title: 'Wallpaper ready. Tap Save or share to finish.', id: Date.now() })
     }
     else {
       pendingShare.value = undefined
@@ -278,12 +293,12 @@ useEventListener('keydown', (event: KeyboardEvent) => {
             <div class="dims">
               <label class="dim">
                 <span class="eyebrow">Width</span>
-                <input :value="width" type="number" min="1" :max="MAX_SIDE" class="input" @change="onWidth">
+                <input :value="baseSize.width" type="number" min="1" :max="MAX_SIDE" class="input" @change="onWidth">
               </label>
               <span class="dims-x" aria-hidden="true">×</span>
               <label class="dim">
                 <span class="eyebrow">Height</span>
-                <input :value="height" type="number" min="1" :max="MAX_SIDE" class="input" @change="onHeight">
+                <input :value="baseSize.height" type="number" min="1" :max="MAX_SIDE" class="input" @change="onHeight">
               </label>
             </div>
           </section>
@@ -355,7 +370,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
             </button>
             <button class="action action-ink" type="button" :disabled="busy" @click="share">
               <span :class="busy ? 'i-carbon-renew animate-spin' : 'i-carbon-share'" aria-hidden="true" />
-              {{ busy ? 'Rendering…' : 'Save image' }}
+              {{ busy ? 'Rendering…' : 'Save or share' }}
             </button>
           </div>
           <div v-else class="export-actions">
