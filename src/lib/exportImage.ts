@@ -1,4 +1,4 @@
-import { GRAIN_TILE, type PatternFrame } from '~/lib/effects'
+import type { PatternFrame } from '~/lib/effects'
 
 export type ImageFormat = 'png' | 'jpeg' | 'webp'
 
@@ -155,11 +155,12 @@ function mountExportFrame(spec: ExportSpec) {
 
   root.append(pattern)
 
-  // Grain is painted straight onto the canvas afterwards (see `paintGrain`):
-  // its SVG noise tile does not survive html-to-image's foreignObject capture.
-  for (const layer of ['light', 'overlay'] as const) {
+  // Texture tiles (grain, paper, riso ink) are painted straight onto the canvas
+  // afterwards (see `paintTexture`): their SVG noise does not survive
+  // html-to-image's foreignObject capture.
+  for (const layer of ['light', 'overlay', 'material'] as const) {
     const css = frame[layer]
-    if (!css)
+    if (!css || textureSrc(css))
       continue
     const el = doc.createElement('div')
     applyCss(el, css)
@@ -179,30 +180,35 @@ function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('Could not load the grain texture.'))
+    image.onerror = () => reject(new Error('Could not load a texture.'))
     image.src = src
   })
 }
 
-/** Composites the frame's grain layer over a finished capture, matching its CSS blend. */
-async function paintGrain(canvas: HTMLCanvasElement, grain: Record<string, string>, pixelRatio: number) {
-  const src = grain['background-image']?.match(/^url\("(.*)"\)$/)?.[1]
+function textureSrc(css: Record<string, string>) {
+  return css['background-image']?.match(/^url\("(data:image\/svg\+xml,.*)"\)$/)?.[1]
+}
+
+/** Composites a texture layer over a finished capture, matching its CSS tile size and blend. */
+async function paintTexture(canvas: HTMLCanvasElement, texture: Record<string, string>, pixelRatio: number) {
+  const src = textureSrc(texture)
   const ctx = canvas.getContext('2d')
   if (!src || !ctx)
     return
 
   const image = await loadImage(src)
+  const size = Number.parseFloat(texture['background-size'] ?? '') || image.width
   const tile = document.createElement('canvas')
-  tile.width = GRAIN_TILE * pixelRatio
-  tile.height = GRAIN_TILE * pixelRatio
+  tile.width = size * pixelRatio
+  tile.height = size * pixelRatio
   tile.getContext('2d')?.drawImage(image, 0, 0, tile.width, tile.height)
 
   const pattern = ctx.createPattern(tile, 'repeat')
   if (!pattern)
     return
   ctx.save()
-  ctx.globalAlpha = Number(grain.opacity ?? 1)
-  ctx.globalCompositeOperation = (grain['mix-blend-mode'] ?? 'overlay') as GlobalCompositeOperation
+  ctx.globalAlpha = Number(texture.opacity ?? 1)
+  ctx.globalCompositeOperation = (texture['mix-blend-mode'] ?? 'overlay') as GlobalCompositeOperation
   ctx.fillStyle = pattern
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.restore()
@@ -242,8 +248,11 @@ export async function renderPatternBlob(spec: ExportSpec) {
       cacheBust: false,
       skipAutoScale: true,
     })
-    if (spec.frame.grain)
-      await paintGrain(canvas, spec.frame.grain, pixelRatio)
+    for (const layer of ['material', 'grain'] as const) {
+      const texture = spec.frame[layer]
+      if (texture)
+        await paintTexture(canvas, texture, pixelRatio)
+    }
     return canvasToBlob(canvas, spec.format, spec.quality)
   }
   finally {

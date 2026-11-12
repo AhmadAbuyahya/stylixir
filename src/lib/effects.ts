@@ -17,6 +17,8 @@ export const colorModes = ['shift', 'swap'] as const
 export type ColorMode = typeof colorModes[number]
 export const moveModes = ['drift', 'spin'] as const
 export type MoveMode = typeof moveModes[number]
+export const materials = ['none', 'paper', 'linen', 'embossed', 'riso'] as const
+export type Material = typeof materials[number]
 
 export interface Effects {
   grain: number
@@ -40,6 +42,9 @@ export interface Effects {
   liquid: number
   /** Dial keys shape motion leaves still. Unknown keys are ignored, so holds carry across patterns that share names. */
   shapeHold: string[]
+  /** A physical finish for the whole swatch. */
+  material: Material
+  materialStrength: number
 }
 
 export const DEFAULT_EFFECTS: Effects = {
@@ -57,6 +62,8 @@ export const DEFAULT_EFFECTS: Effects = {
   driftAngle: 315,
   liquid: 0,
   shapeHold: [],
+  material: 'none',
+  materialStrength: 0.5,
 }
 
 /** What a motion channel jumps to when it is switched on. */
@@ -83,12 +90,16 @@ export const EFFECT_DIALS: Record<NumericEffect, { param: string; min: number; m
   move: { param: 'fxMove', min: 0, max: 1, step: 0.01 },
   driftAngle: { param: 'fxDriftAngle', min: 0, max: 315, step: 45 },
   liquid: { param: 'fxLiquid', min: 0, max: 1, step: 0.01 },
+  materialStrength: { param: 'fxMaterialStrength', min: 0, max: 1, step: 0.01 },
 }
 
 const EFFECT_CHOICES = {
   colorMode: { param: 'fxColorMode', values: colorModes },
   moveMode: { param: 'fxMoveMode', values: moveModes },
+  material: { param: 'fxMaterial', values: materials },
 } as const
+
+type ChoiceEffect = keyof typeof EFFECT_CHOICES
 
 const SHAPE_HOLD_PARAM = 'fxShapeHold'
 
@@ -129,12 +140,11 @@ export function parseEffects(read: (param: string) => unknown, fallback: Effects
     if (Number.isFinite(parsed))
       next[key] = clamp(parsed, dial.min, dial.max)
   }
-  const colorMode = read(EFFECT_CHOICES.colorMode.param)
-  if ((colorModes as readonly unknown[]).includes(colorMode))
-    next.colorMode = colorMode as ColorMode
-  const moveMode = read(EFFECT_CHOICES.moveMode.param)
-  if ((moveModes as readonly unknown[]).includes(moveMode))
-    next.moveMode = moveMode as MoveMode
+  for (const [key, choice] of Object.entries(EFFECT_CHOICES) as [ChoiceEffect, typeof EFFECT_CHOICES[ChoiceEffect]][]) {
+    const raw = read(choice.param)
+    if ((choice.values as readonly unknown[]).includes(raw))
+      Object.assign(next, { [key]: raw })
+  }
   const hold = read(SHAPE_HOLD_PARAM)
   if (typeof hold === 'string')
     next.shapeHold = hold.split(',').filter(key => /^\w+$/.test(key))
@@ -142,11 +152,9 @@ export function parseEffects(read: (param: string) => unknown, fallback: Effects
 }
 
 export function effectsToParams(effects: Effects) {
-  const params: Record<string, string | number> = {
-    [EFFECT_CHOICES.colorMode.param]: effects.colorMode,
-    [EFFECT_CHOICES.moveMode.param]: effects.moveMode,
-    [SHAPE_HOLD_PARAM]: effects.shapeHold.join(','),
-  }
+  const params: Record<string, string | number> = { [SHAPE_HOLD_PARAM]: effects.shapeHold.join(',') }
+  for (const [key, choice] of Object.entries(EFFECT_CHOICES) as [ChoiceEffect, typeof EFFECT_CHOICES[ChoiceEffect]][])
+    params[choice.param] = effects[key]
   for (const [key, dial] of Object.entries(EFFECT_DIALS) as [NumericEffect, typeof EFFECT_DIALS[NumericEffect]][])
     params[dial.param] = effects[key]
   return params
@@ -172,16 +180,30 @@ export function legacyEffectParamKeys() {
 
 export const GRAIN_TILE = 256
 
+/** A tile painted by an SVG filter, as a data URI. */
+function filterTile(width: number, height: number, filter: string, attributes = '') {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
+    // The region must be exactly the tile, or stitched noise repeats at the wrong period and seams.
+    + `<filter id="g" x="0" y="0" width="100%" height="100%"${attributes}>${filter}</filter>`
+    + '<rect width="100%" height="100%" filter="url(#g)"/></svg>'
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+}
+
+/** Monochrome noise pushed through a linear curve. */
+function greyNoise(turbulence: string, slope: number, intercept: number) {
+  const curve = `type="linear" slope="${slope}" intercept="${intercept}"`
+  return `${turbulence}<feColorMatrix type="saturate" values="0"/>`
+    + `<feComponentTransfer><feFuncR ${curve}/><feFuncG ${curve}/><feFuncB ${curve}/></feComponentTransfer>`
+}
+
 /** A seamless, monochrome, contrast-boosted noise tile as an SVG data URI. */
 export function grainImage(size: number) {
   const frequency = round(0.9 / clamp(size, 0.1, 10))
-  const curve = 'type="linear" slope="2.2" intercept="-0.6"'
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${GRAIN_TILE}" height="${GRAIN_TILE}">`
-    + `<filter id="g"><feTurbulence type="fractalNoise" baseFrequency="${frequency}" numOctaves="3" stitchTiles="stitch"/>`
-    + '<feColorMatrix type="saturate" values="0"/>'
-    + `<feComponentTransfer><feFuncR ${curve}/><feFuncG ${curve}/><feFuncB ${curve}/></feComponentTransfer></filter>`
-    + '<rect width="100%" height="100%" filter="url(#g)"/></svg>'
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+  return filterTile(GRAIN_TILE, GRAIN_TILE, greyNoise(
+    `<feTurbulence type="fractalNoise" baseFrequency="${frequency}" numOctaves="3" stitchTiles="stitch"/>`,
+    2.2,
+    -0.6,
+  ))
 }
 
 export function grainStyle(effects: Effects): Record<string, string> | undefined {
@@ -257,6 +279,108 @@ export function warpFilterMarkup(effects: Effects, options: { id?: string; anima
     + `<feTurbulence type="fractalNoise" baseFrequency="${f}" numOctaves="2" seed="7" result="noise">${flow}</feTurbulence>`
     + `<feDisplacementMap in="SourceGraphic" in2="noise" scale="${effects.warp}" xChannelSelector="R" yChannelSelector="G"/>`
     + '</filter></svg>'
+}
+
+// ---------------------------------------------------------------------------
+// Materials
+// ---------------------------------------------------------------------------
+
+export const PAPER_TILE = 512
+
+function hasMaterial(effects: Effects) {
+  return effects.material !== 'none' && effects.materialStrength > 0
+}
+
+/** Each plate's shift: strength pulls the inks further out of register. */
+function risoOffset(effects: Effects) {
+  return round(0.5 + effects.materialStrength * 3, 1)
+}
+
+/** Overhang the pattern layer needs so the material's filter has pixels to read past the edges. */
+function materialBleed(effects: Effects) {
+  if (!hasMaterial(effects))
+    return 0
+  if (effects.material === 'riso')
+    return Math.ceil(risoOffset(effects)) + 2
+  return effects.material === 'embossed' ? 4 : 0
+}
+
+/** Crossed threads, each lit on one side, with slubs on prime periods so the weave never lines up into a grid. */
+const LINEN = [
+  'repeating-linear-gradient(0deg, rgb(255 255 255 / 0.35) 0 1px, rgb(0 0 0 / 0.35) 1px 2px, transparent 2px 3px)',
+  'repeating-linear-gradient(90deg, rgb(255 255 255 / 0.3) 0 1px, rgb(0 0 0 / 0.3) 1px 2px, transparent 2px 3px)',
+  'repeating-linear-gradient(0deg, transparent 0 5px, rgb(0 0 0 / 0.25) 5px 7px, transparent 7px 17px)',
+  'repeating-linear-gradient(90deg, transparent 0 9px, rgb(0 0 0 / 0.2) 9px 10px, transparent 10px 13px)',
+  'repeating-linear-gradient(0deg, transparent 0 21px, rgb(255 255 255 / 0.3) 21px 23px, transparent 23px 41px)',
+  'repeating-linear-gradient(90deg, transparent 0 27px, rgb(255 255 255 / 0.3) 27px 29px, transparent 29px 47px)',
+].join(', ')
+
+/** Raking light over fibrous noise gives the paper its tooth; the curve centres it on mid-grey so hard-light both lifts and presses. */
+function paperImage() {
+  return filterTile(PAPER_TILE, PAPER_TILE, ''
+    + '<feTurbulence type="fractalNoise" baseFrequency="0.035 0.06" numOctaves="5" seed="4" stitchTiles="stitch"/>'
+    + `<feDiffuseLighting surfaceScale="1.6" lighting-color="#fff"><feDistantLight azimuth="225" elevation="55"/></feDiffuseLighting>${
+     greyNoise('', 1.5, -0.73)}`, ' color-interpolation-filters="sRGB"')
+}
+
+/** Sparse pale specks where the ink starved. */
+function risoInkImage() {
+  return filterTile(GRAIN_TILE, GRAIN_TILE, greyNoise(
+    '<feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="3" stitchTiles="stitch"/>',
+    7,
+    -4.1,
+  ))
+}
+
+/** The material's own layer over the pattern; Embossed has none, it lives in the filter. */
+export function materialStyle(effects: Effects): Record<string, string> | undefined {
+  if (!hasMaterial(effects) || effects.material === 'embossed')
+    return undefined
+  const opacity = String(round(effects.materialStrength, 2))
+  const base = { 'position': 'absolute', 'inset': '0', 'pointer-events': 'none' }
+  if (effects.material === 'linen')
+    return { ...base, 'background-image': LINEN, 'mix-blend-mode': 'hard-light', opacity }
+  const paper = effects.material === 'paper'
+  const tile = paper ? PAPER_TILE : GRAIN_TILE
+  return {
+    ...base,
+    'background-image': paper ? paperImage() : risoInkImage(),
+    'background-size': `${tile}px ${tile}px`,
+    // Hard-light keys off the texture rather than the pattern, so it still shows on white or black grounds.
+    'mix-blend-mode': paper ? 'hard-light' : 'screen',
+    opacity,
+  }
+}
+
+/** The pattern layer's material filter, chained after warp: Embossed lights the pattern's luminance, Riso splits it into ink plates. */
+export function materialFilterMarkup(effects: Effects, id: string) {
+  if (!hasMaterial(effects) || !['embossed', 'riso'].includes(effects.material))
+    return ''
+  let body: string
+  if (effects.material === 'embossed') {
+    const surface = round(1 + effects.materialStrength * 4, 2)
+    // Diffuse only: a specular pass halved the frame rate under motion for little visible gain.
+    // Dividing by sin(50°) keeps flat areas at their own color; only slopes shade.
+    body = '<feColorMatrix in="SourceGraphic" type="luminanceToAlpha"/>'
+      + '<feGaussianBlur stdDeviation="1.2"/>'
+      + `<feDiffuseLighting surfaceScale="${surface}" lighting-color="#fff" result="shade"><feDistantLight azimuth="225" elevation="50"/></feDiffuseLighting>`
+      + '<feComposite in="SourceGraphic" in2="shade" operator="arithmetic" k1="1.305"/>'
+  }
+  else {
+    const d = risoOffset(effects)
+    // Cyan, magenta and yellow plates multiply back to the original when aligned; shifted, their edges fringe.
+    const plate = (matrix: string, dx: number, dy: number, result: string) =>
+      `<feColorMatrix in="SourceGraphic" type="matrix" values="${matrix}"/><feOffset dx="${dx}" dy="${dy}" result="${result}"/>`
+    body = `${plate('1 0 0 0 0  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0', d, round(-d / 2, 1), 'cyan')
+      + plate('0 0 0 0 1  0 1 0 0 0  0 0 0 0 1  0 0 0 1 0', round(-d * 0.6, 1), d, 'magenta')
+      + plate('0 0 0 0 1  0 0 0 0 1  0 0 1 0 0  0 0 0 1 0', 0, 0, 'yellow')
+       }<feBlend in="cyan" in2="magenta" mode="multiply"/>`
+      + '<feBlend in2="yellow" mode="multiply"/>'
+      // Riso inks are translucent and matte: no true black, no glare.
+      + '<feComponentTransfer><feFuncR type="linear" slope="0.9" intercept="0.07"/><feFuncG type="linear" slope="0.9" intercept="0.07"/><feFuncB type="linear" slope="0.9" intercept="0.07"/></feComponentTransfer>'
+  }
+  return '<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">'
+    + `<filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${body}</filter></svg>`
 }
 
 // ---------------------------------------------------------------------------
@@ -519,8 +643,9 @@ export interface PatternFrame {
   pattern: Record<string, string>
   light?: Record<string, string>
   overlay?: Record<string, string>
+  material?: Record<string, string>
   grain?: Record<string, string>
-  /** Inline SVG holding the warp filter; empty when warp is off. */
+  /** Inline SVG holding the warp and material filters; empty when neither is on. */
   filterMarkup: string
   /** Global rules (`@property`, `@keyframes`); empty when nothing moves. */
   css: string
@@ -583,7 +708,10 @@ export function buildFrame(options: FrameOptions): PatternFrame {
   } = options
 
   const fx = liveEffects(effects, animate)
-  const bleed = warpBleed(fx)
+  const bleed = warpBleed(fx) + materialBleed(fx)
+  const materialId = `${filterId}-material`
+  const materialFilter = materialFilterMarkup(fx, materialId)
+  const filters = [fx.warp > 0 && `url(#${filterId})`, materialFilter && `url(#${materialId})`].filter(Boolean)
   const spin = fx.move > 0 && fx.moveMode === 'spin'
   // A spinning layer must cover the frame's diagonal at every angle; half the longer side past each edge is enough.
   const pad = spin ? `calc(${bleed}px + 50cqmax)` : `${bleed}px`
@@ -617,20 +745,21 @@ export function buildFrame(options: FrameOptions): PatternFrame {
       ...declarations,
       ...(fx.shape > 0 ? centeredOrigin(pad) : {}),
       ...Object.assign({}, ...parts.map(part => part.declarations)),
-      ...(fx.warp > 0 ? { filter: `url(#${filterId})` } : {}),
+      ...(filters.length ? { filter: filters.join(' ') } : {}),
       ...(animations.length ? { animation: animations.join(', ') } : {}),
     },
     light: lightStyle(fx),
     overlay: hasOverlay(overlay)
       ? { 'position': 'absolute', 'inset': '0', 'pointer-events': 'none', ...overlay }
       : undefined,
+    material: materialStyle(fx),
     grain: grainStyle(fx),
-    filterMarkup: warpFilterMarkup(fx, { id: filterId, animate }),
+    filterMarkup: warpFilterMarkup(fx, { id: filterId, animate }) + materialFilter,
     css: parts.flatMap(part => part.css).join('\n'),
   }
 }
 
-export const FRAME_LAYERS = ['pattern', 'light', 'overlay', 'grain'] as const
+export const FRAME_LAYERS = ['pattern', 'light', 'overlay', 'material', 'grain'] as const
 
 /** A paste-anywhere HTML + CSS snippet for a frame. */
 export function buildSnippet(frame: PatternFrame, className = 'background') {
