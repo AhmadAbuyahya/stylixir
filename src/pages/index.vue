@@ -48,10 +48,9 @@ function go(step: number) {
   store.updateActiveTemplate(slugs[(index.value + step + slugs.length) % slugs.length])
 }
 
-async function shuffle() {
+function shuffle() {
+  // Switching templates resets the dials synchronously, so the roll lands on the new pattern.
   store.updateActiveTemplate(randomTemplateSlug(templates, store.activeTemplate))
-  // The store resets dials to defaults in a watcher; roll after it has run.
-  await nextTick()
   store.randomizeAll()
 }
 

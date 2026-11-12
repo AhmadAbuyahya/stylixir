@@ -23,6 +23,26 @@ function customised(slug: string): Look {
 }
 
 describe('recipe', () => {
+  it('keys dials by lowerCamelCase names, apart from every other key', () => {
+    for (const [slug, entry] of Object.entries(templates)) {
+      for (const key of Object.keys(entry.variables)) {
+        expect(key, `${slug}.${key}: dial names must match ^[a-z][A-Za-z0-9]*$ (lowerCamelCase, no _ or -) `
+          + 'or they collide with recipe settings and separators in src/lib/recipe.ts. Rename the dial.').toMatch(/^[a-z][A-Za-z0-9]*$/)
+      }
+    }
+    // Every non-dial key starts uppercase, effects included, so a future effect param cannot pass for a dial.
+    const recipe = encodeRecipe({ ...atDefaults('zigzag'), overlay: { overlayType: 'none', overlayColor: '#ffffff', overlayOpacity: 0.1, overlayBlur: 1 }, effects: customised('zigzag').effects })
+    for (const entry of recipe.split('.').slice(2).join('.').split('_'))
+      expect(entry, recipe).toMatch(/^[A-Z]/)
+  })
+
+  it('keeps dial values by name when a template later reorders, drops or adds dials', () => {
+    const look = { ...atDefaults('zigzag'), values: { size: 140, bgColor: '#123456', colorOne: '#abcdef', position: 0.2, width: 70 } }
+    const { size, colorOne, width } = templates.zigzag.variables
+    const newer = { ...templates, zigzag: { ...templates.zigzag, variables: { width, extra: { type: 'range' as const, value: 3, min: 0, max: 9 }, colorOne, size } } }
+    expect(decodeRecipe(encodeRecipe(look), newer)?.values).toEqual({ width: 70, extra: 3, colorOne: '#abcdef', size: 140 })
+  })
+
   it('round-trips every template at its defaults as little more than the slug', () => {
     for (const slug of Object.keys(templates)) {
       const recipe = encodeRecipe(atDefaults(slug))
@@ -49,16 +69,16 @@ describe('recipe', () => {
     // A cut-off body still loads the template, keeping whatever parsed cleanly.
     for (let end = 9; end < recipe.length; end++)
       expect(decodeRecipe(recipe.slice(0, end))?.template).toBe('zigzag')
-    expect(decodeRecipe('1.zigzag.0-*ZZ_ot-*')).toEqual(atDefaults('zigzag'))
+    expect(decodeRecipe('1.zigzag.size-*ZZ_OT-*')).toEqual(atDefaults('zigzag'))
   })
 
   it('ignores unknown keys and validates values like the old params', () => {
-    const look = decodeRecipe('1.zigzag.99-5_zz-1_Bogus-3_0-notanumber_ot-sideways_oc-xyz_ot-*5F*5Fproto*5F*5F')
+    const look = decodeRecipe('1.zigzag.0-5_gone-1_Bogus-3_size-notanumber_bgColor-xyz_OT-sideways_OC-xyz_OT-*5F*5Fproto*5F*5F_constructor-1')
     expect(look).toEqual(atDefaults('zigzag'))
   })
 
   it('clamps out-of-range values', () => {
-    const look = decodeRecipe('1.zigzag.Grain-7_Warp--3_Speed-1000_oo-4_ob-500_ColorMode-nope')!
+    const look = decodeRecipe('1.zigzag.Grain-7_Warp--3_Speed-1000_OO-4_OB-500_ColorMode-nope')!
     expect(look.effects.grain).toBe(EFFECT_DIALS.grain.max)
     expect(look.effects.warp).toBe(EFFECT_DIALS.warp.min)
     expect(look.effects.speed).toBe(EFFECT_DIALS.speed.max)
@@ -100,7 +120,7 @@ describe('recipe', () => {
     // A shuffled roll with a finish on it; every template, so the longest dial list counts too.
     for (const slug of Object.keys(templates)) {
       const look = { ...atDefaults(slug), values: randomVariables(templates[slug]), effects: { ...DEFAULT_EFFECTS, grain: 0.3, move: 0.35 } }
-      expect(encodeRecipe(look).length, slug).toBeLessThan(150)
+      expect(encodeRecipe(look).length, slug).toBeLessThan(200)
     }
   })
 })

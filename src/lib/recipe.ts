@@ -2,6 +2,7 @@ import { DEFAULT_EFFECTS, type Effects, effectsToParams, parseEffects } from '~/
 import { clampOverlayOpacity, overlayTypes } from '~/lib/overlays'
 import { defaultVariables, paramToValue, valueToParam } from '~/lib/pattern'
 import templates from '~/lib/templates'
+import type { Templates, Variables } from '~/types'
 
 /**
  * A recipe is the whole look in one URL-safe string, carried as `?p=`:
@@ -9,9 +10,15 @@ import templates from '~/lib/templates'
  *   1.<slug>.<key>-<value>_<key>-<value>…
  *
  * `1` is the format version. Only values that differ from their defaults are
- * written. Keys: a dial's position in the template (`0`, `1`, …), `ot`/`oc`/
- * `oo`/`ob` for the overlay, and effect params without their `fx` prefix
- * (`Grain`, `ColorMode`, …) so new effect fields serialize with no change here.
+ * written. Dials are keyed by name, so a recipe survives dials being added,
+ * removed or reordered: a dial it names that no longer exists is ignored, and
+ * one it leaves out takes its default.
+ *
+ * Keys never collide and are never escaped, by one rule: dial names are
+ * lowerCamelCase (`^[a-z][A-Za-z0-9]*$`, enforced by a test), and every other
+ * key starts with an uppercase letter — `OT`/`OC`/`OO`/`OB` for the overlay,
+ * and effect params without their `fx` prefix (`Grain`, `ColorMode`, …), so
+ * new effect fields serialize with no change here.
  *
  * Free of Vue, the router and the DOM so other clients can share it.
  */
@@ -39,10 +46,10 @@ export interface Look {
 
 const VERSION = '1'
 const OVERLAY_KEYS: Record<keyof Overlay, string> = {
-  overlayType: 'ot',
-  overlayColor: 'oc',
-  overlayOpacity: 'oo',
-  overlayBlur: 'ob',
+  overlayType: 'OT',
+  overlayColor: 'OC',
+  overlayOpacity: 'OO',
+  overlayBlur: 'OB',
 }
 const MAX_BLUR = 20
 
@@ -86,10 +93,10 @@ function parseOverlay(read: (key: keyof Overlay) => unknown, fallback: Overlay):
   }
 }
 
-/** Dial values for a template from a param reader, in the template's dial order. */
-function parseValues(slug: string, read: (key: string, index: number) => unknown) {
-  return Object.entries(templates[slug].variables).reduce((acc, [key, variable], index) => {
-    acc[key] = paramToValue(read(key, index), variable)
+/** Dial values for a template's dials from a param reader keyed by dial name. */
+function parseValues(variables: Variables, read: (key: string) => unknown) {
+  return Object.entries(variables).reduce((acc, [key, variable]) => {
+    acc[key] = paramToValue(read(key), variable)
     return acc
   }, {} as Record<string, string | number>)
 }
@@ -102,9 +109,9 @@ export function encodeRecipe(look: Look) {
   }
 
   const defaults = defaultVariables(templates[look.template]?.variables ?? {})
-  Object.keys(defaults).forEach((key, index) => {
+  Object.keys(defaults).forEach((key) => {
     if (key in look.values)
-      add(String(index), valueToParam(look.values[key]), valueToParam(defaults[key]))
+      add(key, valueToParam(look.values[key]), valueToParam(defaults[key]))
   })
   for (const [field, key] of Object.entries(OVERLAY_KEYS) as [keyof Overlay, string][])
     add(key, valueToParam(look.overlay[field]), valueToParam(DEFAULT_OVERLAY[field]))
@@ -116,13 +123,16 @@ export function encodeRecipe(look: Look) {
   return [VERSION, look.template, ...(entries.length ? [entries.join('_')] : [])].join('.')
 }
 
-/** Never throws: returns undefined for anything that is not a recipe for a known template. */
-export function decodeRecipe(recipe: unknown): Look | undefined {
+/**
+ * Never throws: returns undefined for anything that is not a recipe for a known template.
+ * `catalog` is the pattern set to read against, so a client holding newer or older pattern files can pass its own.
+ */
+export function decodeRecipe(recipe: unknown, catalog: Templates = templates): Look | undefined {
   try {
     if (typeof recipe !== 'string')
       return undefined
     const match = /^(\w+)\.([a-z0-9_]+)(?:\.(.*))?$/.exec(recipe)
-    if (!match || match[1] !== VERSION || !isTemplate(match[2]))
+    if (!match || match[1] !== VERSION || !isKey(catalog, match[2]))
       return undefined
     const [, , slug, body = ''] = match
 
@@ -138,7 +148,7 @@ export function decodeRecipe(recipe: unknown): Look | undefined {
 
     return {
       template: slug,
-      values: parseValues(slug, (_, index) => entries.get(String(index))),
+      values: parseValues(catalog[slug].variables, key => entries.get(key)),
       overlay: parseOverlay(field => entries.get(OVERLAY_KEYS[field]), DEFAULT_OVERLAY),
       effects: parseEffects(param => entries.get(effectKey(param)), DEFAULT_EFFECTS),
     }
@@ -157,7 +167,7 @@ export function lookFromParams(read: (key: string) => unknown, fallback: Look): 
   const template = isTemplate(slug) ? slug : fallback.template
   return {
     template,
-    values: parseValues(template, key => read(key)),
+    values: parseValues(templates[template].variables, read),
     overlay: parseOverlay(read, fallback.overlay),
     effects: parseEffects(read, fallback.effects),
   }
