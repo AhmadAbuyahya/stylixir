@@ -1,4 +1,4 @@
-import { GRAIN_TILE, type PatternFrame } from '~/lib/effects'
+import type { PatternFrame } from '~/lib/effects'
 
 export type ImageFormat = 'png' | 'jpeg' | 'webp'
 
@@ -6,17 +6,20 @@ export interface SizePreset {
   id: string
   label: string
   hint: string
+  /** Layout size in CSS pixels, so the pattern keeps the scale it has on that screen. */
   width: number
   height: number
+  /** Render ratio, the screen's pixel density. The file is `renderSize(width, height, scale)`. */
+  scale: number
 }
 
 export const SIZE_PRESETS: SizePreset[] = [
-  { id: 'hd', label: 'HD desktop', hint: '1920 × 1080', width: 1920, height: 1080 },
-  { id: 'qhd', label: 'QHD desktop', hint: '2560 × 1440', width: 2560, height: 1440 },
-  { id: 'uhd', label: '4K desktop', hint: '3840 × 2160', width: 3840, height: 2160 },
-  { id: 'ultrawide', label: 'Ultrawide', hint: '3440 × 1440', width: 3440, height: 1440 },
-  { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 1170, height: 2532 },
-  { id: 'tablet', label: 'Tablet', hint: '2048 × 2732', width: 2048, height: 2732 },
+  { id: 'hd', label: 'HD desktop', hint: '1920 × 1080', width: 1920, height: 1080, scale: 1 },
+  { id: 'qhd', label: 'QHD desktop', hint: '2560 × 1440', width: 2560, height: 1440, scale: 1 },
+  { id: 'uhd', label: '4K desktop', hint: '3840 × 2160', width: 3840, height: 2160, scale: 1 },
+  { id: 'ultrawide', label: 'Ultrawide', hint: '3440 × 1440', width: 3440, height: 1440, scale: 1 },
+  { id: 'phone', label: 'Phone', hint: '1170 × 2532', width: 390, height: 844, scale: 3 },
+  { id: 'tablet', label: 'Tablet', hint: '2048 × 2732', width: 1024, height: 1366, scale: 2 },
 ]
 
 export const MAX_SIDE = 7680
@@ -27,7 +30,7 @@ export interface ExportSpec {
   height: number
   format: ImageFormat
   quality: number
-  pixelRatio: 1 | 2
+  pixelRatio: number
   slug: string
   /** A still frame (no motion); leave its overlay out to export without one. */
   frame: PatternFrame
@@ -39,14 +42,36 @@ export function clampDimension(value: number) {
   return Math.min(MAX_SIDE, Math.max(1, Math.round(value)))
 }
 
+/** The file's real pixel size: html-to-image sets `canvas.width = width * ratio`, which the browser truncates. */
+export function renderSize(width: number, height: number, pixelRatio: number) {
+  return {
+    width: Math.trunc(clampDimension(width) * pixelRatio),
+    height: Math.trunc(clampDimension(height) * pixelRatio),
+  }
+}
+
 export function outputPixels(width: number, height: number, pixelRatio: number) {
   return clampDimension(width) * clampDimension(height) * pixelRatio * pixelRatio
 }
 
 export function canUsePixelRatio(width: number, height: number, pixelRatio: number) {
-  const w = clampDimension(width) * pixelRatio
-  const h = clampDimension(height) * pixelRatio
+  const { width: w, height: h } = renderSize(width, height, pixelRatio)
   return w <= MAX_SIDE && h <= MAX_SIDE && w * h <= MAX_PIXELS
+}
+
+/**
+ * The device's screen as a CSS layout size plus a render ratio, so the export looks
+ * like the screen at its physical resolution. A screen past the export limits keeps
+ * its layout and gets a lower ratio. iOS reports `screen` in portrait whatever the
+ * rotation, so the caller says which way the screen is turned.
+ */
+export function screenSize(screenWidth: number, screenHeight: number, devicePixelRatio: number, landscape: boolean) {
+  const long = clampDimension(Math.max(screenWidth, screenHeight))
+  const short = clampDimension(Math.min(screenWidth, screenHeight))
+  const scale = Math.min(devicePixelRatio, MAX_SIDE / long, Math.sqrt(MAX_PIXELS / (long * short)))
+  return landscape
+    ? { width: long, height: short, scale }
+    : { width: short, height: long, scale }
 }
 
 export function exportFilename(slug: string, width: number, height: number, format: ImageFormat, pixelRatio: number) {
@@ -130,11 +155,12 @@ function mountExportFrame(spec: ExportSpec) {
 
   root.append(pattern)
 
-  // Grain is painted straight onto the canvas afterwards (see `paintGrain`):
-  // its SVG noise tile does not survive html-to-image's foreignObject capture.
-  for (const layer of ['light', 'overlay'] as const) {
+  // Texture tiles (grain, paper, riso ink) are painted straight onto the canvas
+  // afterwards (see `paintTexture`): their SVG noise does not survive
+  // html-to-image's foreignObject capture.
+  for (const layer of ['light', 'overlay', 'material'] as const) {
     const css = frame[layer]
-    if (!css)
+    if (!css || textureSrc(css))
       continue
     const el = doc.createElement('div')
     applyCss(el, css)
@@ -154,30 +180,35 @@ function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('Could not load the grain texture.'))
+    image.onerror = () => reject(new Error('Could not load a texture.'))
     image.src = src
   })
 }
 
-/** Composites the frame's grain layer over a finished capture, matching its CSS blend. */
-async function paintGrain(canvas: HTMLCanvasElement, grain: Record<string, string>, pixelRatio: number) {
-  const src = grain['background-image']?.match(/^url\("(.*)"\)$/)?.[1]
+function textureSrc(css: Record<string, string>) {
+  return css['background-image']?.match(/^url\("(data:image\/svg\+xml,.*)"\)$/)?.[1]
+}
+
+/** Composites a texture layer over a finished capture, matching its CSS tile size and blend. */
+async function paintTexture(canvas: HTMLCanvasElement, texture: Record<string, string>, pixelRatio: number) {
+  const src = textureSrc(texture)
   const ctx = canvas.getContext('2d')
   if (!src || !ctx)
     return
 
   const image = await loadImage(src)
+  const size = Number.parseFloat(texture['background-size'] ?? '') || image.width
   const tile = document.createElement('canvas')
-  tile.width = GRAIN_TILE * pixelRatio
-  tile.height = GRAIN_TILE * pixelRatio
+  tile.width = size * pixelRatio
+  tile.height = size * pixelRatio
   tile.getContext('2d')?.drawImage(image, 0, 0, tile.width, tile.height)
 
   const pattern = ctx.createPattern(tile, 'repeat')
   if (!pattern)
     return
   ctx.save()
-  ctx.globalAlpha = Number(grain.opacity ?? 1)
-  ctx.globalCompositeOperation = (grain['mix-blend-mode'] ?? 'overlay') as GlobalCompositeOperation
+  ctx.globalAlpha = Number(texture.opacity ?? 1)
+  ctx.globalCompositeOperation = (texture['mix-blend-mode'] ?? 'overlay') as GlobalCompositeOperation
   ctx.fillStyle = pattern
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.restore()
@@ -217,8 +248,11 @@ export async function renderPatternBlob(spec: ExportSpec) {
       cacheBust: false,
       skipAutoScale: true,
     })
-    if (spec.frame.grain)
-      await paintGrain(canvas, spec.frame.grain, pixelRatio)
+    for (const layer of ['material', 'grain'] as const) {
+      const texture = spec.frame[layer]
+      if (texture)
+        await paintTexture(canvas, texture, pixelRatio)
+    }
     return canvasToBlob(canvas, spec.format, spec.quality)
   }
   finally {

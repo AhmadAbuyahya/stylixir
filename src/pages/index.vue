@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import tinycolor from 'tinycolor2'
 import { buildSnippet } from '~/lib/effects'
-import { randomTemplateSlug } from '~/lib/pattern'
 import templates from '~/lib/templates'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 import { useToastStore } from '~/stores/toast'
@@ -48,16 +47,18 @@ function go(step: number) {
   store.updateActiveTemplate(slugs[(index.value + step + slugs.length) % slugs.length])
 }
 
-async function shuffle() {
-  store.updateActiveTemplate(randomTemplateSlug(templates, store.activeTemplate))
-  // The store resets dials to defaults in a watcher; roll after it has run.
-  await nextTick()
-  store.randomizeAll()
-}
-
 function pick(slug: string) {
   store.updateActiveTemplate(slug)
   bookOpen.value = false
+}
+
+function applyKept(recipe: string) {
+  store.applyRecipe(recipe)
+  bookOpen.value = false
+}
+
+function toggleKeep() {
+  addToast({ variant: 'success', title: store.toggleKeep() ? 'Kept. Find it at the top of the Book.' : 'Removed from your kept looks' })
 }
 
 async function copyCss() {
@@ -99,10 +100,13 @@ watch(isFullscreen, (full) => {
 })
 
 useEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.metaKey || event.ctrlKey || event.altKey || exportOpen.value)
+  const command = event.metaKey || event.ctrlKey
+  // Cmd/Ctrl+Z is the one modified key let through, for undo.
+  if (event.altKey || exportOpen.value || (command && event.key.toLowerCase() !== 'z'))
     return
   if (bare.value) {
-    unpresent()
+    if (!command)
+      unpresent()
     return
   }
   if (event.key === 'Escape') {
@@ -117,7 +121,12 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     return
   if (event.key === ' ' && !target.closest('button, a')) {
     event.preventDefault()
-    shuffle()
+    store.shuffle()
+  }
+  // Shift+Z is redo elsewhere, and there is no redo here.
+  else if (event.key.toLowerCase() === 'z' && !event.shiftKey) {
+    event.preventDefault()
+    store.undo()
   }
   else if (event.key === 'ArrowRight') {
     go(1)
@@ -131,9 +140,15 @@ onMounted(() => {
   if (window.matchMedia('(min-width: 1100px)').matches)
     tuneOpen.value = true
   // A bare visit opens on a fresh roll; shared links keep theirs. Runs after the store reads the URL.
-  const shared = new URLSearchParams(location.search).has('template') || location.hash.includes('template=')
-  if (!shared)
-    setTimeout(shuffle, 0)
+  const search = new URLSearchParams(location.search)
+  const shared = search.has('p') || search.has('template') || location.hash.includes('template=')
+  if (!shared) {
+    setTimeout(() => {
+      store.shuffle()
+      // The look before this first roll was never really seen, so there is nothing to undo yet.
+      store.undoStack = []
+    }, 0)
+  }
 })
 </script>
 
@@ -156,6 +171,10 @@ onMounted(() => {
           <span class="i-carbon-catalog" aria-hidden="true" />
           <span class="tool-label">Book</span>
           <span class="tool-count">{{ slugs.length }}</span>
+        </button>
+        <button class="tool" type="button" :title="store.isKept ? 'Kept. Press to remove it from the Book' : 'Keep this look in the Book'" :aria-label="store.isKept ? 'Kept' : 'Keep this look'" :aria-pressed="store.isKept" @click="toggleKeep">
+          <span :class="store.isKept ? 'i-carbon-star-filled' : 'i-carbon-star'" aria-hidden="true" />
+          <span class="tool-label">{{ store.isKept ? 'Kept' : 'Keep' }}</span>
         </button>
         <button class="tool" type="button" title="Tune shape, colors, finish and motion" :aria-pressed="tuneOpen" @click="tuneOpen = !tuneOpen">
           <span class="i-carbon-settings-adjust" aria-hidden="true" />
@@ -201,7 +220,10 @@ onMounted(() => {
           <button class="step" type="button" title="Previous pattern (←)" aria-label="Previous pattern" @click="go(-1)">
             <span class="i-carbon-arrow-left" aria-hidden="true" />
           </button>
-          <button class="shuffle" type="button" @click="shuffle">
+          <button class="step" type="button" title="Undo, back one look (Z)" aria-label="Undo" :disabled="!store.canUndo" @click="store.undo()">
+            <span class="i-carbon-undo" aria-hidden="true" />
+          </button>
+          <button class="shuffle" type="button" @click="store.shuffle()">
             <span class="i-carbon-shuffle" aria-hidden="true" />
             Shuffle
             <kbd class="shuffle-kbd">Space</kbd>
@@ -218,7 +240,7 @@ onMounted(() => {
     </Transition>
 
     <Transition name="book">
-      <PatternBook v-show="bookOpen" :open="bookOpen" :active="store.activeTemplate" @pick="pick" @close="bookOpen = false" />
+      <PatternBook v-show="bookOpen" :open="bookOpen" :active="store.activeTemplate" :kept="store.kept" :current="store.recipe" @pick="pick" @apply="applyKept" @unkeep="store.unkeep" @close="bookOpen = false" />
     </Transition>
 
     <ExportDialog v-model:open="exportOpen" />
@@ -436,6 +458,13 @@ meta:
 
 .step:hover {
   background: var(--wash);
+}
+
+.step:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: none;
+  transform: none;
 }
 
 .shuffle {

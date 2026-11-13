@@ -81,6 +81,8 @@ describe('buildFrame', () => {
     expect(frame.light).toBeUndefined()
     expect(frame.grain).toBeUndefined()
     expect(frame.overlay).toBeUndefined()
+    expect(frame.material).toBeUndefined()
+    expect(frame.pattern.filter).toBeUndefined()
     expect(frame.filterMarkup).toBe('')
     expect(frame.css).toBe('')
   })
@@ -230,5 +232,77 @@ describe('buildSnippet', () => {
     expect(snippet).toContain('<filter id="stylixir-warp"')
     expect(snippet).toContain('@keyframes stylixir-hue')
     expect(snippet).toContain('prefers-reduced-motion')
+  })
+})
+
+describe('materials', () => {
+  const frame = (effects: Partial<typeof DEFAULT_EFFECTS>, options: { animate?: boolean } = {}) =>
+    buildFrame({ template, variables, values, effects: { ...DEFAULT_EFFECTS, ...effects }, filterId: 'f', ...options })
+
+  it('changes nothing at the default or at zero strength', () => {
+    const plain = frame({})
+    expect(frame({ materialStrength: 1 })).toEqual(plain)
+    expect(frame({ material: 'riso', materialStrength: 0 })).toEqual(plain)
+  })
+
+  it('gives paper and linen a blended layer and leaves the pattern alone', () => {
+    const paper = frame({ material: 'paper' })
+    expect(paper.material?.['background-image']).toMatch(/^url\("data:image\/svg\+xml,.*feDiffuseLighting/)
+    expect(paper.material?.['background-size']).toBe('512px 512px')
+    expect(paper.material?.['mix-blend-mode']).toBe('hard-light')
+    expect(paper.material?.opacity).toBe('0.5')
+    expect(paper.pattern.filter).toBeUndefined()
+    expect(paper.filterMarkup).toBe('')
+
+    const linen = frame({ material: 'linen', materialStrength: 0.8 })
+    expect(linen.material?.['background-image']).toContain('repeating-linear-gradient(90deg')
+    expect(linen.material?.opacity).toBe('0.8')
+    expect(linen.filterMarkup).toBe('')
+  })
+
+  it('embosses through a lighting filter on the pattern, overhanging the edges', () => {
+    const embossed = frame({ material: 'embossed' })
+    expect(embossed.material).toBeUndefined()
+    expect(embossed.pattern.filter).toBe('url(#f-material)')
+    expect(embossed.pattern.inset).toBe('-4px')
+    expect(embossed.filterMarkup).toContain('<filter id="f-material"')
+    expect(embossed.filterMarkup).toContain('feDiffuseLighting')
+    expect(embossed.filterMarkup).toContain('luminanceToAlpha')
+  })
+
+  it('prints riso as offset ink plates plus an ink texture layer', () => {
+    const riso = frame({ material: 'riso' })
+    expect(riso.pattern.filter).toBe('url(#f-material)')
+    expect(riso.filterMarkup.match(/<feOffset/g)).toHaveLength(3)
+    expect(riso.filterMarkup).toContain('dx="2"')
+    expect(riso.material?.['mix-blend-mode']).toBe('screen')
+  })
+
+  it('chains after warp, adding the bleeds, and survives a still frame', () => {
+    const both = frame({ material: 'embossed', warp: 40 })
+    expect(both.pattern.filter).toBe('url(#f) url(#f-material)')
+    expect(both.pattern.inset).toBe(`-${warpBleed({ ...DEFAULT_EFFECTS, warp: 40 }) + 4}px`)
+    expect(both.filterMarkup.indexOf('id="f"')).toBeLessThan(both.filterMarkup.indexOf('id="f-material"'))
+
+    const still = frame({ material: 'riso', liquid: 0.5, shape: 0.5 }, { animate: false })
+    expect(still.pattern.filter).toBe('url(#f-material)')
+    expect(still.css).toBe('')
+  })
+
+  it('round-trips through the URL and ignores unknown materials', () => {
+    const effects = { ...DEFAULT_EFFECTS, material: 'linen' as const, materialStrength: 0.7 }
+    const params = effectsToParams(effects)
+    expect(params.fxMaterial).toBe('linen')
+    expect(params.fxMaterialStrength).toBe(0.7)
+    expect(parseEffects(key => params[key])).toEqual(effects)
+    expect(parseEffects(key => ({ fxMaterial: 'velvet' } as Record<string, string>)[key]).material).toBe('none')
+  })
+
+  it('puts its layer and filter in the snippet', () => {
+    const riso = buildSnippet(frame({ material: 'riso' }))
+    expect(riso).toContain('<div class="background__material"></div>')
+    expect(riso).toContain('<filter id="f-material"')
+    expect(riso).toContain('filter: url(#f-material);')
+    expect(buildSnippet(frame({ material: 'embossed' }))).not.toContain('background__material')
   })
 })

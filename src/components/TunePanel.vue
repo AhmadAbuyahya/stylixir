@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import startCase from 'lodash.startcase'
 import { storeToRefs } from 'pinia'
-import { CHANNEL_ON, DEFAULT_EFFECTS, EFFECT_DIALS, type Effects, type MotionChannel, isMoving } from '~/lib/effects'
+import { CHANNEL_ON, DEFAULT_EFFECTS, EFFECT_DIALS, type Effects, type MotionChannel, isMoving, materials } from '~/lib/effects'
 import { overlayTypes } from '~/lib/overlays'
 import { useActiveTemplateStore } from '~/stores/activeTemplate'
 
@@ -159,6 +159,29 @@ const colorVars = computed(() => Object.entries(variables.value).filter(([, vari
             Reset effects
           </button>
         </div>
+        <div class="segmented materials" role="radiogroup" aria-label="Material">
+          <button
+            v-for="material in materials"
+            :key="material"
+            type="button"
+            role="radio"
+            class="segment"
+            :aria-checked="effectVariables.material === material"
+            @click="effectVariables.material = material"
+          >
+            {{ startCase(material) }}
+          </button>
+        </div>
+        <SliderRow
+          v-if="effectVariables.material !== 'none'"
+          v-model="effectVariables.materialStrength"
+          label="Strength"
+          :min="0.05"
+          :max="EFFECT_DIALS.materialStrength.max"
+          :step="EFFECT_DIALS.materialStrength.step"
+          :default-value="DEFAULT_EFFECTS.materialStrength"
+          percent
+        />
         <SliderRow
           v-for="dial in visibleEffectDials"
           :key="dial.key"
@@ -610,6 +633,15 @@ const colorVars = computed(() => Object.entries(variables.value).filter(([, vari
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
+}
+
+.materials {
+  grid-template-columns: repeat(5, 1fr);
+  margin-bottom: 2px;
+}
+
+.materials .segment {
+  padding: 0 4px;
 }
 
 .compass {
