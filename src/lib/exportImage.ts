@@ -42,7 +42,7 @@ export function clampDimension(value: number) {
   return Math.min(MAX_SIDE, Math.max(1, Math.round(value)))
 }
 
-/** The file's real pixel size: html-to-image sets `canvas.width = width * ratio`, which the browser truncates. */
+/** The file's real pixel size: the capture is sized to it, so a fractional ratio is truncated like a canvas. */
 export function renderSize(width: number, height: number, pixelRatio: number) {
   return {
     width: Math.trunc(clampDimension(width) * pixelRatio),
@@ -96,13 +96,51 @@ function nextFrame() {
   return new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
 }
 
+/** Splits a CSS list on its top-level commas, so `url("a,b")` and `min(1px, 2px)` stay whole. */
+export function splitList(value: string) {
+  const items: string[] = []
+  let depth = 0
+  let quote = ''
+  let start = 0
+  for (let i = 0; i < value.length; i++) {
+    const char = value[i]
+    if (quote) {
+      if (char === quote && value[i - 1] !== '\\')
+        quote = ''
+    }
+    else if (char === '"' || char === '\'') {
+      quote = char
+    }
+    else if (char === '(') {
+      depth++
+    }
+    else if (char === ')') {
+      depth--
+    }
+    else if (char === ',' && depth === 0) {
+      items.push(value.slice(start, i).trim())
+      start = i + 1
+    }
+  }
+  items.push(value.slice(start).trim())
+  return items
+}
+
 function flattenBackground(el: HTMLElement) {
   const computed = getComputedStyle(el)
+  const layers = splitList(computed.backgroundImage).length
+  // WebKit keeps a short list (one size for four layers) as is, and html-to-image copies its
+  // `background` shorthand, which then drops the size, position and repeat of every layer
+  // after the first. One entry per layer survives that.
+  const perLayer = (value: string) => {
+    const items = splitList(value)
+    return Array.from({ length: layers }, (_, i) => items[i % items.length]).join(', ')
+  }
   el.style.backgroundImage = computed.backgroundImage
   el.style.backgroundColor = computed.backgroundColor
-  el.style.backgroundSize = computed.backgroundSize
-  el.style.backgroundPosition = computed.backgroundPosition
-  el.style.backgroundRepeat = computed.backgroundRepeat
+  el.style.backgroundSize = perLayer(computed.backgroundSize)
+  el.style.backgroundPosition = perLayer(computed.backgroundPosition)
+  el.style.backgroundRepeat = perLayer(computed.backgroundRepeat)
 }
 
 function mountExportFrame(spec: ExportSpec) {
@@ -240,10 +278,21 @@ export async function renderPatternBlob(spec: ExportSpec) {
     const root = pattern.parentElement
     if (!root)
       throw new Error('Could not export the image.')
+    // Firefox rasterizes the SVG capture at its own size and stretches the bitmap for any
+    // `pixelRatio` above 1, softening every edge (a transform stretches it the same way).
+    // So capture at 1 the size of the file and `zoom` the content, which it lays out and
+    // paints at full resolution. shortcut: Firefox before 126 has no `zoom` and would export
+    // the pattern unscaled in a corner; drop this once those are gone.
+    const file = renderSize(spec.width, spec.height, pixelRatio)
     const canvas = await toCanvas(root, {
-      pixelRatio,
-      width,
-      height,
+      pixelRatio: 1,
+      width: file.width,
+      height: file.height,
+      style: {
+        width: `${width}px`,
+        height: `${height}px`,
+        zoom: String(pixelRatio),
+      } as Partial<CSSStyleDeclaration>, // `zoom` is missing from this lib.dom
       fontEmbedCSS: '',
       cacheBust: false,
       skipAutoScale: true,

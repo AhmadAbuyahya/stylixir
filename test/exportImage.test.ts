@@ -9,6 +9,7 @@ import {
   outputPixels,
   renderSize,
   screenSize,
+  splitList,
 } from '~/lib/exportImage'
 
 describe('exportImage helpers', () => {
@@ -47,6 +48,13 @@ describe('exportImage helpers', () => {
   it('truncates fractional render sizes like the canvas does', () => {
     expect(renderSize(412, 915, 2.625)).toEqual({ width: 1081, height: 2401 })
     expect(renderSize(390, 844, 3)).toEqual({ width: 1170, height: 2532 })
+  })
+
+  it('splits a CSS list only on its top-level commas', () => {
+    expect(splitList('50px 0px, 50px 0px, 0px 0px')).toEqual(['50px 0px', '50px 0px', '0px 0px'])
+    expect(splitList('repeat')).toEqual(['repeat'])
+    expect(splitList('linear-gradient(45deg, red 1%, blue 2%), url("a,b.svg"), url(data:image/svg+xml,%3Csvg%3E)'))
+      .toEqual(['linear-gradient(45deg, red 1%, blue 2%)', 'url("a,b.svg")', 'url(data:image/svg+xml,%3Csvg%3E)'])
   })
 
   it('rejects 2x density when the raster would overflow', () => {
