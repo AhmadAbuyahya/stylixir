@@ -60,6 +60,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0232a0c7-8d81-4368-8e09-54fdc7bf2854"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0232a0c7-8d81-4368-8e09-54fdc7bf2854"
     }
   }
 }
