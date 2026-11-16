@@ -1,5 +1,7 @@
 import tinycolor from 'tinycolor2'
 import type { ColorHarmony, ColorRole, Template, Variables } from '~/types'
+import { COMBOS } from '~/lib/combos'
+import templates from '~/lib/templates'
 
 type Rng = () => number
 
@@ -228,11 +230,56 @@ function generateSet(count: number, rng: Rng, hasGround: boolean) {
   ))
 }
 
+function distance(a: string, b: string) {
+  const x = tinycolor(a).toRgb()
+  const y = tinycolor(b).toRgb()
+  return Math.hypot(x.r - y.r, x.g - y.g, x.b - y.b)
+}
+
+/** How far a color sits from its nearest neighbor in the combo. */
+function isolation(combo: string[], index: number) {
+  return Math.min(...combo.filter((_, i) => i !== index).map(hex => distance(hex, combo[index])))
+}
+
+/** Studied combos: Wada's dictionary plus every template's own starting colors, minus the ones too close to read. */
+const CURATED = [
+  ...COMBOS,
+  ...Object.values(templates)
+    .filter(template => template.harmony !== 'ramp')
+    .map(template => Object.values(template.variables)
+      .filter(variable => variable.type === 'color')
+      .map(variable => String(variable.value))),
+].filter(combo => combo.every((_, i) => isolation(combo, i) >= (combo.length === 2 ? 60 : 30)))
+
+/** Share of rolls that use a studied combo; the rest stay procedural so rolls never run out. */
+const CURATED_SHARE = 0.7
+
+function curatedColors(count: number, hasGround: boolean, rng: Rng) {
+  const pool = CURATED.filter(combo => combo.length === count)
+  // Only sizes with a deep pool, so a roll rarely repeats.
+  if (pool.length < 50)
+    return undefined
+  const combo = shuffle(pick(pool, rng), rng)
+  if (!hasGround)
+    return combo
+
+  // The ground is the darkest or lightest color, leaning to the one that stands further from the figures.
+  const sorted = [...combo].sort((a, b) => tinycolor(a).getLuminance() - tinycolor(b).getLuminance())
+  const lean = isolation(sorted, 0) - isolation(sorted, count - 1) + rand(-20, 20, rng)
+  const ground = sorted[lean > 0 ? 0 : count - 1]
+  return [ground, ...combo.filter(hex => hex !== ground)]
+}
+
 function generateColors(count: number, harmony: ColorHarmony, hasGround: boolean, rng: Rng) {
   if (count <= 0)
     return []
   if (harmony === 'ramp')
     return generateRamp(count, rng)
+  if (rng() < CURATED_SHARE) {
+    const curated = curatedColors(count, hasGround, rng)
+    if (curated)
+      return curated
+  }
   if (count === 1 || harmony === 'pair' || count === 2)
     return generatePair(rng, hasGround).slice(0, count)
   return generateSet(count, rng, hasGround)
