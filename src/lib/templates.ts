@@ -207,6 +207,7 @@ const templates: Templates = {
       colorLight: { type: 'color', value: '#f2f2f2' },
       cubeRatio: {
         type: 'range',
+        breaking: true,
         value: 1.732,
         min: 1.2,
         max: 4,
@@ -216,8 +217,8 @@ const templates: Templates = {
         type: 'range',
         breaking: true,
         value: 120,
-        min: 10,
-        max: 180,
+        min: 100,
+        max: 160,
         step: 5,
       },
     },
@@ -313,8 +314,8 @@ const templates: Templates = {
   'overlapping_circles': {
     template: {
       '--_g': `
-        {colorOne} 0%  5% ,{colorTwo} 6%  15%,{colorOne} 16% 25%,{colorTwo} 26% 35%,{colorOne} 36% 45%,
-        {colorTwo} 46% 55%,{colorOne} 56% 65%,{colorTwo} 66% 75%,{colorOne} 76% 85%,{colorTwo} 86% 95%,
+        {colorOne} 0% calc(15% - {weight}%),{colorTwo} calc(16% - {weight}%) 15%,{colorOne} 16% calc(35% - {weight}%),{colorTwo} calc(36% - {weight}%) 35%,{colorOne} 36% calc(55% - {weight}%),
+        {colorTwo} calc(56% - {weight}%) 55%,{colorOne} 56% calc(75% - {weight}%),{colorTwo} calc(76% - {weight}%) 75%,{colorOne} 76% calc(95% - {weight}%),{colorTwo} calc(96% - {weight}%) 95%,
         #0000 96%`,
       'background': `
         radial-gradient({radius1}% {radius1}% at 100% 0,var(--_g)),
@@ -334,6 +335,13 @@ const templates: Templates = {
         type: 'color',
         value: '#05057e',
       },
+      weight: {
+        type: 'range',
+        value: 10,
+        min: 5,
+        max: 13,
+        step: 0.5,
+      },
       radius1: {
         type: 'range',
         value: 50,
@@ -345,11 +353,16 @@ const templates: Templates = {
 
   'equilateral_triangles': {
     template: {
-      'background':
-        `conic-gradient(from {topAngle}deg at 50% 33%,#0000,{colorOne} 0.5deg 60deg,#0000 60.5deg)
-         calc({size}px/2) calc({size}px/{sqrtFactor}),
-         conic-gradient(from {bottomAngle}deg at 50% 66%,#0000,{colorTwo} 0.5deg 60deg,{colorThree} 60.5deg)`,
-      'background-size': '{size}px calc(0.5*{size}px/tan(30deg))',
+      // Rows of up/down triangles whose cell is size x size*height; --_a is the half apex angle,
+      // --_d the inset that opens the gap, so every height still tiles exactly.
+      '--_a': 'atan(0.5/{height})',
+      '--_d': 'calc({gap}*{size}px/200)',
+      'background': `
+        linear-gradient({colorThree} var(--_d),#0000 0 calc(100% - var(--_d)),{colorThree} 0),
+        conic-gradient(from calc(180deg - var(--_a)) at 50% calc(var(--_d)/sin(var(--_a))),{colorOne} calc(2*var(--_a)),#0000 0),
+        conic-gradient(from calc(-1*var(--_a)) at 50% calc(100% - var(--_d)/sin(var(--_a))),{colorTwo} calc(2*var(--_a)),#0000 0) calc({size}px/2) 0,
+        {colorThree}`,
+      'background-size': '{size}px calc({size}px*{height})',
     },
     variables: {
       size: size(120, 60, 240, 10),
@@ -365,25 +378,19 @@ const templates: Templates = {
         type: 'color',
         value: '#ECD078',
       },
-      topAngle: {
+      gap: {
+        type: 'range',
+        value: 8,
+        min: 1,
+        max: 16,
+        step: 0.5,
+      },
+      height: {
         type: 'range',
         breaking: true,
-        value: 150,
-        min: 120,
-        max: 180,
-      },
-      bottomAngle: {
-        type: 'range',
-        breaking: true,
-        value: -30,
-        min: -60,
-        max: 0,
-      },
-      sqrtFactor: {
-        type: 'range',
-        value: 1.4142,
-        min: 1.3,
-        max: 1.6,
+        value: 0.866,
+        min: 0.5,
+        max: 1.5,
         step: 0.01,
       },
     },
@@ -391,27 +398,28 @@ const templates: Templates = {
 
   'braided_lines': {
     template: {
-      '--g': '{gap}px',
+      // size is the pitch; weight is the share of it the stripes take, so size scales the whole weave.
+      '--s': 'calc({size}px*{weight}/100)',
+      '--g': 'calc({size}px*(100 - {weight})/100)',
       'background':
-        `conic-gradient(at {size}px calc(100% - {size}px),
-          #0000 270deg,{colorOne} 0) calc({size}px + var(--g)) 0,
-         linear-gradient({colorTwo} {size}px,#0000 0) 0 var(--g),
-         conic-gradient(at {size}px calc(100% - {size}px),
+        `conic-gradient(at var(--s) calc(100% - var(--s)),
+          #0000 270deg,{colorOne} 0) calc(var(--s) + var(--g)) 0,
+         linear-gradient({colorTwo} var(--s),#0000 0) 0 var(--g),
+         conic-gradient(at var(--s) calc(100% - var(--s)),
           #0000 90deg,{colorTwo} 0 180deg, {colorOne} 0),
          {backgroundColor}`,
-      'background-size': `calc(2*({size}px + var(--g)))
-                          calc(2*({size}px + var(--g)))`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
     },
     variables: {
-      size: size(20, 10, 48, 2),
+      size: size(40, 24, 90, 2),
       colorOne: { type: 'color', value: '#C02942' },
       colorTwo: { type: 'color', value: '#53777A' },
       backgroundColor: { type: 'color', value: '#ECD078' },
-      gap: {
+      weight: {
         type: 'range',
-        value: 20,
-        min: 5,
-        max: 40,
+        value: 50,
+        min: 25,
+        max: 80,
         step: 1,
       },
     },
@@ -472,15 +480,25 @@ const templates: Templates = {
 
   'hearts_pattern': {
     template: {
+      // Each heart straddles a row seam; --_u is its width, so shrinking it about the seam opens gaps at a fixed pitch.
+      '--_u': 'calc({size}px*(100 - {gap})/100)',
+      '--_r': 'calc({lobe}*1.1314/100*var(--_u))',
       'background': `
-        radial-gradient(at 80% 80%,{heartColor} {lobe}%,#0000 calc({lobe}% + .6%)),
-        radial-gradient(at 20% 80%,{heartColor} {lobe}%,#0000 calc({lobe}% + .6%)),
-        conic-gradient(from -45deg at 50% 41%,{heartColor} 90deg,{backgroundColor} 0)
+        radial-gradient(circle var(--_r) at calc(100% - .2*var(--_u)) calc(100% - .2*var(--_u)),{heartColor} calc(var(--_r) - .8px),#0000 var(--_r)),
+        radial-gradient(circle var(--_r) at calc(.2*var(--_u)) calc(100% - .2*var(--_u)),{heartColor} calc(var(--_r) - .8px),#0000 var(--_r)),
+        conic-gradient(from -45deg at 50% calc(.41*var(--_u)),{heartColor} 90deg,{backgroundColor} 0)
            calc({size}px/2) 0`,
       'background-size': '{size}px {size}px',
     },
     variables: {
       size: size(120, 60, 200, 10),
+      gap: {
+        type: 'range',
+        value: 0,
+        min: 0,
+        max: 60,
+        step: 1,
+      },
       lobe: {
         type: 'range',
         breaking: true,
@@ -591,15 +609,22 @@ const templates: Templates = {
 
   'stars': {
     template: {
-      '--d': 'calc({size}px/{gapFactor})',
-      '--_g': '{starColor} {pointAngle}deg, #0000 0',
+      // The star fills its bounding box (width size, height .951*size); five bg cones at the inner
+      // vertices carve the notches, so any inner radius is a clean star. --_r is the outer radius,
+      // --_k the inner one, --_p each notch's half-angle.
+      '--_r': 'calc({size}px*.5257)',
+      '--_k': 'calc(var(--_r)*{inner}/100)',
+      '--_p': 'atan(.5878/(.809 - {inner}/100))',
       'background': `
-        conic-gradient(from calc(162deg + {rotation}deg) at calc({size}px * .5) calc({size}px * .68), var(--_g)),
-        conic-gradient(from calc(18deg + {rotation}deg) at calc({size}px * .19) calc({size}px * .59), var(--_g)),
-        conic-gradient(from calc(306deg + {rotation}deg) at calc({size}px * .81) calc({size}px * .59), var(--_g)),
-        {bgColor}`,
-      'background-position': '0 calc({size}px * {offsetY})',
-      'background-size': 'calc({size}px + var(--d)) calc({size}px + var(--d))',
+        linear-gradient(90deg,{bgColor} 1px,#0000 0 calc({size}px - 1px),{bgColor} 0),
+        linear-gradient({bgColor} 1px,#0000 0 calc({size}px*.951 - 1px),{bgColor} 0),
+        conic-gradient(from calc(36deg - var(--_p)) at calc({size}px/2 + var(--_k)*.5878) calc(var(--_r) - var(--_k)*.809),{bgColor} calc(2*var(--_p)),#0000 0),
+        conic-gradient(from calc(108deg - var(--_p)) at calc({size}px/2 + var(--_k)*.9511) calc(var(--_r) + var(--_k)*.309),{bgColor} calc(2*var(--_p)),#0000 0),
+        conic-gradient(from calc(180deg - var(--_p)) at calc({size}px/2) calc(var(--_r) + var(--_k)),{bgColor} calc(2*var(--_p)),#0000 0),
+        conic-gradient(from calc(252deg - var(--_p)) at calc({size}px/2 - var(--_k)*.9511) calc(var(--_r) + var(--_k)*.309),{bgColor} calc(2*var(--_p)),#0000 0),
+        conic-gradient(from calc(324deg - var(--_p)) at calc({size}px/2 - var(--_k)*.5878) calc(var(--_r) - var(--_k)*.809),{bgColor} calc(2*var(--_p)),#0000 0),
+        {starColor}`,
+      'background-size': 'calc({size}px*(100 + {gap})/100) calc({size}px*.951*(100 + {gap})/100)',
     },
     variables: {
       size: size(90, 40, 180, 5),
@@ -612,47 +637,34 @@ const templates: Templates = {
         value: '#e181c2',
         role: 'ground',
       },
-      gapFactor: {
+      gap: {
         type: 'range',
-        value: 10,
-        min: 4,
-        max: 20,
+        value: 12,
+        min: 5,
+        max: 60,
         step: 1,
       },
-      pointAngle: {
+      inner: {
         type: 'range',
-        breaking: true,
-        value: 36,
-        min: 22,
-        max: 48,
+        value: 38,
+        min: 25,
+        max: 60,
         step: 1,
-      },
-      rotation: {
-        type: 'range',
-        breaking: true,
-        value: 0,
-        min: 0,
-        max: 72,
-        step: 1,
-      },
-      offsetY: {
-        type: 'range',
-        value: 0.35,
-        min: 0.2,
-        max: 0.5,
-        step: 0.01,
       },
     },
   },
 
   'rectangles_parallelograms': {
     template: {
+      // The 45deg grid stretched to a size x size*height cell: --_t is the diagonal's angle from vertical,
+      // so every wedge edge still lands on a neighbouring apex. Inner/outer apexes mirror each other.
+      '--_t': 'atan(1/{height})',
       'background': `
-        conic-gradient(from {angle}deg at {outerPos}% {outerPos}%, {colorOne} 90deg, {colorTwo} 0 180deg, #0000 0),
-        conic-gradient(from calc(-1 * {angle}deg) at {innerPos}% {innerPos}%, {colorOne} 90deg, #0000 0),
-        conic-gradient(from calc(-1 * {angle}deg) at 50% 100%, #0000 180deg, {colorOne} 0),
-        conic-gradient(from calc(-1 * {angle}deg), {colorTwo} 90deg, {colorThree} 0 {splitAngle}deg, {colorFour} 0)`,
-      'background-size': '{size}px {size}px',
+        conic-gradient(from var(--_t) at calc(100% - {inset}%) calc(100% - {inset}%), {colorOne} calc(180deg - 2*var(--_t)), {colorTwo} 0 180deg, #0000 0),
+        conic-gradient(from calc(-1*var(--_t)) at {inset}% {inset}%, {colorOne} calc(2*var(--_t)), #0000 0),
+        conic-gradient(from calc(-1*var(--_t)) at 50% 100%, #0000 180deg, {colorOne} 0),
+        conic-gradient(from calc(-1*var(--_t)), {colorTwo} calc(2*var(--_t)), {colorThree} 0 calc({split}deg + var(--_t) - .3deg), {colorFour} calc({split}deg + var(--_t)))`,
+      'background-size': '{size}px calc({size}px*{height})',
     },
     variables: {
       size: size(150, 60, 260, 5),
@@ -672,35 +684,28 @@ const templates: Templates = {
         type: 'color',
         value: '#99B898',
       },
-      angle: {
+      inset: {
         type: 'range',
         breaking: true,
-        value: 45,
-        min: 15,
-        max: 75,
-        step: 1,
-      },
-      outerPos: {
-        type: 'range',
-        breaking: true,
-        value: 75,
-        min: 60,
-        max: 85,
-        step: 1,
-      },
-      innerPos: {
-        type: 'range',
         value: 25,
         min: 15,
-        max: 40,
+        max: 30,
         step: 1,
       },
-      splitAngle: {
+      split: {
         type: 'range',
-        value: 225,
-        min: 180,
-        max: 270,
-        step: 1,
+        value: 180,
+        min: 135,
+        max: 225,
+        step: 45,
+      },
+      height: {
+        type: 'range',
+        breaking: true,
+        value: 1,
+        min: 0.6,
+        max: 1.6,
+        step: 0.01,
       },
     },
   },
@@ -778,12 +783,13 @@ const templates: Templates = {
 
   'equal_sign': {
     template: {
-      '--_g': '#0000 {bandStart}%,{figureColor} 0 {bandEnd}%,#0000 0 {bandGap}%',
+      '--_w': 'calc({weight}%/2)',
+      '--_g': '#0000 calc({bandStart}% - var(--_w)),{figureColor} 0 calc({bandEnd}% + var(--_w)),#0000 0 calc({bandGap}% - var(--_w))',
       'background': `
-        linear-gradient({tilt}deg,#0000 20.5%,{figureColor} 0 29.5%,#0000 0) 0 calc({size}px/4),
+        linear-gradient({tilt}deg,#0000 calc(20.5% - var(--_w)),{figureColor} 0 calc(29.5% + var(--_w)),#0000 0) 0 calc({size}px/4),
         linear-gradient(calc({tilt}deg - 90deg),var(--_g)) calc({size}px/2) 0,
-        linear-gradient({tilt}deg,var(--_g),{figureColor} 0 67%,#0000 0),
-        linear-gradient(calc({tilt}deg - 90deg),var(--_g),{figureColor} 0 67%,#0000 0 83%,{figureColor} 0 92%,#0000 0),
+        linear-gradient({tilt}deg,var(--_g),{figureColor} 0 calc(67% + var(--_w)),#0000 0),
+        linear-gradient(calc({tilt}deg - 90deg),var(--_g),{figureColor} 0 calc(67% + var(--_w)),#0000 0 calc(83% - var(--_w)),{figureColor} 0 calc(92% + var(--_w)),#0000 0),
         {bgColor}`,
       'background-size': '{size}px {size}px',
     },
@@ -797,6 +803,13 @@ const templates: Templates = {
         type: 'color',
         value: '#1095c1',
         role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 0,
+        min: -3,
+        max: 6,
+        step: 0.5,
       },
       tilt: {
         type: 'range',
@@ -835,12 +848,15 @@ const templates: Templates = {
 
   'triangles_chevrons': {
     template: {
-      '--_g': '{cut}deg,#0000 0',
+      // Cell is 2*size x size*height; --_a is the wedge half-angle that reaches the cell corners, so
+      // every height still tiles. The tiny second angle softens the hard conic edge that steps.
+      '--_a': 'atan(1/{height})',
+      '--_g': 'calc(2*var(--_a) - .4deg),#0000 calc(2*var(--_a))',
       'background': `
-        conic-gradient(from {angle}deg,{colorOne} var(--_g)) {size}px calc({size}px/2),
-        conic-gradient(from {angle}deg,{colorTwo} var(--_g)),
-        conic-gradient(from {angle}deg at {tipX}% 0,{colorOne} var(--_g)) {colorTwo}`,
-      'background-size': 'calc(2*{size}px) {size}px',
+        conic-gradient(from calc(180deg - var(--_a)),{colorOne} var(--_g)) {size}px calc({size}px*{height}/2),
+        conic-gradient(from calc(180deg - var(--_a)) at 50% {weight}%,{colorTwo} var(--_g)),
+        conic-gradient(from calc(180deg - var(--_a)) at {tipX}% 0,{colorOne} var(--_g)) {colorTwo}`,
+      'background-size': 'calc(2*{size}px) calc({size}px*{height})',
     },
     variables: {
       size: size(64, 32, 160, 2),
@@ -853,24 +869,24 @@ const templates: Templates = {
         value: '#69D2E7',
         role: 'ground',
       },
-      angle: {
+      weight: {
         type: 'range',
-        breaking: true,
-        value: 135,
-        min: 90,
-        max: 180,
+        value: 50,
+        min: 25,
+        max: 75,
         step: 1,
       },
-      cut: {
+      height: {
         type: 'range',
         breaking: true,
-        value: 90,
-        min: 60,
-        max: 120,
-        step: 1,
+        value: 1,
+        min: 0.6,
+        max: 1.6,
+        step: 0.01,
       },
       tipX: {
         type: 'range',
+        breaking: true,
         value: 50,
         min: 44,
         max: 56,
@@ -882,9 +898,9 @@ const templates: Templates = {
   'rhombus_stripes': {
     template: {
       background: `
-        conic-gradient(from {fromA}deg,{colorOne} {wedge}deg,#0000 0 180deg,{colorTwo} 0 270deg,#0000 0)
+        conic-gradient(from calc(-{diamond}deg/2),{colorOne} {diamond}deg,#0000 0 180deg,{colorTwo} 0 calc(180deg + {diamond}deg),#0000 0)
           0 calc({size}px/2)/{size}px {size}px,
-        conic-gradient(from {fromB}deg at {tipX}% 0,{colorOne} {wedge}deg,{colorTwo} 0)
+        conic-gradient(from calc(180deg - {wedge}deg/2) at 50% 0,{colorOne} {wedge}deg,{colorTwo} 0)
           0 0/calc(2*{size}px) {size}px`,
     },
     variables: {
@@ -897,35 +913,18 @@ const templates: Templates = {
         type: 'color',
         value: '#EDC951',
       },
-      fromA: {
-        type: 'range',
-        breaking: true,
-        value: -45,
-        min: -75,
-        max: -15,
-        step: 1,
-      },
-      fromB: {
-        type: 'range',
-        breaking: true,
-        value: 135,
-        min: 105,
-        max: 165,
-        step: 1,
-      },
       wedge: {
         type: 'range',
-        breaking: true,
         value: 90,
-        min: 60,
-        max: 120,
+        min: 40,
+        max: 105,
         step: 1,
       },
-      tipX: {
+      diamond: {
         type: 'range',
-        value: 50,
-        min: 35,
-        max: 65,
+        value: 90,
+        min: 40,
+        max: 120,
         step: 1,
       },
     },
@@ -934,13 +933,13 @@ const templates: Templates = {
   'mosaic_triangles': {
     template: {
       '--_g': `calc(2*{size}px*1.732) calc(2*{size}px)
-        conic-gradient(from {from}deg at {accentX}% 50%,{colorOne} {wedge}deg,#0000 0)`,
+        conic-gradient(from calc(90deg - {wedge}deg/2) at {accentX}% 50%,{colorOne} {wedge}deg,#0000 0)`,
       'background': `
         calc(2.598*{size}px/2) calc({size}px/2)/var(--_g),
         calc(-0.866*{size}px/2) calc({size}px/-2)/var(--_g),
         repeating-conic-gradient({colorTwo} 0 90deg,#0000 0 180deg)
           0 0/calc(2*{size}px*1.732) calc(2*{size}px),
-        repeating-conic-gradient(from {from}deg,{colorThree} 0 {wedge}deg,{colorTwo} 0 180deg)
+        repeating-conic-gradient(from calc(90deg - {wedge}deg/2),{colorThree} 0 {wedge}deg,{colorTwo} 0 180deg)
           0 0/calc({size}px*1.732) {size}px`,
     },
     variables: {
@@ -958,14 +957,6 @@ const templates: Templates = {
         type: 'color',
         value: '#b62f31',
       },
-      from: {
-        type: 'range',
-        breaking: true,
-        value: 60,
-        min: 30,
-        max: 90,
-        step: 1,
-      },
       accentX: {
         type: 'range',
         value: 62.5,
@@ -975,10 +966,9 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
-        breaking: true,
         value: 60,
-        min: 40,
-        max: 80,
+        min: 30,
+        max: 70,
         step: 1,
       },
     },
@@ -2061,7 +2051,7 @@ const templates: Templates = {
   'nested_triangles_3d': {
     harmony: 'ramp',
     template: {
-      '--_g': 'conic-gradient(from {tipFrom}deg at 50% {tipY}%,#0000 calc(360deg - {wedge}deg),{colorOne} 0)',
+      '--_g': 'conic-gradient(from calc({tip}deg/2) at 50% {tipY}%,#0000 calc(360deg - {tip}deg),{colorOne} 0)',
       'background': `
         var(--_g) calc(0.2885*{size}px) calc(7*{size}px/12),
         var(--_g) 0 calc({size}px/12),
@@ -2108,6 +2098,13 @@ const templates: Templates = {
         max: 45,
         step: 1,
       },
+      tip: {
+        type: 'range',
+        value: 60,
+        min: 36,
+        max: 78,
+        step: 1,
+      },
       tipY: {
         type: 'range',
         value: 25,
@@ -2120,7 +2117,7 @@ const templates: Templates = {
         breaking: true,
         value: 3,
         min: 2.4,
-        max: 4,
+        max: 3.1,
         step: 0.1,
       },
     },
@@ -4557,9 +4554,8 @@ const templates: Templates = {
       },
       depth: {
         type: 'range',
-        breaking: true,
         value: 35,
-        min: 5,
+        min: 25,
         max: 42,
         step: 1,
       },
