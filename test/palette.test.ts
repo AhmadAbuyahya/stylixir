@@ -1,4 +1,6 @@
+import tinycolor from 'tinycolor2'
 import { describe, expect, it } from 'vitest'
+import { COMBOS } from '~/lib/combos'
 import { hueDistance, paletteMetrics, rollTemplatePalette } from '~/lib/palette'
 import templates from '~/lib/templates'
 
@@ -53,5 +55,31 @@ describe('rollTemplatePalette', () => {
     const palette = rollTemplatePalette(templates.geometric_flowers, rngFrom(3))
     const lights = Object.values(palette).map(hex => paletteMetrics(hex).l)
     expect(Math.max(...lights) - Math.min(...lights)).toBeGreaterThan(20)
+  })
+
+  it('ships the full Wada dictionary as valid hexes', () => {
+    expect([2, 3, 4].map(n => COMBOS.filter(combo => combo.length === n).length)).toEqual([120, 120, 108])
+    expect(COMBOS.flat().every(hex => /^#[0-9a-f]{6}$/.test(hex))).toBe(true)
+  })
+
+  it('rolls many different, readable pairs', () => {
+    const seen = new Set<string>()
+    for (let seed = 1; seed <= 300; seed++) {
+      const { bgColor, colorOne } = rollTemplatePalette(templates.zigzag, rngFrom(seed * 7919))
+      const a = tinycolor(bgColor).toRgb()
+      const b = tinycolor(colorOne).toRgb()
+      expect(Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b)).toBeGreaterThanOrEqual(60)
+      seen.add(bgColor + colorOne)
+    }
+    expect(seen.size).toBeGreaterThan(200)
+  })
+
+  it('keeps the ground at the dark or light end of every roll', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const palette = rollTemplatePalette(templates.curved_lines, rngFrom(seed * 7919))
+      const lums = Object.values(palette).map(hex => tinycolor(hex).getLuminance())
+      const ground = tinycolor(palette.colorTwo).getLuminance()
+      expect(ground === Math.min(...lums) || ground === Math.max(...lums)).toBe(true)
+    }
   })
 })

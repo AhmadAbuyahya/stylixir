@@ -57,8 +57,8 @@ const templates: Templates = {
   'geometric_flowers': {
     template: {
       'background': `
-        radial-gradient({colorOne} 24%,#0000 25%),
-        radial-gradient({colorTwo} 30%,#0000 32%) calc({size}px/2) calc({size}px/2),
+        radial-gradient({colorOne} {dotA}%,#0000 calc({dotA}% + 1%)),
+        radial-gradient({colorTwo} {dotB}%,#0000 calc({dotB}% + 2%)) calc({size}px/2) calc({size}px/2),
         repeating-conic-gradient(from {angle}deg,{colorThree} 0 {degree1}deg,{colorFour} 0 25%)`,
       'background-size': '{size}px {size}px',
     },
@@ -93,6 +93,20 @@ const templates: Templates = {
         value: 30,
         min: 10,
         max: 90,
+      },
+      dotA: {
+        type: 'range',
+        value: 24,
+        min: 10,
+        max: 36,
+        step: 1,
+      },
+      dotB: {
+        type: 'range',
+        value: 30,
+        min: 12,
+        max: 44,
+        step: 1,
       },
     },
   },
@@ -143,7 +157,7 @@ const templates: Templates = {
   'parallelograms': {
     template: {
       background:
-        `linear-gradient({degree}deg,{colorOne} 33%,{colorTwo} 33.5% 66.5%,{colorOne} 67%)
+        `linear-gradient({degree}deg,{colorOne} {band}%,{colorTwo} calc({band}% + .5%) calc(99.5% - {band}%),{colorOne} calc(100% - {band}%))
         0/{size}px {size}px`,
     },
     variables: {
@@ -158,10 +172,16 @@ const templates: Templates = {
       },
       degree: {
         type: 'range',
-        breaking: true,
         value: 26,
         min: 0,
         max: 360,
+        step: 1,
+      },
+      band: {
+        type: 'range',
+        value: 33,
+        min: 12,
+        max: 45,
         step: 1,
       },
     },
@@ -187,9 +207,8 @@ const templates: Templates = {
       colorLight: { type: 'color', value: '#f2f2f2' },
       cubeRatio: {
         type: 'range',
-        breaking: true,
         value: 1.732,
-        min: 1,
+        min: 1.2,
         max: 4,
         step: 0.01,
       },
@@ -236,7 +255,6 @@ const templates: Templates = {
       },
       position1: {
         type: 'range',
-        breaking: true,
         value: 47,
         min: 25,
         max: 75,
@@ -318,7 +336,6 @@ const templates: Templates = {
       },
       radius1: {
         type: 'range',
-        breaking: true,
         value: 50,
         min: 35,
         max: 55,
@@ -364,9 +381,8 @@ const templates: Templates = {
       },
       sqrtFactor: {
         type: 'range',
-        breaking: true,
         value: 1.4142,
-        min: 1.2,
+        min: 1.3,
         max: 1.6,
         step: 0.01,
       },
@@ -504,7 +520,6 @@ const templates: Templates = {
       },
       position1: {
         type: 'range',
-        breaking: true,
         value: 33,
         min: 20,
         max: 45,
@@ -512,7 +527,6 @@ const templates: Templates = {
       },
       position2: {
         type: 'range',
-        breaking: true,
         value: 66,
         min: 55,
         max: 80,
@@ -600,7 +614,6 @@ const templates: Templates = {
       },
       gapFactor: {
         type: 'range',
-        breaking: true,
         value: 10,
         min: 4,
         max: 20,
@@ -624,7 +637,6 @@ const templates: Templates = {
       },
       offsetY: {
         type: 'range',
-        breaking: true,
         value: 0.35,
         min: 0.2,
         max: 0.5,
@@ -678,7 +690,6 @@ const templates: Templates = {
       },
       innerPos: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 15,
         max: 40,
@@ -686,7 +697,6 @@ const templates: Templates = {
       },
       splitAngle: {
         type: 'range',
-        breaking: true,
         value: 225,
         min: 180,
         max: 270,
@@ -726,10 +736,9 @@ const templates: Templates = {
       },
       bandStart: {
         type: 'range',
-        breaking: true,
         value: 10,
         min: 4,
-        max: 18,
+        max: 13,
         step: 0.5,
       },
       bandMid: {
@@ -862,10 +871,9 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
-        breaking: true,
         value: 50,
-        min: 35,
-        max: 65,
+        min: 44,
+        max: 56,
         step: 1,
       },
     },
@@ -915,7 +923,6 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
-        breaking: true,
         value: 50,
         min: 35,
         max: 65,
@@ -961,7 +968,6 @@ const templates: Templates = {
       },
       accentX: {
         type: 'range',
-        breaking: true,
         value: 62.5,
         min: 50,
         max: 75,
@@ -1000,7 +1006,6 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
-        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -1040,12 +1045,12 @@ const templates: Templates = {
       '--_g2': 'conic-gradient(at 87.5% 62.5%,var(--_c))',
       '--_g3': 'conic-gradient(at 25% 12.5%,var(--_c))',
       'background': `
-        var(--_g1) calc({size}px/-{step}) calc(4*{size}px/{step}),var(--_g1) calc(-3*{size}px/{step}) calc(2*{size}px/{step}),
-        var(--_g2) calc(3*{size}px/{step}) calc(2*{size}px/{step}),var(--_g2) calc({size}px/-{step}) 0,
-        var(--_g3) 0 calc(-2*{size}px/{step}),var(--_g3) calc(-2*{size}px/{step}) 0,
+        var(--_g1) calc({size}px/-{step}) calc(4*{stretch}*{size}px/{step}),var(--_g1) calc(-3*{size}px/{step}) calc(2*{stretch}*{size}px/{step}),
+        var(--_g2) calc(3*{size}px/{step}) calc(2*{stretch}*{size}px/{step}),var(--_g2) calc({size}px/-{step}) 0,
+        var(--_g3) 0 calc(-2*{stretch}*{size}px/{step}),var(--_g3) calc(-2*{size}px/{step}) 0,
         conic-gradient(at 87.5% 87.5%,var(--_c)) calc({size}px/{step}) 0
         {bgColor}`,
-      'background-size': '{size}px {size}px',
+      'background-size': '{size}px calc({size}px*{stretch})',
     },
     variables: {
       size: size(120, 60, 220, 5),
@@ -1073,6 +1078,13 @@ const templates: Templates = {
         min: 6,
         max: 10,
         step: 1,
+      },
+      stretch: {
+        type: 'range',
+        value: 1,
+        min: 0.7,
+        max: 1.5,
+        step: 0.05,
       },
     },
   },
@@ -1111,7 +1123,6 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
-        breaking: true,
         value: 20.71,
         min: 14,
         max: 28,
@@ -1119,7 +1130,6 @@ const templates: Templates = {
       },
       corner: {
         type: 'range',
-        breaking: true,
         value: 29.29,
         min: 22,
         max: 36,
@@ -1149,7 +1159,6 @@ const templates: Templates = {
       },
       slope: {
         type: 'range',
-        breaking: true,
         value: 2,
         min: 1.2,
         max: 3.5,
@@ -1157,7 +1166,6 @@ const templates: Templates = {
       },
       heightRatio: {
         type: 'range',
-        breaking: true,
         value: 1,
         min: 0.65,
         max: 1.35,
@@ -1206,10 +1214,9 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
-        breaking: true,
         value: 10,
         min: 5,
-        max: 22,
+        max: 14,
         step: 0.5,
       },
     },
@@ -1254,7 +1261,6 @@ const templates: Templates = {
       },
       faceY: {
         type: 'range',
-        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -1262,7 +1268,6 @@ const templates: Templates = {
       },
       facePos: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -1316,7 +1321,6 @@ const templates: Templates = {
       },
       ridgeDiv: {
         type: 'range',
-        breaking: true,
         value: 6,
         min: 4.5,
         max: 8,
@@ -1344,7 +1348,6 @@ const templates: Templates = {
       },
       pos: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -1371,14 +1374,16 @@ const templates: Templates = {
 
   'nested_rhombus': {
     template: {
+      // Each stripe thins around its own centre line, so the nested corners still meet.
+      '--_d': 'calc((1 - {weight})*{band}%/6)',
       '--_g1': `
-        {colorOne} calc({band}%/3),#0000 0 calc(2*{band}%/3),
-        {colorOne} 0 {band}%,#0000 0 calc(100% - {band}%),
-        {colorOne} 0 calc(10*{band}%/3),#0000 0 calc(11*{band}%/3),
-        {colorOne} 0`,
+        #0000 var(--_d),{colorOne} 0 calc({band}%/3 - var(--_d)),#0000 0 calc(2*{band}%/3 + var(--_d)),
+        {colorOne} 0 calc({band}% - var(--_d)),#0000 0 calc(100% - {band}% + var(--_d)),
+        {colorOne} 0 calc(10*{band}%/3 - var(--_d)),#0000 0 calc(11*{band}%/3 + var(--_d)),
+        {colorOne} 0 calc(100% - var(--_d)),#0000 0`,
       '--_g2': `
-        #0000 calc({band}%/3),{colorOne} 0 calc(2*{band}%/3),
-        #0000 0 calc(10*{band}%/3),{colorOne} 0 calc(11*{band}%/3),
+        #0000 calc({band}%/3 + var(--_d)),{colorOne} 0 calc(2*{band}%/3 - var(--_d)),
+        #0000 0 calc(10*{band}%/3 + var(--_d)),{colorOne} 0 calc(11*{band}%/3 - var(--_d)),
         #0000 0`,
       'background': `
         linear-gradient({angle}deg,var(--_g2)),linear-gradient({angle}deg,var(--_g1)),
@@ -1400,6 +1405,7 @@ const templates: Templates = {
       },
       band: {
         type: 'range',
+        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -1412,6 +1418,13 @@ const templates: Templates = {
         min: 30,
         max: 60,
         step: 1,
+      },
+      weight: {
+        type: 'range',
+        value: 1,
+        min: 0.3,
+        max: 1.5,
+        step: 0.05,
       },
     },
   },
@@ -1465,7 +1478,6 @@ const templates: Templates = {
       },
       link: {
         type: 'range',
-        breaking: true,
         value: 0.9,
         min: 0.75,
         max: 0.98,
@@ -1504,7 +1516,6 @@ const templates: Templates = {
       },
       tipX: {
         type: 'range',
-        breaking: true,
         value: 87.5,
         min: 75,
         max: 95,
@@ -1512,7 +1523,6 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -1694,14 +1704,14 @@ const templates: Templates = {
         type: 'range',
         value: 6.1,
         min: 3,
-        max: 12,
+        max: 8,
         step: 0.1,
       },
       band: {
         type: 'range',
         value: 12.2,
         min: 8,
-        max: 16,
+        max: 13,
         step: 0.1,
       },
     },
@@ -1756,15 +1766,15 @@ const templates: Templates = {
 
   'diagonal_zig_zag': {
     template: {
-      '--_s': 'calc(2*{size}px) calc(2*{size}px)',
+      '--_s': 'calc(2*{size}px) calc(2*{stretch}*{size}px)',
       '--_g1': 'var(--_s) conic-gradient(at calc(500%/(2*{cellDiv})) 50%,{colorDark} {split}%,#0000 0)',
       '--_g2': 'var(--_s) conic-gradient(at calc(200%/{cellDiv}) 50%,{colorMid} {split}%,#0000 0)',
       'background': `
-        {size}px {size}px/var(--_g1),0 0/var(--_g1),
-        {size}px {size}px/var(--_g2),0 0/var(--_g2),
+        {size}px calc({stretch}*{size}px)/var(--_g1),0 0/var(--_g1),
+        {size}px calc({stretch}*{size}px)/var(--_g2),0 0/var(--_g2),
         repeating-conic-gradient({colorLight} 0 {split}%,#0000 0 50%) 0 0/var(--_s),
         linear-gradient({colorLight} calc(100%/{cellDiv}),{colorMid} 0 calc(200%/{cellDiv}),{colorDark} 0)
-          0 0/{size}px {size}px`,
+          0 0/{size}px calc({stretch}*{size}px)`,
     },
     variables: {
       size: size(60, 30, 120, 2),
@@ -1795,6 +1805,13 @@ const templates: Templates = {
         min: 15,
         max: 35,
         step: 1,
+      },
+      stretch: {
+        type: 'range',
+        value: 1,
+        min: 0.6,
+        max: 1.6,
+        step: 0.05,
       },
     },
   },
@@ -1894,7 +1911,6 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
-        breaking: true,
         value: 30,
         min: 22,
         max: 38,
@@ -1910,7 +1926,6 @@ const templates: Templates = {
       },
       arm: {
         type: 'range',
-        breaking: true,
         value: 28.86,
         min: 24,
         max: 34,
@@ -1952,10 +1967,9 @@ const templates: Templates = {
       },
       radial: {
         type: 'range',
-        breaking: true,
         value: 65,
-        min: 50,
-        max: 80,
+        min: 53,
+        max: 70,
         step: 1,
       },
     },
@@ -2096,7 +2110,6 @@ const templates: Templates = {
       },
       tipY: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
         max: 32,
@@ -2104,6 +2117,7 @@ const templates: Templates = {
       },
       cellDiv: {
         type: 'range',
+        breaking: true,
         value: 3,
         min: 2.4,
         max: 4,
@@ -2195,10 +2209,9 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
-        max: 35,
+        max: 31,
         step: 1,
       },
     },
@@ -2256,7 +2269,7 @@ const templates: Templates = {
       band: {
         type: 'range',
         value: 6,
-        min: 3,
+        min: 5,
         max: 10,
         step: 0.5,
       },
@@ -2316,7 +2329,7 @@ const templates: Templates = {
       band: {
         type: 'range',
         value: 8,
-        min: 5,
+        min: 7,
         max: 12,
         step: 0.5,
       },
@@ -2465,7 +2478,6 @@ const templates: Templates = {
       },
       fill: {
         type: 'range',
-        breaking: true,
         value: 35,
         min: 25,
         max: 48,
@@ -2476,7 +2488,7 @@ const templates: Templates = {
 
   'rhombus_nested': {
     template: {
-      '--_g': '#0000 calc(-650%/{bandDiv}) calc(50%/{bandDiv}),{figureColor} 0 calc(100%/{bandDiv}),#0000 0 calc(150%/{bandDiv}),{figureColor} 0 calc(200%/{bandDiv}),#0000 0 calc(250%/{bandDiv}),{figureColor} 0 calc(300%/{bandDiv})',
+      '--_g': '#0000 calc(-650%/{bandDiv}) calc((75% - 25%*{weight})/{bandDiv}),{figureColor} 0 calc((75% + 25%*{weight})/{bandDiv}),#0000 0 calc((175% - 25%*{weight})/{bandDiv}),{figureColor} 0 calc((175% + 25%*{weight})/{bandDiv}),#0000 0 calc((275% - 25%*{weight})/{bandDiv}),{figureColor} 0 calc((275% + 25%*{weight})/{bandDiv}),#0000 0 calc(300%/{bandDiv})',
       '--_g0': 'repeating-linear-gradient(45deg,var(--_g))',
       '--_g1': 'repeating-linear-gradient(-45deg,var(--_g))',
       'background': `
@@ -2497,10 +2509,18 @@ const templates: Templates = {
       },
       bandDiv: {
         type: 'range',
+        breaking: true,
         value: 13,
         min: 9,
         max: 17,
         step: 1,
+      },
+      weight: {
+        type: 'range',
+        value: 1,
+        min: 0.3,
+        max: 1.7,
+        step: 0.05,
       },
     },
   },
@@ -2537,7 +2557,6 @@ const templates: Templates = {
       size: size(56, 28, 100, 2),
       radius: {
         type: 'range',
-        breaking: true,
         value: 100,
         min: 50,
         max: 100,
@@ -2578,10 +2597,9 @@ const templates: Templates = {
       },
       fill: {
         type: 'range',
-        breaking: true,
         value: 49,
         min: 40,
-        max: 55,
+        max: 50,
         step: 0.5,
       },
       angle: {
@@ -2627,7 +2645,6 @@ const templates: Templates = {
       },
       wedge: {
         type: 'range',
-        breaking: true,
         value: 80,
         min: 20,
         max: 104,
@@ -2680,8 +2697,8 @@ const templates: Templates = {
   'diagonal_rectangles': {
     template: {
       'background': `
-        linear-gradient({angle}deg,#0000 {cutStart}%,{colorOne} 0 {cutEnd}%,#0000 0),
-        repeating-linear-gradient(calc({angle}deg - 90deg),{colorOne} calc(-1 * {band}%) {band}%,{colorTwo} 0 calc(3*{band}%))`,
+        linear-gradient({angle}deg,#0000 calc({cutStart}% + (1 - {weight})*{band}%),{colorOne} 0 calc({cutEnd}% - (1 - {weight})*{band}%),#0000 0),
+        repeating-linear-gradient(calc({angle}deg - 90deg),{colorOne} calc(-1*{weight}*{band}%) calc({weight}*{band}%),{colorTwo} 0 calc((4 - {weight})*{band}%))`,
       'background-size': '{size}px {size}px',
     },
     variables: {
@@ -2721,10 +2738,18 @@ const templates: Templates = {
       },
       band: {
         type: 'range',
+        breaking: true,
         value: 6.25,
         min: 4,
         max: 10,
         step: 0.25,
+      },
+      weight: {
+        type: 'range',
+        value: 1,
+        min: 0.4,
+        max: 1.4,
+        step: 0.05,
       },
     },
   },
@@ -2807,7 +2832,6 @@ const templates: Templates = {
       },
       ring: {
         type: 'range',
-        breaking: true,
         value: 70,
         min: 55,
         max: 82,
@@ -2871,7 +2895,6 @@ const templates: Templates = {
       },
       rx: {
         type: 'range',
-        breaking: true,
         value: 36,
         min: 28,
         max: 45,
@@ -2898,11 +2921,11 @@ const templates: Templates = {
 
   'curved_segments': {
     template: {
-      '--_c': '{colorOne} calc(100% - {size}px*{weight}/100) 99%,#0000',
-      '--_g': '{size}px,#0000 calc(99% - {size}px*{weight}/100),var(--_c)',
+      '--_c': '{colorOne} calc(75% + {size}px*{weight}/200 - .5%),#0000 calc(75% + {size}px*{weight}/200 + .5%)',
+      '--_g': '{size}px,#0000 calc(75% - {size}px*{weight}/200 - .5%),{colorOne} calc(75% - {size}px*{weight}/200 + .5%),var(--_c)',
       'background': `
         radial-gradient({size}px at 100% var(--_g)),
-        radial-gradient(calc({size}px*{weight}/200) at 50% calc(100%/3),var(--_c)) {size}px 0,
+        radial-gradient(calc({size}px*{weight}/200) at 50% calc(100%/3),{colorOne} 97%,#0000) {size}px 0,
         radial-gradient({size}px at 0% var(--_g)) 0 calc(3*{size}px)
         {bgColor}`,
       'background-size': `
@@ -2914,8 +2937,8 @@ const templates: Templates = {
       weight: {
         type: 'range',
         value: 50,
-        min: 18,
-        max: 52,
+        min: 14,
+        max: 50,
         step: 1,
       },
       colorOne: {
@@ -3039,6 +3062,7 @@ const templates: Templates = {
       },
       band: {
         type: 'range',
+        breaking: true,
         value: 8,
         min: 5,
         max: 12,
@@ -3066,7 +3090,6 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
-        breaking: true,
         value: 75,
         min: 60,
         max: 85,
@@ -3167,7 +3190,6 @@ const templates: Templates = {
       },
       mid: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
         max: 35,
@@ -3271,16 +3293,17 @@ const templates: Templates = {
       },
       ringB: {
         type: 'range',
+        breaking: true,
         value: 77,
         min: 59,
-        max: 68,
+        max: 77,
         step: 1,
       },
       stroke: {
         type: 'range',
         value: 2,
         min: 1,
-        max: 10,
+        max: 5,
         step: 0.5,
       },
     },
@@ -3288,15 +3311,15 @@ const templates: Templates = {
 
   'zig_zag_rectangles': {
     template: {
-      '--g': '{colorTwo} {band}%,{colorOne} 0 calc(3*{band}%),{colorTwo} 0 calc(5*{band}%),{colorOne} 0 calc(7*{band}%),{colorTwo} 0 calc(9*{band}%),#0000 0',
+      '--g': '{colorTwo} calc({weight}*{band}%),{colorOne} 0 calc((4 - {weight})*{band}%),{colorTwo} 0 calc((4 + {weight})*{band}%),{colorOne} 0 calc((8 - {weight})*{band}%),{colorTwo} 0 calc((8 + {weight})*{band}%),#0000 0',
       'background': `
-        linear-gradient(225deg,#0000 {band}%,{colorOne} 0 calc(3*{band}%),#0000 0 calc(25*{band}%),{colorOne} 0 calc(27*{band}%),#0000 0)
+        linear-gradient(225deg,#0000 calc({weight}*{band}%),{colorOne} 0 calc((4 - {weight})*{band}%),#0000 0 calc((24 + {weight})*{band}%),{colorOne} 0 calc((28 - {weight})*{band}%),#0000 0)
           0 calc({size}px/2),
         linear-gradient(45deg,var(--g)) 0 {size}px,
         linear-gradient(45deg,var(--g)) calc({size}px/-2) calc({size}px/-2),
         linear-gradient(225deg,var(--g)) {size}px 0,
         linear-gradient(225deg,var(--g)) calc({size}px/2) {size}px,
-        repeating-linear-gradient(-45deg,{colorTwo} calc(-1 * {band}%) {band}%,{colorOne} 0 calc(3*{band}%))`,
+        repeating-linear-gradient(-45deg,{colorTwo} calc(-1*{weight}*{band}%) calc({weight}*{band}%),{colorOne} 0 calc((4 - {weight})*{band}%))`,
       'background-size': 'calc(2*{size}px) calc(2*{size}px)',
     },
     variables: {
@@ -3312,10 +3335,18 @@ const templates: Templates = {
       },
       band: {
         type: 'range',
+        breaking: true,
         value: 3.125,
         min: 2,
         max: 5,
         step: 0.125,
+      },
+      weight: {
+        type: 'range',
+        value: 1,
+        min: 0.4,
+        max: 1.6,
+        step: 0.05,
       },
     },
   },
@@ -3342,10 +3373,9 @@ const templates: Templates = {
       },
       fillStop: {
         type: 'range',
-        breaking: true,
         value: 75,
         min: 60,
-        max: 85,
+        max: 82,
         step: 0.5,
       },
     },
@@ -3373,17 +3403,15 @@ const templates: Templates = {
       },
       rx: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 18,
-        max: 35,
+        max: 30,
         step: 1,
       },
       ry: {
         type: 'range',
-        breaking: true,
         value: 50,
-        min: 35,
+        min: 45,
         max: 65,
         step: 1,
       },
@@ -3393,7 +3421,7 @@ const templates: Templates = {
   'triangle_tiles': {
     template: {
       background: `
-        repeating-conic-gradient({colorOne} 0 {wedge}deg,{colorTwo} 0 calc(2*{wedge}deg))
+        repeating-conic-gradient({colorOne} 0 calc(180deg/{blades}),{colorTwo} 0 calc(360deg/{blades}))
         0/{size}px {size}px`,
     },
     variables: {
@@ -3406,12 +3434,11 @@ const templates: Templates = {
         type: 'color',
         value: '#99B2B7',
       },
-      wedge: {
+      blades: {
         type: 'range',
-        breaking: true,
-        value: 45,
-        min: 30,
-        max: 60,
+        value: 4,
+        min: 2,
+        max: 6,
         step: 1,
       },
     },
@@ -3440,9 +3467,8 @@ const templates: Templates = {
       },
       petal: {
         type: 'range',
-        breaking: true,
         value: 25,
-        min: 18,
+        min: 25,
         max: 35,
         step: 1,
       },
@@ -3535,7 +3561,6 @@ const templates: Templates = {
       },
       posA: {
         type: 'range',
-        breaking: true,
         value: 90,
         min: 80,
         max: 95,
@@ -3543,7 +3568,6 @@ const templates: Templates = {
       },
       posB: {
         type: 'range',
-        breaking: true,
         value: 75,
         min: 65,
         max: 85,
@@ -3551,7 +3575,6 @@ const templates: Templates = {
       },
       posC: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 15,
         max: 35,
@@ -3559,7 +3582,6 @@ const templates: Templates = {
       },
       posD: {
         type: 'range',
-        breaking: true,
         value: 40,
         min: 30,
         max: 50,
@@ -3615,9 +3637,8 @@ const templates: Templates = {
       },
       stretch: {
         type: 'range',
-        breaking: true,
         value: 2,
-        min: 0.6,
+        min: 1.8,
         max: 5,
         step: 0.1,
       },
@@ -3738,9 +3759,8 @@ const templates: Templates = {
       size: size(29, 14, 58, 1),
       dot: {
         type: 'range',
-        breaking: true,
         value: 100,
-        min: 80,
+        min: 100,
         max: 125,
         step: 1,
       },
@@ -3787,11 +3807,11 @@ const templates: Templates = {
   'tetris': {
     template: {
       'background': `conic-gradient(at 50% 25%,{colorOne} 25%,#0000 0)
-         calc({size}px/-4) calc({size}px/-2),
+         calc({size}px/-4) calc({size}px*{stretch}/-2),
         conic-gradient(at 25% 25%,{colorTwo} 25%,#0000 0 75%,{colorOne} 0)
-         calc({size}px/4) calc({size}px/-4),
+         calc({size}px/4) calc({size}px*{stretch}/-4),
         conic-gradient(from -90deg at 75% 25%,{colorOne} 75%,{colorTwo} 0)`,
-      'background-size': '{size}px {size}px',
+      'background-size': '{size}px calc({size}px*{stretch})',
     },
     variables: {
       size: size(100, 50, 200, 5),
@@ -3802,6 +3822,13 @@ const templates: Templates = {
       colorTwo: {
         type: 'color',
         value: '#ffd500',
+      },
+      stretch: {
+        type: 'range',
+        value: 1,
+        min: 0.6,
+        max: 1.6,
+        step: 0.05,
       },
     },
   },
@@ -3826,9 +3853,8 @@ const templates: Templates = {
       },
       inset: {
         type: 'range',
-        breaking: true,
         value: 25,
-        min: 4,
+        min: 8,
         max: 46,
         step: 1,
       },
@@ -3847,7 +3873,6 @@ const templates: Templates = {
       size: size(160, 80, 320, 5),
       inset: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 9,
         max: 41,
@@ -3886,7 +3911,6 @@ const templates: Templates = {
       },
       shift: {
         type: 'range',
-        breaking: true,
         value: 0.5,
         min: 0,
         max: 1,
@@ -3996,7 +4020,6 @@ const templates: Templates = {
       size: size(76, 38, 152, 2),
       point: {
         type: 'range',
-        breaking: true,
         value: 80,
         min: 55,
         max: 100,
@@ -4094,7 +4117,6 @@ const templates: Templates = {
       },
       lightX: {
         type: 'range',
-        breaking: true,
         value: 40,
         min: 15,
         max: 85,
@@ -4102,7 +4124,6 @@ const templates: Templates = {
       },
       lightY: {
         type: 'range',
-        breaking: true,
         value: 30,
         min: 15,
         max: 85,
@@ -4158,10 +4179,9 @@ const templates: Templates = {
       size: size(150, 75, 300, 5),
       inset: {
         type: 'range',
-        breaking: true,
         value: 25,
-        min: 5,
-        max: 30,
+        min: 9,
+        max: 28,
         step: 1,
       },
       colorOne: {
@@ -4433,7 +4453,6 @@ const templates: Templates = {
       },
       round: {
         type: 'range',
-        breaking: true,
         value: 49,
         min: 20,
         max: 70,
@@ -4454,9 +4473,8 @@ const templates: Templates = {
       size: size(90, 44, 180, 2),
       notch: {
         type: 'range',
-        breaking: true,
         value: 25,
-        min: 10,
+        min: 20,
         max: 60,
         step: 1,
       },
@@ -4507,10 +4525,9 @@ const templates: Templates = {
       },
       radius: {
         type: 'range',
-        breaking: true,
         value: 64,
         min: 20,
-        max: 90,
+        max: 80,
         step: 1,
       },
     },
@@ -4576,9 +4593,8 @@ const templates: Templates = {
       },
       pill: {
         type: 'range',
-        breaking: true,
         value: 70,
-        min: 45,
+        min: 62,
         max: 80,
         step: 1,
       },
@@ -4618,7 +4634,6 @@ const templates: Templates = {
       size: size(62, 30, 124, 2),
       inset: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 8,
         max: 50,
@@ -4656,7 +4671,7 @@ const templates: Templates = {
       band: {
         type: 'range',
         value: 10,
-        min: 4,
+        min: 6,
         max: 30,
         step: 1,
       },
@@ -4676,7 +4691,6 @@ const templates: Templates = {
       size: size(120, 60, 240, 5),
       inset: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 12,
         max: 38,
@@ -4816,7 +4830,6 @@ const templates: Templates = {
       },
       tilt: {
         type: 'range',
-        breaking: true,
         value: 15,
         min: 0,
         max: 45,
@@ -4849,7 +4862,7 @@ const templates: Templates = {
         type: 'range',
         value: 4,
         min: 0.5,
-        max: 20,
+        max: 9,
         step: 0.5,
       },
       dot: {
@@ -4881,10 +4894,9 @@ const templates: Templates = {
       },
       arc: {
         type: 'range',
-        breaking: true,
         value: 35,
         min: 15,
-        max: 70,
+        max: 42,
         step: 1,
       },
     },
@@ -4909,10 +4921,9 @@ const templates: Templates = {
       size: size(104, 52, 208, 2),
       wave: {
         type: 'range',
-        breaking: true,
         value: 35,
         min: 24,
-        max: 40,
+        max: 35,
         step: 1,
       },
       colorOne: {
@@ -5205,7 +5216,6 @@ const templates: Templates = {
       size: size(150, 75, 300, 5),
       shift: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 8,
         max: 50,
@@ -5356,7 +5366,7 @@ const templates: Templates = {
         type: 'range',
         value: 100,
         min: 20,
-        max: 170,
+        max: 150,
         step: 5,
       },
     },
@@ -5364,12 +5374,12 @@ const templates: Templates = {
   'leafs': {
     template: {
       '--c': '{colorOne} 99%,#0000 101%',
-      'background': `radial-gradient(calc({size}px*{radius}/100) at 100% 100%,var(--c)),
-        radial-gradient(calc({size}px*{radius}/100) at 100% 0   ,var(--c)) calc(3*{size}px/2) 0,
-        radial-gradient(calc({size}px*{radius}/100) at 0    100%,var(--c)) calc(  {size}px/2) 0,
-        radial-gradient(calc({size}px*{radius}/100) at 0    0   ,var(--c)) calc(2*{size}px) 0
+      'background': `radial-gradient(calc({size}px*{radius}/100) calc({size}px*{radius}*{stretch}/100) at 100% 100%,var(--c)),
+        radial-gradient(calc({size}px*{radius}/100) calc({size}px*{radius}*{stretch}/100) at 100% 0   ,var(--c)) calc(3*{size}px/2) 0,
+        radial-gradient(calc({size}px*{radius}/100) calc({size}px*{radius}*{stretch}/100) at 0    100%,var(--c)) calc(  {size}px/2) 0,
+        radial-gradient(calc({size}px*{radius}/100) calc({size}px*{radius}*{stretch}/100) at 0    0   ,var(--c)) calc(2*{size}px) 0
         {colorTwo}`,
-      'background-size': 'calc(3*{size}px) calc(5*{size}px/2)',
+      'background-size': 'calc(3*{size}px) calc(5*{stretch}*{size}px/2)',
     },
     variables: {
       size: size(50, 24, 100, 2),
@@ -5388,6 +5398,13 @@ const templates: Templates = {
       colorTwo: {
         type: 'color',
         value: '#b5d8eb',
+      },
+      stretch: {
+        type: 'range',
+        value: 1,
+        min: 0.6,
+        max: 1.6,
+        step: 0.05,
       },
     },
   },
@@ -5443,7 +5460,7 @@ const templates: Templates = {
         type: 'range',
         value: 10,
         min: 2,
-        max: 28,
+        max: 16,
         step: 1,
       },
     },
@@ -5470,7 +5487,7 @@ const templates: Templates = {
         type: 'range',
         value: 5,
         min: 0.5,
-        max: 14,
+        max: 8,
         step: 0.5,
       },
     },
@@ -5495,7 +5512,7 @@ const templates: Templates = {
       inner: {
         type: 'range',
         value: 66,
-        min: 30,
+        min: 55,
         max: 85,
         step: 1,
       },
@@ -5503,7 +5520,7 @@ const templates: Templates = {
         type: 'range',
         value: 10,
         min: 2,
-        max: 35,
+        max: 24,
         step: 1,
       },
     },
@@ -5529,7 +5546,7 @@ const templates: Templates = {
       inner: {
         type: 'range',
         value: 66,
-        min: 30,
+        min: 55,
         max: 85,
         step: 1,
       },
@@ -5537,7 +5554,7 @@ const templates: Templates = {
         type: 'range',
         value: 10,
         min: 2,
-        max: 35,
+        max: 24,
         step: 1,
       },
     },
@@ -5564,7 +5581,6 @@ const templates: Templates = {
       },
       body: {
         type: 'range',
-        breaking: true,
         value: 24,
         min: 4,
         max: 48,
@@ -5585,7 +5601,6 @@ const templates: Templates = {
       size: size(30, 15, 60, 1),
       petal: {
         type: 'range',
-        breaking: true,
         value: 60,
         min: 35,
         max: 60,
@@ -5652,7 +5667,7 @@ const templates: Templates = {
         type: 'range',
         value: 6.25,
         min: 2,
-        max: 20,
+        max: 12,
         step: 0.25,
       },
     },
@@ -5729,7 +5744,7 @@ const templates: Templates = {
         type: 'range',
         value: 6.25,
         min: 1,
-        max: 10,
+        max: 7.5,
         step: 0.25,
       },
     },
@@ -5783,7 +5798,6 @@ const templates: Templates = {
       },
       split: {
         type: 'range',
-        breaking: true,
         value: 33.3,
         min: 5,
         max: 80,
@@ -5802,11 +5816,10 @@ const templates: Templates = {
       size: size(104, 52, 208, 2),
       shift: {
         type: 'range',
-        breaking: true,
         value: 25,
         min: 0,
         max: 50,
-        step: 1,
+        step: 25,
       },
       colorOne: {
         type: 'color',
@@ -5839,7 +5852,7 @@ const templates: Templates = {
         type: 'range',
         value: 4,
         min: 0.5,
-        max: 20,
+        max: 8,
         step: 0.5,
       },
     },
@@ -5865,7 +5878,6 @@ const templates: Templates = {
       },
       corner: {
         type: 'range',
-        breaking: true,
         value: 17.67,
         min: 2,
         max: 30,
@@ -5899,7 +5911,7 @@ const templates: Templates = {
         type: 'range',
         value: 5,
         min: 1,
-        max: 20,
+        max: 9,
         step: 0.5,
       },
     },
@@ -5924,9 +5936,8 @@ const templates: Templates = {
       },
       dot: {
         type: 'range',
-        breaking: true,
         value: 34,
-        min: 10,
+        min: 31,
         max: 48,
         step: 1,
       },
