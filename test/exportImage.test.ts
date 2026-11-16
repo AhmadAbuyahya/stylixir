@@ -7,11 +7,20 @@ import {
   clampDimension,
   exportFilename,
   outputPixels,
+  perLayer,
   renderSize,
   screenSize,
 } from '~/lib/exportImage'
 
 describe('exportImage helpers', () => {
+  it('spells out background lists per gradient layer, for WebKit', () => {
+    const images = 'linear-gradient(45deg, rgb(1, 2, 3) 12.5%, red 0px), repeating-linear-gradient(-45deg, red 0px, blue 25%), radial-gradient(red, blue)'
+    expect(perLayer(images, '150px 150px')).toBe('150px 150px, 150px 150px, 150px 150px')
+    expect(perLayer(images, '10px 10px, auto')).toBe('10px 10px, auto, 10px 10px')
+    expect(perLayer('linear-gradient(red, blue)', '40px 20px')).toBe('40px 20px')
+    expect(perLayer(images, '0px 0px, 100px 100px')).toBe('0px 0px, 100px 100px, 0px 0px')
+  })
+
   it('builds a download name from the pattern and size', () => {
     expect(exportFilename('hearts_pattern', 1920, 1080, 'png', 1))
       .toBe('stylixir-hearts_pattern-1920x1080.png')

@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Stylixir",
+    "slug": "stylixir",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "stylixir",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "ios": {
+      "bundleIdentifier": "app.stylixir",
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": false
+      }
+    },
+    "android": {
+      "package": "app.stylixir",
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Stylixir saves the wallpapers you make to your photo library.",
+          "photosPermission": "Stylixir saves the wallpapers you make to your photo library.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": [
+            "photo"
+          ]
+        }
+      ],
+      "expo-background-task",
+      "expo-sharing",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "# WorkManager (behind expo-background-task) builds its Room database by reflection; R8 strips the constructor otherwise.\n-keep class * extends androidx.room.RoomDatabase { <init>(); }"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

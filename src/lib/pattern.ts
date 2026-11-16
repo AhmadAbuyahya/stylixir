@@ -45,9 +45,9 @@ export function randomVariables(
   options: { colors?: boolean; numbers?: boolean; breaking?: boolean } = {},
 ) {
   const { colors = true, numbers = true, breaking = false } = options
-  const isTemplate = 'variables' in template && 'template' in template
-  const variables = isTemplate ? template.variables : template
-  const harmony = isTemplate ? template.harmony : undefined
+  const full = ('variables' in template && 'template' in template) ? template as Template : undefined
+  const variables = full ? full.variables : template as Variables
+  const harmony = full?.harmony
 
   const next = Object.entries(variables).reduce((acc, [key, variable]) => {
     if ((variable.type === 'range' || variable.type === 'number') && numbers && (breaking || !variable.breaking))

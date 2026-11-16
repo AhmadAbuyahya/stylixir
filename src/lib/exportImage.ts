@@ -96,13 +96,34 @@ function nextFrame() {
   return new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
 }
 
+/**
+ * One entry per image layer for a background list such as size or position. WebKit
+ * reports a short list as written, then leaves the missing layers out of the
+ * `background` shorthand html-to-image copies, so they fall back to defaults and the
+ * pattern scrambles.
+ */
+export function perLayer(images: string, list: string) {
+  let depth = 0
+  let layers = 1
+  for (const ch of images) {
+    if (ch === '(')
+      depth++
+    else if (ch === ')')
+      depth--
+    else if (ch === ',' && depth === 0)
+      layers++
+  }
+  const items = list.split(',').map(s => s.trim())
+  return Array.from({ length: Math.max(layers, items.length) }, (_, i) => items[i % items.length]).join(', ')
+}
+
 function flattenBackground(el: HTMLElement) {
   const computed = getComputedStyle(el)
   el.style.backgroundImage = computed.backgroundImage
   el.style.backgroundColor = computed.backgroundColor
-  el.style.backgroundSize = computed.backgroundSize
-  el.style.backgroundPosition = computed.backgroundPosition
-  el.style.backgroundRepeat = computed.backgroundRepeat
+  el.style.backgroundSize = perLayer(computed.backgroundImage, computed.backgroundSize)
+  el.style.backgroundPosition = perLayer(computed.backgroundImage, computed.backgroundPosition)
+  el.style.backgroundRepeat = perLayer(computed.backgroundImage, computed.backgroundRepeat)
 }
 
 function mountExportFrame(spec: ExportSpec) {
