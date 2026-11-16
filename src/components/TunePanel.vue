@@ -463,16 +463,11 @@ const colorVars = computed(() => Object.entries(variables.value).filter(([, vari
   transition: opacity 0.15s ease, transform 0.15s var(--ease-out);
 }
 
-.wild:hover .tip,
-.wild:focus-within .tip {
+.wild:hover .tip {
   opacity: 1;
   transform: none;
   /* A short wait so passing the cursor over it doesn't flash the tip. */
   transition-delay: 0.35s;
-}
-
-.wild:focus-within .tip {
-  transition-delay: 0s;
 }
 
 .switch {

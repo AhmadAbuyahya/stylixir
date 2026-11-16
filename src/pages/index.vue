@@ -198,7 +198,7 @@ onMounted(() => {
         </button>
         <template v-if="isDev">
           <span class="tool-sep tool-wide-only" aria-hidden="true" />
-          <RouterLink class="tool tool-wide-only" :to="{ path: '/audit', query: { template: store.activeTemplate } }" title="Audit this pattern's dials (dev only)">
+          <RouterLink class="tool tool-wide-only" target="_blank" rel="noopener" :to="{ path: '/audit', query: { template: store.activeTemplate } }" title="Audit this pattern's dials (dev only)">
             <span class="i-carbon-debug" aria-hidden="true" />
             <span class="tool-label">Audit</span>
           </RouterLink>
