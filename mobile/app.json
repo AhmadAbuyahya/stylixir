@@ -12,7 +12,8 @@
       "bundleIdentifier": "app.stylixir",
       "icon": "./assets/expo.icon",
       "infoPlist": {
-        "UIViewControllerBasedStatusBarAppearance": false
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
