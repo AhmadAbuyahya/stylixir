@@ -139,6 +139,10 @@ watch(() => props.open, async (open) => {
     <p v-if="!shown.length && !keptShown.length" class="book-empty">
       Nothing matches “{{ query }}”. Try a shape, like circle, wave or brick.
     </p>
+
+    <p class="book-credit">
+      Patterns adapted from <a href="https://github.com/Afif13/CSS-Pattern" target="_blank" rel="noopener">CSS-Pattern</a> by Temani Afif, MIT License.
+    </p>
   </div>
 </template>
 
@@ -327,6 +331,17 @@ watch(() => props.open, async (open) => {
   padding: 48px 24px;
   text-align: center;
   color: var(--muted);
+}
+
+.book-credit {
+  padding: 32px 24px 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.book-credit a {
+  text-decoration: underline;
 }
 
 @media (max-width: 720px) {
