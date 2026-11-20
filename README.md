@@ -32,4 +32,4 @@ Start the dev server:
 
 ## Credits
 
-The starting patterns are adapted from [CSS-Pattern](https://github.com/Afif13/CSS-Pattern) by [Temani Afif](https://github.com/Afif13), MIT licensed. See [LICENSE](LICENSE) for the full notice.
+The starting patterns are adapted from [CSS-Pattern](https://github.com/Afif13/CSS-Pattern) by [Temani Afif](https://github.com/Afif13), MIT licensed. More are adapted from the [CSS3 Patterns Gallery](https://github.com/LeaVerou/css3patterns) by [Lea Verou](https://lea.verou.me) and contributors, also MIT. See [LICENSE](LICENSE) for the full notices.

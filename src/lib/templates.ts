@@ -1,4 +1,5 @@
-// Patterns adapted from CSS-Pattern by Temani Afif (https://github.com/Afif13/CSS-Pattern), MIT. Notice in /LICENSE.
+// Patterns adapted from CSS-Pattern by Temani Afif (https://github.com/Afif13/CSS-Pattern), MIT,
+// and from Lea Verou's CSS3 Patterns Gallery (https://github.com/LeaVerou/css3patterns), MIT. Notices in /LICENSE.
 import type { Templates } from '~/types'
 
 function size(value: number, min: number, max: number, step?: number) {
@@ -2381,7 +2382,7 @@ const templates: Templates = {
 
   'citrus_shapes': {
     template: {
-      '--b': 'calc({size}px/{thickDiv})',
+      '--b': 'calc({size}px/{weight})',
       '--_r': 'calc(1.28*{size}px + var(--b)/2) at top 50%',
       '--_f': 'calc(99.5% - var(--b)),{fillColor} calc(101% - var(--b)) 99.5%,#0000 101%',
       '--_g0': 'calc(-.8*{size}px), {colorOne} var(--_f)',
@@ -2410,7 +2411,7 @@ const templates: Templates = {
         value: '#F9F2E7',
         role: 'ground',
       },
-      thickDiv: {
+      weight: {
         type: 'range',
         value: 3.67,
         min: 2.5,
@@ -2483,7 +2484,7 @@ const templates: Templates = {
         type: 'range',
         value: 1,
         min: 0.3,
-        max: 1.7,
+        max: 1.3,
         step: 0.05,
       },
     },
@@ -4124,7 +4125,7 @@ const templates: Templates = {
       size: size(86, 42, 172, 2),
       colorOne: {
         type: 'color',
-        value: '#88abc2',
+        value: '#3d6a87',
       },
       colorTwo: {
         type: 'color',
@@ -5828,5 +5829,1498 @@ const templates: Templates = {
       },
     },
   },
+
+  // Patterns below adapted from the CSS3 Patterns Gallery by Lea Verou and contributors
+  // (https://github.com/LeaVerou/css3patterns), MIT. Original authors named per entry.
+
+  // Microbial Mat by Logan McBroom
+  'microbial_mat': {
+    template: {
+      '--_g': '#0000 calc({size}px/2 - {weight}px/2),{colorOne} 0 calc({size}px/2 + {weight}px/2),#0000 0',
+      'background': `
+        radial-gradient(circle at 0% 50%,var(--_g)) 0 calc({size}px/2),
+        radial-gradient(circle at 100% 100%,var(--_g)),
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(40, 16, 120, 2),
+      colorOne: {
+        type: 'color',
+        value: '#661133',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#88aa33',
+        role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 4,
+        min: 2,
+        max: 12,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Half-Rombes by Valentin Agachi
+  'half_rombes': {
+    template: {
+      '--_a': '#0000 {cut}%,{colorOne} 0',
+      'background': `
+        linear-gradient(115deg,var(--_a)),
+        linear-gradient(245deg,var(--_a)),
+        linear-gradient(115deg,var(--_a)) calc({size}px/2) calc(-1*{size}px),
+        linear-gradient(245deg,var(--_a)) calc({size}px/2) calc(-1*{size}px),
+        {bgColor}`,
+      'background-size': '{size}px calc(2*{size}px)',
+    },
+    variables: {
+      size: size(30, 12, 80, 1),
+      colorOne: {
+        type: 'color',
+        value: '#e8eefc',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#3366cc',
+        role: 'ground',
+      },
+      cut: {
+        type: 'range',
+        value: 75,
+        min: 62,
+        max: 90,
+        step: 1,
+      },
+    },
+  },
+
+  // Weave by Jeroen Franse
+  'weave': {
+    template: {
+      '--_w': `{bgColor} calc(.33*{size}px),{colorOne} 0 calc(.33*{size}px + {weight}px),
+        #0000 0 calc(1.05*{size}px),{colorOne} 0 calc(1.05*{size}px + {weight}px),#0000 0`,
+      'background': `
+        linear-gradient(135deg,var(--_w)),
+        linear-gradient(225deg,var(--_w)) 0 {size}px,
+        {bgColor}`,
+      'background-size': '{size}px calc(2*{size}px)',
+    },
+    variables: {
+      size: size(64, 30, 160, 2),
+      colorOne: {
+        type: 'color',
+        value: '#d9ecff',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#708090',
+        role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 10,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Marrakesh by Divya Manian
+  'marrakesh': {
+    template: {
+      '--u': 'calc({size}px/30)',
+      'background-image': `
+        radial-gradient({colorOne} calc({dot}*var(--u)),#0000 calc({dot}*var(--u) + 1px)),
+        repeating-radial-gradient({colorOne} 0 calc({weight}*var(--u)),#0000 0 calc(20*var(--u)),
+          {colorOne} 0 calc((20 + {weight})*var(--u)),#0000 0 calc(50*var(--u)))`,
+      'background-size': '{size}px {size}px,calc(3*{size}px) calc(3*{size}px)',
+      'background-color': '{bgColor}',
+    },
+    variables: {
+      size: size(40, 16, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#191970',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#ffffff',
+        role: 'ground',
+      },
+      dot: {
+        type: 'range',
+        value: 9,
+        min: 3,
+        max: 14,
+        step: 0.5,
+      },
+      weight: {
+        type: 'range',
+        value: 4,
+        min: 1,
+        max: 9,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Argyle, after Anna Kassner; magic-corner gradients keep the diamond true at any stretch
+  'argyle': {
+    template: {
+      '--_c': '{colorTwo} 25%,#0000 0 75%,{colorTwo} 0',
+      '--_l': '#0000 calc(50% - {weight}px/2),{lineColor} 0 calc(50% + {weight}px/2),#0000 0',
+      'background': `
+        linear-gradient(to top right,var(--_l)),
+        linear-gradient(to top left,var(--_l)),
+        linear-gradient(to top right,var(--_c)),
+        linear-gradient(to top left,var(--_c)),
+        {colorOne}`,
+      'background-size': '{size}px calc({size}px*{stretch})',
+    },
+    variables: {
+      size: size(70, 30, 160, 2),
+      colorOne: {
+        type: 'color',
+        value: '#6d695c',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#57544a',
+      },
+      lineColor: {
+        type: 'color',
+        value: '#a7a396',
+      },
+      stretch: {
+        type: 'range',
+        value: 1.7,
+        min: 1,
+        max: 2.6,
+        step: 0.05,
+      },
+      weight: {
+        type: 'range',
+        value: 2,
+        min: 1,
+        max: 8,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Cross by Lea Verou
+  'cross': {
+    template: {
+      '--_r': 'radial-gradient(circle,#0000 {hole}%,{bgColor} 0 80%,#0000 0)',
+      'background': `
+        var(--_r) 0 0/{size}px {size}px,
+        var(--_r) calc({size}px/2) calc({size}px/2)/{size}px {size}px,
+        linear-gradient({colorOne} {weight}px,#0000 0) 0 calc(-1*{weight}px/2)/calc({size}px/2) calc({size}px/2),
+        linear-gradient(90deg,{colorOne} {weight}px,#0000 0) calc(-1*{weight}px/2) 0/calc({size}px/2) calc({size}px/2),
+        {bgColor}`,
+    },
+    variables: {
+      size: size(100, 40, 200, 4),
+      colorOne: {
+        type: 'color',
+        value: '#a8b1bb',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#708090',
+        role: 'ground',
+      },
+      hole: {
+        type: 'range',
+        value: 20,
+        min: 10,
+        max: 40,
+        step: 1,
+      },
+      weight: {
+        type: 'range',
+        value: 8,
+        min: 2,
+        max: 20,
+        step: 1,
+      },
+    },
+  },
+
+  // Yin Yang by Lea Verou
+  'yin_yang': {
+    template: {
+      '--_a': 'radial-gradient(circle at 50% 59%,{colorLight} 3%,{colorDark} 4% 11%,#0000 12%)',
+      '--_b': 'radial-gradient(circle at 50% 41%,{colorDark} 3%,{colorLight} 4% 11%,#0000 12%)',
+      '--_l': 'radial-gradient(circle at 100% 50%,{colorLight} 16%,#0000 17%)',
+      '--_d': 'radial-gradient(circle at 0% 50%,{colorDark} 16%,#0000 17%)',
+      'background': `
+        var(--_a) calc({size}px/2) 0,
+        var(--_b) calc({size}px/2) 0,
+        var(--_a) 0 calc({size}px/2),
+        var(--_b) 0 calc({size}px/2),
+        var(--_l),
+        var(--_d),
+        var(--_l) calc({size}px/2) calc({size}px/2),
+        var(--_d) calc({size}px/2) calc({size}px/2),
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(100, 50, 200, 4),
+      colorLight: {
+        type: 'color',
+        value: '#d2caab',
+      },
+      colorDark: {
+        type: 'color',
+        value: '#364e27',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#63773f',
+        role: 'ground',
+      },
+    },
+  },
+
+  // Seigaiha by Lea Verou
+  'seigaiha': {
+    template: {
+      '--_c': '{bgColor} 24%,{colorOne} 0 28%,{bgColor} 0 36%,{colorOne} 0 40%,#0000 0',
+      '--_s': '{colorOne} 5%,{bgColor} 0 15%,{colorOne} 0 20%,{bgColor} 0 29%,{colorOne} 0 34%,{bgColor} 0 44%,{colorOne} 0 49%,#0000 0',
+      'background': `
+        radial-gradient(circle at 100% 150%,var(--_c)),
+        radial-gradient(circle at 0 150%,var(--_c)),
+        radial-gradient(circle at 50% 100%,{colorOne} 10%,{bgColor} 0 23%,{colorOne} 0 30%,{bgColor} 0 43%,
+          {colorOne} 0 50%,{bgColor} 0 63%,{colorOne} 0 71%,#0000 0),
+        radial-gradient(circle at 100% 50%,var(--_s)),
+        radial-gradient(circle at 0 50%,var(--_s)),
+        {bgColor}`,
+      'background-size': '{size}px calc({size}px/2)',
+    },
+    variables: {
+      size: size(100, 60, 240, 4),
+      colorOne: {
+        type: 'color',
+        value: '#ffffff',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#c0c0c0',
+        role: 'ground',
+      },
+    },
+  },
+
+  // Japanese cube by Lea Verou
+  'japanese_cube': {
+    harmony: 'ramp',
+    template: {
+      // whole-pixel tile height; a fractional one leaves a hairline across the top faces
+      '--h': 'round({size}px*1.732,2px)',
+      '--_a': '{colorDark} calc(12.5% + .5px),#0000 0 calc(87.5% - .5px),{colorDark} 0',
+      '--_b': '{colorLight} calc(25% + .5px),#0000 0 calc(75% - .5px),{colorLight} 0',
+      'background': `
+        linear-gradient(30deg,var(--_a)),
+        linear-gradient(150deg,var(--_a)),
+        linear-gradient(30deg,var(--_a)) calc({size}px/2) calc(var(--h)/2),
+        linear-gradient(150deg,var(--_a)) calc({size}px/2) calc(var(--h)/2),
+        linear-gradient(60deg,var(--_b)),
+        linear-gradient(60deg,var(--_b)) calc({size}px/2) calc(var(--h)/2),
+        {colorMid}`,
+      'background-size': '{size}px var(--h)',
+    },
+    variables: {
+      size: size(80, 30, 200, 2),
+      colorDark: {
+        type: 'color',
+        value: '#444455',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#555566',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#9999aa',
+      },
+    },
+  },
+
+  // Tartan by Marta Armada
+  'tartan': {
+    template: {
+      '--_s': `#0000 0 calc({size}px*.2155),rgb(0 0 0/calc({shade}*.4)) 0 calc({size}px*.2284),
+        #0000 0 calc({size}px*.2716),rgb(0 0 0/calc({shade}*.4)) 0 calc({size}px*.2845),
+        #0000 0 calc({size}px*.5),rgb(0 0 0/calc({shade}*.5)) 0 calc({size}px*.7155),
+        rgb(255 255 255/calc({shade}*.2)) 0 calc({size}px*.7284),rgb(0 0 0/calc({shade}*.5)) 0 calc({size}px*.7716),
+        rgb(255 255 255/calc({shade}*.2)) 0 calc({size}px*.7845),rgb(0 0 0/calc({shade}*.5)) 0 {size}px`,
+      'background': `
+        repeating-linear-gradient(var(--_s)),
+        repeating-linear-gradient(270deg,var(--_s)),
+        repeating-linear-gradient(125deg,#0000 0 2px,rgb(0 0 0/calc({shade}*.2)) 0 3px,#0000 0 5px),
+        {bgColor}`,
+    },
+    variables: {
+      size: size(232, 100, 400, 4),
+      bgColor: {
+        type: 'color',
+        value: '#a03029',
+        role: 'ground',
+      },
+      shade: {
+        type: 'range',
+        value: 1,
+        min: 0.4,
+        max: 1.8,
+        step: 0.05,
+      },
+    },
+  },
+
+  // Gingham, after Lea Verou's Tablecloth; one conic gives the three tones with solid colours
+  'gingham': {
+    harmony: 'ramp',
+    template: {
+      'background': 'conic-gradient(at {band}% {band}%,{colorMid} 25%,{bgColor} 0 50%,{colorMid} 0 75%,{colorDark} 0)',
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(50, 20, 140, 2),
+      colorDark: {
+        type: 'color',
+        value: '#c83c3c',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#e49e9e',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#ffffff',
+        role: 'shade-light',
+      },
+      band: {
+        type: 'range',
+        value: 50,
+        min: 20,
+        max: 80,
+        step: 1,
+      },
+    },
+  },
+
+  // Cicada stripes by Randy Merrill
+  'cicada_stripes': {
+    template: {
+      background: `
+        linear-gradient(90deg,rgb(255 255 255/calc({shade}*.07)) 50%,#0000 0) 0 0/calc({size}px*.245) 100%,
+        linear-gradient(90deg,rgb(255 255 255/calc({shade}*.13)) 50%,#0000 0) 0 0/calc({size}px*.547) 100%,
+        linear-gradient(90deg,#0000 50%,rgb(255 255 255/calc({shade}*.17)) 0) 0 0/calc({size}px*.698) 100%,
+        linear-gradient(90deg,#0000 50%,rgb(255 255 255/calc({shade}*.19)) 0) 0 0/{size}px 100%,
+        {bgColor}`,
+    },
+    variables: {
+      size: size(106, 40, 240, 2),
+      bgColor: {
+        type: 'color',
+        value: '#026873',
+        role: 'ground',
+      },
+      shade: {
+        type: 'range',
+        value: 1,
+        min: 0.4,
+        max: 2.5,
+        step: 0.05,
+      },
+    },
+  },
+
+  // Pyramid by Paul Salentiny
+  'pyramid': {
+    harmony: 'ramp',
+    template: {
+      'background': `
+        linear-gradient(315deg,#0000 75%,{colorLight} 0) calc({size}px/-2) 0,
+        linear-gradient(45deg,#0000 75%,{colorLight} 0) calc({size}px/-2) 0,
+        linear-gradient(135deg,{colorMid} 50%,#0000 0),
+        linear-gradient(45deg,rgb(255 255 255/.07) 50%,#0000 0),
+        {colorDark}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(40, 20, 120, 2),
+      colorDark: {
+        type: 'color',
+        value: '#561a16',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#a7332b',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#d45d55',
+      },
+    },
+  },
+
+  // Chocolate Weave by Paul Salentiny
+  'chocolate_weave': {
+    harmony: 'ramp',
+    template: {
+      'background': `
+        linear-gradient(45deg,{colorLight} calc({weight}%/2),#0000 0 calc(100% - {weight}%/2),{colorLight} 0),
+        linear-gradient(135deg,#0000 calc(50% - {weight}%/2),{colorMid} 0 calc(50% + {weight}%/2),#0000 0),
+        linear-gradient(45deg,#0000 calc(50% - {weight}%/2),{colorLight} 0 calc(50% + {weight}%/2),#0000 0),
+        {colorDark}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(40, 14, 120, 2),
+      colorDark: {
+        type: 'color',
+        value: '#775533',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#aa8855',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#ddccaa',
+      },
+      weight: {
+        type: 'range',
+        value: 26,
+        min: 10,
+        max: 30,
+        step: 1,
+      },
+    },
+  },
+
+  // Hearts by Lea Verou
+  'hearts': {
+    template: {
+      'background': `
+        radial-gradient(circle closest-side at 60% 43%,{bgColor} 26%,#0000 27%),
+        radial-gradient(circle closest-side at 40% 43%,{bgColor} 26%,#0000 27%),
+        radial-gradient(circle closest-side at 42% 22%,{colorOne} 43%,#0000 45%),
+        radial-gradient(circle closest-side at 58% 22%,{colorOne} 43%,#0000 45%),
+        radial-gradient(circle closest-side at 50% 35%,{colorOne} 32%,#0000 27%),
+        radial-gradient(circle closest-side at 60% 43%,{bgColor} 26%,#0000 27%) calc({size}px/2) calc({size}px/2),
+        radial-gradient(circle closest-side at 40% 43%,{bgColor} 26%,#0000 27%) calc({size}px/2) calc({size}px/2),
+        radial-gradient(circle closest-side at 40% 22%,{colorOne} 40%,#0000 45%) calc({size}px*.52) calc({size}px/2),
+        radial-gradient(circle closest-side at 60% 22%,{colorOne} 40%,#0000 45%) calc({size}px*.48) calc({size}px/2),
+        radial-gradient(circle closest-side at 50% 35%,{colorOne} 30%,#0000 37%) calc({size}px/2) calc({size}px/2),
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(100, 40, 240, 4),
+      colorOne: {
+        type: 'color',
+        value: '#dd3355',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#bb0033',
+        role: 'ground',
+      },
+    },
+  },
+
+  // Upholstery by Nate Eagle
+  'upholstery': {
+    harmony: 'ramp',
+    template: {
+      '--_btn': 'radial-gradient({colorLight} 4%,{colorMid} 9%,#0000 9%)',
+      '--_puff': 'radial-gradient({colorLight} 20%,#0000)',
+      '--_pad': 'radial-gradient({colorMid} 35%,#0000 60%)',
+      // repeating, one period per S/√2 along the diagonal, so each crease runs on across tiles instead of being cut at the edge
+      '--_p': 'calc({size}px*.7071)',
+      '--_crease': 'rgb(0 0 0/{shade}) 0,#0000 calc(var(--_p)*.4) calc(var(--_p) - 1px),rgb(0 0 0/{shade}) var(--_p)',
+      'background': `
+        var(--_btn),
+        var(--_btn) calc({size}px/2) calc({size}px/2),
+        repeating-linear-gradient(45deg,var(--_crease)),
+        repeating-linear-gradient(-45deg,var(--_crease)),
+        var(--_puff) calc({size}px/2) 0,
+        var(--_puff) 0 calc({size}px/2),
+        var(--_pad) calc({size}px/2) 0,
+        var(--_pad) {size}px calc({size}px/2),
+        {colorDark}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(100, 40, 240, 4),
+      colorDark: {
+        type: 'color',
+        value: '#330000',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#660000',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#990000',
+      },
+      shade: {
+        type: 'range',
+        value: 0.5,
+        min: 0.2,
+        max: 1,
+        step: 0.05,
+      },
+    },
+  },
+
+  // Waves by Lea Verou (renamed: we already have `waves`)
+  'wave_arcs': {
+    template: {
+      '--_r': '#0000 20%,{colorOne} 21% calc(21% + {weight}%),#0000 calc(22% + {weight}%)',
+      'background': `
+        radial-gradient(circle at 100% 50%,var(--_r)),
+        radial-gradient(circle at 0% 50%,var(--_r)) 0 calc(-1*{size}px/2),
+        {bgColor}`,
+      'background-size': 'calc({size}px*.75) {size}px',
+    },
+    variables: {
+      size: size(100, 40, 240, 4),
+      colorOne: {
+        type: 'color',
+        value: '#a9b3bf',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#708090',
+        role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 13,
+        min: 6,
+        max: 30,
+        step: 1,
+      },
+    },
+  },
+
+  // Brady Bunch by Estelle Weyl
+  'brady_bunch': {
+    harmony: 'ramp',
+    template: {
+      '--_g': `radial-gradient(closest-side,#0000 75%,{colorMid} 76% 85%,{colorLight} 86% 94%,{colorBright} 95% 103%,
+        {colorLight} 104% 112%,{colorDark} 113% 121%,{colorBright} 122% 130%,{colorLight} 131% 140%)`,
+      'background': `
+        var(--_g),
+        var(--_g) calc({size}px/2) calc({size}px/2),
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(110, 50, 240, 2),
+      colorDark: {
+        type: 'color',
+        value: '#798b3c',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#b6cc66',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#c8d3a7',
+        role: 'shade-mid',
+      },
+      colorLight: {
+        type: 'color',
+        value: '#e0ead7',
+      },
+      colorBright: {
+        type: 'color',
+        value: '#ffffff',
+      },
+    },
+  },
+
+  // Bricks by Tab Atkins Jr (renamed: we already have `brick`)
+  'slanted_bricks': {
+    template: {
+      '--_t': 'calc({size}px*.397)',
+      'background-image': `
+        linear-gradient(335deg,{colorOne} var(--_t),#0000 0),
+        linear-gradient(155deg,{colorTwo} var(--_t),#0000 0),
+        linear-gradient(335deg,{colorOne} var(--_t),#0000 0),
+        linear-gradient(155deg,{colorTwo} var(--_t),#0000 0)`,
+      'background-size': '{size}px {size}px',
+      'background-position': `
+        0 calc({size}px*.034),
+        calc({size}px*.069) calc({size}px*.603),
+        calc({size}px*.5) calc({size}px*.534),
+        calc({size}px*.586) calc({size}px*.103)`,
+      'background-color': '{bgColor}',
+    },
+    variables: {
+      size: size(58, 24, 160, 2),
+      colorOne: {
+        type: 'color',
+        value: '#bb0000',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#dd0000',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#c0c0c0',
+        role: 'ground',
+      },
+    },
+  },
+
+  // Madras by Divya Manian; multiply stands in for the original's half-transparent stripes
+  'madras': {
+    template: {
+      '--_m': `#0000 0 calc({size}px*.036),{colorDark} 0 calc({size}px*.071),#0000 0 calc({size}px*.25),
+        {colorOne} 0 calc({size}px*.286),{colorDark} 0 calc({size}px*.357),#0000 0 calc({size}px*.429),
+        {colorOne} 0 calc({size}px*.5),{colorTwo} 0 calc({size}px*.571),#0000 0 calc({size}px*.643),
+        {colorOne} 0 calc({size}px*.786)`,
+      'background': `
+        repeating-linear-gradient(45deg,var(--_m),#0000 0 calc({size}px*.857),{colorDark} 0 {size}px),
+        repeating-linear-gradient(135deg,var(--_m),#0000 0 {size}px,{colorDark} 0 calc({size}px*1.143)),
+        {bgColor}`,
+      'background-blend-mode': 'multiply',
+    },
+    variables: {
+      size: size(140, 60, 300, 4),
+      colorDark: {
+        type: 'color',
+        value: '#56707b',
+      },
+      colorOne: {
+        type: 'color',
+        value: '#e3a59c',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#f5c77e',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#ebd6bb',
+        role: 'ground',
+      },
+    },
+  },
+
+  // Cross-Dots by Natali Davydova
+  'cross_dots': {
+    template: {
+      '--_d': 'radial-gradient({colorOne} {dot}px,#0000 calc({dot}px + 1px))',
+      '--_l': '#0000 calc(50% - {weight}px/2),{lineColor} 0 calc(50% + {weight}px/2),#0000 0',
+      'background': `
+        var(--_d) calc({size}px/2) calc({size}px/2)/{size}px {size}px,
+        var(--_d) 0 0/{size}px {size}px,
+        linear-gradient({bgColor} {dash}px,#0000 0) 0 0/100% calc({dash}px*1.5),
+        linear-gradient(45deg,var(--_l)) 0 0/{size}px {size}px,
+        linear-gradient(-45deg,var(--_l)) 0 0/{size}px {size}px,
+        {bgColor}`,
+    },
+    variables: {
+      size: size(110, 50, 240, 2),
+      colorOne: {
+        type: 'color',
+        value: '#000000',
+      },
+      lineColor: {
+        type: 'color',
+        value: '#a4a4a4',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#ffffff',
+        role: 'ground',
+      },
+      dot: {
+        type: 'range',
+        value: 3.5,
+        min: 2,
+        max: 10,
+        step: 0.5,
+      },
+      weight: {
+        type: 'range',
+        value: 1,
+        min: 0.5,
+        max: 4,
+        step: 0.5,
+      },
+      dash: {
+        type: 'range',
+        value: 4,
+        min: 2,
+        max: 12,
+        step: 1,
+      },
+    },
+  },
+
+  // Original Stylixir patterns from here on.
+
+  // Two ring fields with offset centres; their interference makes the moiré. Not tiled.
+  'moire_rings': {
+    template: {
+      '--_r': '{colorOne} 0 calc({size}px*{weight}/100),#0000 0 {size}px',
+      'background': `
+        repeating-radial-gradient(circle at {spread}% 35%,var(--_r)),
+        repeating-radial-gradient(circle at calc(100% - {spread}%) 65%,var(--_r)),
+        {bgColor}`,
+    },
+    variables: {
+      size: size(18, 8, 48, 1),
+      colorOne: {
+        type: 'color',
+        value: '#1b1b1f',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#f2efe6',
+        role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 35,
+        min: 15,
+        max: 60,
+        step: 1,
+      },
+      spread: {
+        type: 'range',
+        value: 30,
+        min: 5,
+        max: 50,
+        step: 1,
+      },
+    },
+  },
+
+  // Rayed medallions: a conic ray fan masked to a disc, with a hub and a dot between medallions.
+  'sunbursts': {
+    template: {
+      'background': `
+        radial-gradient({colorOne} {dot}%,#0000 calc({dot}% + 1%)) calc({size}px/2) calc({size}px/2),
+        radial-gradient({bgColor} {dot}%,#0000 calc({dot}% + 1%)),
+        radial-gradient(#0000 {radius}%,{bgColor} calc({radius}% + 1%)),
+        repeating-conic-gradient({colorOne} 0 calc(180deg/{rays}),{colorTwo} 0 calc(360deg/{rays}))`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(100, 40, 240, 4),
+      colorOne: {
+        type: 'color',
+        value: '#e76f51',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#f4a261',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#264653',
+        role: 'ground',
+      },
+      rays: {
+        type: 'range',
+        value: 16,
+        min: 6,
+        max: 36,
+        step: 2,
+      },
+      radius: {
+        type: 'range',
+        value: 62,
+        min: 30,
+        max: 70,
+        step: 1,
+      },
+      dot: {
+        type: 'range',
+        value: 7,
+        min: 3,
+        max: 14,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Bamboo: shaded stalks with nodes; a conic quadrant keeps each node band to one stalk so
+  // neighbouring stalks can carry their nodes half a segment apart.
+  'bamboo': {
+    harmony: 'ramp',
+    template: {
+      '--_h': 'calc({size}px*{length})',
+      '--_n': 'conic-gradient(at 50% calc({size}px*{node}/100),#0000 75%,{colorDark} 0)',
+      'background': `
+        linear-gradient(90deg,{bgColor} {gap}%,#0000 0 calc(100% - {gap}%),{bgColor} 0) 0 0/{size}px var(--_h),
+        var(--_n) 0 0/calc(2*{size}px) var(--_h),
+        var(--_n) {size}px calc(var(--_h)/2)/calc(2*{size}px) var(--_h),
+        linear-gradient(90deg,#0000 {gap}%,rgb(255 255 255/.25) 0,#0000 40% 60%,
+          rgb(0 0 0/.25) calc(100% - {gap}%),#0000 0) 0 0/{size}px var(--_h),
+        {colorMid}`,
+    },
+    variables: {
+      size: size(48, 20, 120, 2),
+      colorDark: {
+        type: 'color',
+        value: '#3f5f2a',
+      },
+      colorMid: {
+        type: 'color',
+        value: '#8fb35a',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#f1f0dc',
+        role: 'shade-light',
+      },
+      length: {
+        type: 'range',
+        value: 4,
+        min: 1.5,
+        max: 8,
+        step: 0.25,
+      },
+      gap: {
+        type: 'range',
+        value: 12,
+        min: 3,
+        max: 30,
+        step: 1,
+      },
+      node: {
+        type: 'range',
+        value: 9,
+        min: 4,
+        max: 14,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Hitomezashi (sashiko): every row and column is a running stitch, started on or off the grid
+  // point by a fixed 8-step sequence. Each stitch is a conic quadrant, a dash in its own small tile.
+  'hitomezashi': {
+    template: {
+      '--_r': 'conic-gradient(at {size}px {weight}px,#0000 75%,{colorOne} 0)',
+      '--_c': 'conic-gradient(at {weight}px {size}px,#0000 75%,{colorOne} 0)',
+      '--_rs': '/calc(2*{size}px) calc(8*{size}px)',
+      '--_cs': '/calc(8*{size}px) calc(2*{size}px)',
+      '--_o': 'calc({weight}px/-2)',
+      'background': `
+        var(--_r) {size}px var(--_o) var(--_rs),
+        var(--_r) 0 calc({size}px + var(--_o)) var(--_rs),
+        var(--_r) 0 calc(2*{size}px + var(--_o)) var(--_rs),
+        var(--_r) {size}px calc(3*{size}px + var(--_o)) var(--_rs),
+        var(--_r) 0 calc(4*{size}px + var(--_o)) var(--_rs),
+        var(--_r) {size}px calc(5*{size}px + var(--_o)) var(--_rs),
+        var(--_r) {size}px calc(6*{size}px + var(--_o)) var(--_rs),
+        var(--_r) 0 calc(7*{size}px + var(--_o)) var(--_rs),
+        var(--_c) var(--_o) 0 var(--_cs),
+        var(--_c) calc({size}px + var(--_o)) {size}px var(--_cs),
+        var(--_c) calc(2*{size}px + var(--_o)) {size}px var(--_cs),
+        var(--_c) calc(3*{size}px + var(--_o)) 0 var(--_cs),
+        var(--_c) calc(4*{size}px + var(--_o)) {size}px var(--_cs),
+        var(--_c) calc(5*{size}px + var(--_o)) 0 var(--_cs),
+        var(--_c) calc(6*{size}px + var(--_o)) 0 var(--_cs),
+        var(--_c) calc(7*{size}px + var(--_o)) {size}px var(--_cs),
+        {bgColor}`,
+    },
+    variables: {
+      size: size(24, 12, 60, 2),
+      colorOne: {
+        type: 'color',
+        value: '#f4f1ea',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#1f3a5f',
+        role: 'ground',
+      },
+      weight: {
+        type: 'range',
+        value: 3,
+        min: 1.5,
+        max: 8,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Bauhaus block: four cells, each a flat ground with one shape (quarter disc, disc, triangle, half disc).
+  // The quarter disc is centred on the block's middle; the cell grounds above it clip it to its own cell.
+  'bauhaus': {
+    template: {
+      'background': `
+        radial-gradient(circle at 75% 25%,{colorFour} calc({size}px*{dot}/100),#0000 calc({size}px*{dot}/100 + 1px)),
+        conic-gradient(from 153.43deg at 75% 55%,{colorOne} 0 53.13deg,#0000 0),
+        radial-gradient(circle at 25% 100%,{colorThree} calc({size}px*.45),#0000 calc({size}px*.45 + 1px)),
+        conic-gradient({colorThree} 0 25%,{colorTwo} 0 50%,{colorFour} 0 75%,#0000 0),
+        radial-gradient(circle at 50% 50%,{colorTwo} calc({size}px*{arc}/100),#0000 calc({size}px*{arc}/100 + 1px)),
+        {colorOne}`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(120, 50, 240, 4),
+      colorOne: {
+        type: 'color',
+        value: '#f2e8d5',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#d93a2b',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#1d4e89',
+      },
+      colorFour: {
+        type: 'color',
+        value: '#f2b632',
+      },
+      arc: {
+        type: 'range',
+        value: 100,
+        min: 50,
+        max: 141,
+        step: 1,
+      },
+      dot: {
+        type: 'range',
+        value: 35,
+        min: 15,
+        max: 48,
+        step: 1,
+      },
+    },
+  },
+
+  // Terrazzo: a gradient filled solid past a line just inside the tile's far corner leaves a right-angled
+  // chip in that corner, cut off by the tile edges;
+  // six layers with their own angles, sizes and corners make chips of every shape and heading.
+  'terrazzo': {
+    template: {
+      background: `
+        radial-gradient({colorThree} 1.5px,#0000 2px) calc({size}px*.2) calc({size}px*.3)/calc({size}px*.53) calc({size}px*.61),
+        linear-gradient(35deg,#0000 calc(100% - {chip}px),{colorOne} 0) 0 0/calc({size}px*1.13) calc({size}px*.97),
+        linear-gradient(125deg,#0000 calc(100% - {chip}px*.8),{colorTwo} 0) calc({size}px*.4) calc({size}px*.6)/calc({size}px*.89) calc({size}px*1.21),
+        linear-gradient(230deg,#0000 calc(100% - {chip}px*1.2),{colorThree} 0) calc({size}px*.7) calc({size}px*.2)/calc({size}px*1.37) calc({size}px*1.07),
+        linear-gradient(300deg,#0000 calc(100% - {chip}px*.7),{colorOne} 0) calc({size}px*.15) calc({size}px*.85)/calc({size}px*.79) calc({size}px*.83),
+        linear-gradient(170deg,#0000 calc(100% - {chip}px*.6),{colorTwo} 0) calc({size}px*.55) calc({size}px*.35)/calc({size}px*1.03) calc({size}px*1.31),
+        linear-gradient(15deg,#0000 calc(100% - {chip}px*.9),{colorThree} 0) calc({size}px*.25) calc({size}px*.45)/calc({size}px*1.19) calc({size}px*.71),
+        {bgColor}`,
+    },
+    variables: {
+      size: size(60, 30, 160, 2),
+      colorOne: {
+        type: 'color',
+        value: '#d9785b',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#4f6d7a',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#e3b04b',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#efe9e1',
+        role: 'ground',
+      },
+      chip: {
+        type: 'range',
+        value: 14,
+        min: 5,
+        max: 22,
+        step: 1,
+      },
+    },
+  },
+
+  // Skyline: rows of buildings with lit windows. The window grid covers everything; one conic
+  // rectangle per building paints the sky above its roof, and two coarser grids switch windows off.
+  'skyline': {
+    template: {
+      '--_H': 'calc({size}px*{height})',
+      '--_S': '/calc(8*{size}px) var(--_H)',
+      '--_w': 'calc({size}px/3)',
+      '--_off': 'conic-gradient(at calc(var(--_w)*.5 + 1px) calc(var(--_w)*.45 + 1px),#0000 75%,{colorOne} 0)',
+      'background': `
+        conic-gradient(at {size}px calc(var(--_H)*.45),#0000 75%,{bgColor} 0) 0 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.7),#0000 75%,{bgColor} 0) {size}px 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.25),#0000 75%,{bgColor} 0) calc(2*{size}px) 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.55),#0000 75%,{bgColor} 0) calc(3*{size}px) 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.8),#0000 75%,{bgColor} 0) calc(4*{size}px) 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.35),#0000 75%,{bgColor} 0) calc(5*{size}px) 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.65),#0000 75%,{bgColor} 0) calc(6*{size}px) 0 var(--_S),
+        conic-gradient(at {size}px calc(var(--_H)*.5),#0000 75%,{bgColor} 0) calc(7*{size}px) 0 var(--_S),
+        linear-gradient(90deg,rgb(255 255 255/.06) 50%,#0000 0) 0 0/calc(2*{size}px) 100%,
+        var(--_off) calc(var(--_w)*.25 - .5px) calc(var(--_w)*.3 - .5px)/calc(var(--_w)*2) calc(var(--_w)*3),
+        var(--_off) calc(var(--_w)*1.25 - .5px) calc(var(--_w)*1.3 - .5px)/calc(var(--_w)*3) calc(var(--_w)*2),
+        conic-gradient(at calc(var(--_w)*.5) calc(var(--_w)*.45),#0000 75%,{colorTwo} 0)
+          calc(var(--_w)*.25) calc(var(--_w)*.3)/var(--_w) var(--_w),
+        {colorOne}`,
+    },
+    variables: {
+      size: size(40, 20, 100, 2),
+      colorOne: {
+        type: 'color',
+        value: '#121527',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#ffd27a',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#2b3a67',
+        role: 'ground',
+      },
+      height: {
+        type: 'range',
+        value: 4,
+        min: 2.5,
+        max: 7,
+        step: 0.25,
+      },
+    },
+  },
+
+  // Op-art checker: every square carries a disc (or ring) in the other colour.
+  'checker_dots': {
+    template: {
+      '--_r': 'calc({size}px*{dot}/100)',
+      '--_h': 'calc(var(--_r)*{hole}/100)',
+      'background': `
+        radial-gradient(circle at 25% 25%,#0000 var(--_h),{colorOne} 0 var(--_r),#0000 calc(var(--_r) + 1px)),
+        radial-gradient(circle at 75% 75%,#0000 var(--_h),{colorOne} 0 var(--_r),#0000 calc(var(--_r) + 1px)),
+        radial-gradient(circle at 75% 25%,#0000 var(--_h),{colorTwo} 0 var(--_r),#0000 calc(var(--_r) + 1px)),
+        radial-gradient(circle at 25% 75%,#0000 var(--_h),{colorTwo} 0 var(--_r),#0000 calc(var(--_r) + 1px)),
+        repeating-conic-gradient({colorOne} 0 25%,{colorTwo} 0 50%)`,
+      'background-size': 'calc(2*{size}px) calc(2*{size}px)',
+    },
+    variables: {
+      size: size(60, 24, 160, 2),
+      colorOne: {
+        type: 'color',
+        value: '#111111',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#f4f0e6',
+      },
+      dot: {
+        type: 'range',
+        value: 30,
+        min: 10,
+        max: 48,
+        step: 1,
+      },
+      hole: {
+        type: 'range',
+        value: 0,
+        min: 0,
+        max: 85,
+        step: 1,
+      },
+    },
+  },
+
+  // Pinwheel quilt: eight alternating wedges from the block centre make the spinning half-square
+  // triangles; sashing strips and a cornerstone frame each block.
+  'pinwheel_quilt': {
+    template: {
+      '--_b': 'calc({size}px*{sash}/100)',
+      'background': `
+        conic-gradient(at var(--_b) var(--_b),#0000 75%,{colorThree} 0),
+        linear-gradient(90deg,{colorFour} var(--_b),#0000 0),
+        linear-gradient({colorFour} var(--_b),#0000 0),
+        repeating-conic-gradient(at calc(50% + var(--_b)/2) calc(50% + var(--_b)/2),{colorOne} 0 12.5%,{colorTwo} 0 25%)`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(90, 40, 200, 2),
+      colorOne: {
+        type: 'color',
+        value: '#d1495b',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#f6f1e7',
+      },
+      colorThree: {
+        type: 'color',
+        value: '#00798c',
+      },
+      colorFour: {
+        type: 'color',
+        value: '#edae49',
+      },
+      sash: {
+        type: 'range',
+        value: 12,
+        min: 0,
+        max: 30,
+        step: 1,
+      },
+    },
+  },
+
+  // Crescents: a disc with a slightly smaller ground-coloured disc laid off-centre over it, in a
+  // staggered grid with small stars between. The bite points up and right, away from the neighbours.
+  'crescents': {
+    template: {
+      '--_m': 'radial-gradient(circle,{colorOne} calc({size}px*.28),#0000 calc({size}px*.28 + 1px))',
+      '--_c': `radial-gradient(circle at calc(50% + {size}px*{bite}*.004) calc(50% - {size}px*{bite}*.009),
+        {bgColor} calc({size}px*.26),#0000 calc({size}px*.26 + 1px))`,
+      '--_t': 'radial-gradient(circle,{colorTwo} calc({size}px*{star}/100),#0000 calc({size}px*{star}/100 + 1px))',
+      'background': `
+        var(--_t) calc({size}px/2) 0,
+        var(--_t) 0 calc({size}px/2),
+        var(--_c),
+        var(--_m),
+        var(--_c) calc({size}px/2) calc({size}px/2),
+        var(--_m) calc({size}px/2) calc({size}px/2),
+        {bgColor}`,
+      'background-size': '{size}px {size}px',
+    },
+    variables: {
+      size: size(90, 40, 200, 2),
+      colorOne: {
+        type: 'color',
+        value: '#f3e3b0',
+      },
+      colorTwo: {
+        type: 'color',
+        value: '#9fb4ff',
+      },
+      bgColor: {
+        type: 'color',
+        value: '#1b1f3b',
+        role: 'ground',
+      },
+      bite: {
+        type: 'range',
+        value: 12,
+        min: 5,
+        max: 15,
+        step: 0.5,
+      },
+      star: {
+        type: 'range',
+        value: 2.5,
+        min: 1,
+        max: 6,
+        step: 0.5,
+      },
+    },
+  },
+
+  // Lanterns: ribbed paper lanterns on strings. The ribs and highlight fill the tile and an
+  // inverted ellipse paints the ground back outside the body; caps and strings sit on top.
+  // 'lanterns': {
+  //   template: {
+  //     '--_rx': 'calc({size}px*.36)',
+  //     '--_ry': 'calc({size}px*.42)',
+  //     'background': `
+  //       conic-gradient(at calc({size}px*.3) calc({size}px*.07),#0000 75%,{colorThree} 0) calc({size}px*.35) calc({size}px*.29)/{size}px calc({size}px*1.4),
+  //       conic-gradient(at calc({size}px*.3) calc({size}px*.07),#0000 75%,{colorThree} 0) calc({size}px*.35) calc({size}px*1.15)/{size}px calc({size}px*1.4),
+  //       conic-gradient(at 1.5px calc({size}px*.3),#0000 75%,{colorThree} 0) calc({size}px*.5 - .75px) 0/{size}px calc({size}px*1.4),
+  //       conic-gradient(at 1.5px calc({size}px*.2),#0000 75%,{colorThree} 0) calc({size}px*.5 - .75px) calc({size}px*1.2)/{size}px calc({size}px*1.4),
+  //       radial-gradient(var(--_rx) var(--_ry) at 50% 55%,#0000 99%,{bgColor} 100%) 0 0/{size}px calc({size}px*1.4),
+  //       radial-gradient(var(--_rx) var(--_ry) at 40% 45%,rgb(255 255 255/.28),#0000) 0 0/{size}px calc({size}px*1.4),
+  //       repeating-linear-gradient({colorTwo} 0 1.5px,#0000 0 calc({size}px*{rib}/100)) 0 0/{size}px calc({size}px*1.4),
+  //       {colorOne}`,
+  //   },
+  //   variables: {
+  //     size: size(90, 40, 200, 2),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#e4572e',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#a83218',
+  //     },
+  //     colorThree: {
+  //       type: 'color',
+  //       value: '#f3a712',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#1a1423',
+  //       role: 'ground',
+  //     },
+  //     rib: {
+  //       type: 'range',
+  //       value: 8,
+  //       min: 4,
+  //       max: 16,
+  //       step: 0.5,
+  //     },
+  //   },
+  // },
+
+  // Leopard: broken rosettes (five blobs round a darker centre) on three tile sizes that never line
+  // up, plus loose spots on a fourth. Blob shapes follow the ring's tangent, as near as upright ellipses get.
+  // 'leopard': {
+  //   template: {
+  //     '--_k': 'calc({size}px*{spot}*1.5)',
+  //     'background': `
+  //       radial-gradient(calc(var(--_k)*.025) calc(var(--_k)*.03),{colorOne} 98%,#0000) calc({size}px*.2) calc({size}px*.1)/calc({size}px*.53) calc({size}px*.49),
+  //       radial-gradient(calc(var(--_k)*0.035) calc(var(--_k)*0.070) at calc(50% + var(--_k)*0.130) calc(50% + var(--_k)*0.000),{colorOne} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.070) calc(var(--_k)*0.035) at calc(50% + var(--_k)*0.034) calc(50% + var(--_k)*-0.125),{colorOne} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.050) calc(var(--_k)*0.045) at calc(50% + var(--_k)*-0.106) calc(50% + var(--_k)*-0.075),{colorOne} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.045) calc(var(--_k)*0.055) at calc(50% + var(--_k)*-0.106) calc(50% + var(--_k)*0.075),{colorOne} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.065) calc(var(--_k)*0.040) at calc(50% + var(--_k)*0.044) calc(50% + var(--_k)*0.122),{colorOne} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.100) calc(var(--_k)*0.095),{colorTwo} 98%,#0000) 0 0/{size}px {size}px,
+  //       radial-gradient(calc(var(--_k)*0.030) calc(var(--_k)*0.060) at calc(50% + var(--_k)*0.111) calc(50% + var(--_k)*0.000),{colorOne} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.060) calc(var(--_k)*0.030) at calc(50% + var(--_k)*0.029) calc(50% + var(--_k)*-0.106),{colorOne} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.043) calc(var(--_k)*0.038) at calc(50% + var(--_k)*-0.090) calc(50% + var(--_k)*-0.064),{colorOne} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.038) calc(var(--_k)*0.047) at calc(50% + var(--_k)*-0.090) calc(50% + var(--_k)*0.064),{colorOne} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.055) calc(var(--_k)*0.034) at calc(50% + var(--_k)*0.037) calc(50% + var(--_k)*0.104),{colorOne} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.085) calc(var(--_k)*0.081),{colorTwo} 98%,#0000) calc({size}px*0.5) calc({size}px*0.37)/calc({size}px*1.31) calc({size}px*1.31),
+  //       radial-gradient(calc(var(--_k)*0.025) calc(var(--_k)*0.049) at calc(50% + var(--_k)*0.091) calc(50% + var(--_k)*0.000),{colorOne} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       radial-gradient(calc(var(--_k)*0.049) calc(var(--_k)*0.025) at calc(50% + var(--_k)*0.024) calc(50% + var(--_k)*-0.087),{colorOne} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       radial-gradient(calc(var(--_k)*0.035) calc(var(--_k)*0.032) at calc(50% + var(--_k)*-0.074) calc(50% + var(--_k)*-0.052),{colorOne} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       radial-gradient(calc(var(--_k)*0.032) calc(var(--_k)*0.038) at calc(50% + var(--_k)*-0.074) calc(50% + var(--_k)*0.052),{colorOne} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       radial-gradient(calc(var(--_k)*0.045) calc(var(--_k)*0.028) at calc(50% + var(--_k)*0.031) calc(50% + var(--_k)*0.085),{colorOne} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       radial-gradient(calc(var(--_k)*0.070) calc(var(--_k)*0.066),{colorTwo} 98%,#0000) calc({size}px*0.23) calc({size}px*0.71)/calc({size}px*0.87) calc({size}px*0.87),
+  //       {bgColor}`,
+  //   },
+  //   variables: {
+  //     size: size(120, 50, 220, 4),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#2b1d14',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#c98b3e',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#e8b96a',
+  //       role: 'ground',
+  //     },
+  //     spot: {
+  //       type: 'range',
+  //       value: 1,
+  //       min: 0.6,
+  //       max: 1.3,
+  //       step: 0.05,
+  //     },
+  //   },
+  // },
+
+  // Maki: sliced sushi rolls (nori ring, rice, two fillings) in a staggered grid.
+  // 'maki': {
+  //   template: {
+  //     '--_r': 'calc({size}px*{roll}/100)',
+  //     '--_roll': 'radial-gradient(circle,{colorOne} calc(var(--_r)*.86),{colorFour} 0 var(--_r),#0000 calc(var(--_r) + 1px))',
+  //     '--_a': 'radial-gradient(circle at 45% 46%,{colorThree} calc(var(--_r)*.26),#0000 calc(var(--_r)*.26 + 1px))',
+  //     '--_b': 'radial-gradient(circle at 56% 55%,{colorTwo} calc(var(--_r)*.17),#0000 calc(var(--_r)*.17 + 1px))',
+  //     'background': `
+  //       var(--_a),var(--_b),var(--_roll),
+  //       var(--_a) calc({size}px/2) calc({size}px/2),
+  //       var(--_b) calc({size}px/2) calc({size}px/2),
+  //       var(--_roll) calc({size}px/2) calc({size}px/2),
+  //       {bgColor}`,
+  //     'background-size': '{size}px {size}px',
+  //   },
+  //   variables: {
+  //     size: size(100, 40, 240, 4),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#f7f3ea',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#7fa650',
+  //     },
+  //     colorThree: {
+  //       type: 'color',
+  //       value: '#f28c5b',
+  //     },
+  //     colorFour: {
+  //       type: 'color',
+  //       value: '#1e2a1f',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#b5835a',
+  //       role: 'ground',
+  //     },
+  //     roll: {
+  //       type: 'range',
+  //       value: 30,
+  //       min: 18,
+  //       max: 35,
+  //       step: 0.5,
+  //     },
+  //   },
+  // },
+
+  // Circuit board: traces, pads, a chip and two bus lines that run on across tiles. Generated from a
+  // layout in grid units (tile = 6u); each trace is a conic rectangle shifted into place.
+  // 'circuit': {
+  //   template: {
+  //     '--u': 'calc({size}px/6)',
+  //     '--t': '{weight}px',
+  //     '--T': '/{size}px {size}px',
+  //     '--_p': 'radial-gradient(circle,#0000 calc(var(--u)*.12),{colorOne} 0 calc(var(--u)*.26),#0000 calc(var(--u)*.26 + 1px))',
+  //     'background': `
+  //       radial-gradient(circle,{colorOne} calc(var(--u)*.2),#0000 calc(var(--u)*.2 + 1px)) calc(var(--u)*0.3 - {size}px/2) calc(var(--u)*5.5 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*0.75 - {size}px/2) calc(var(--u)*0.75 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*3 - {size}px/2) calc(var(--u)*3 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*1 - {size}px/2) calc(var(--u)*4.5 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*4.5 - {size}px/2) calc(var(--u)*2 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*5.25 - {size}px/2) calc(var(--u)*3.25 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*3.9 - {size}px/2) calc(var(--u)*3 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*5.6 - {size}px/2) calc(var(--u)*1 - {size}px/2) var(--T),
+  //       var(--_p) calc(var(--u)*4.5 - {size}px/2) calc(var(--u)*1 - {size}px/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*1.2) calc(var(--u)*1.1),#0000 75%,{colorTwo} 0) calc(var(--u)*1.3) calc(var(--u)*1.6) var(--T),
+  //       conic-gradient(at calc(var(--u)*2.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*0.75 - var(--t)/2) calc(var(--u)*0.75 - var(--t)/2) var(--T),
+  //       conic-gradient(at var(--t) calc(var(--u)*2.25 + var(--t)),#0000 75%,{colorOne} 0) calc(var(--u)*3 - var(--t)/2) calc(var(--u)*0.75 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*3.5 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*1 - var(--t)/2) calc(var(--u)*4.5 - var(--t)/2) var(--T),
+  //       conic-gradient(at var(--t) calc(var(--u)*2.5 + var(--t)),#0000 75%,{colorOne} 0) calc(var(--u)*4.5 - var(--t)/2) calc(var(--u)*2 - var(--t)/2) var(--T),
+  //       conic-gradient(at var(--t) calc(var(--u)*2.25 + var(--t)),#0000 75%,{colorOne} 0) calc(var(--u)*5.25 - var(--t)/2) calc(var(--u)*3.25 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*6 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*0 - var(--t)/2) calc(var(--u)*5.5 - var(--t)/2) var(--T),
+  //       conic-gradient(at var(--t) calc(var(--u)*6 + var(--t)),#0000 75%,{colorOne} 0) calc(var(--u)*0.3 - var(--t)/2) calc(var(--u)*0 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.9 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*3 - var(--t)/2) calc(var(--u)*3 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*1.1 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*4.5 - var(--t)/2) calc(var(--u)*1 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*1.05 - var(--t)/2) calc(var(--u)*1.85 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*2.5 - var(--t)/2) calc(var(--u)*1.85 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*1.05 - var(--t)/2) calc(var(--u)*2.12 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*2.5 - var(--t)/2) calc(var(--u)*2.12 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*1.05 - var(--t)/2) calc(var(--u)*2.39 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*2.5 - var(--t)/2) calc(var(--u)*2.39 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*1.05 - var(--t)/2) calc(var(--u)*2.66 - var(--t)/2) var(--T),
+  //       conic-gradient(at calc(var(--u)*0.25 + var(--t)) var(--t),#0000 75%,{colorOne} 0) calc(var(--u)*2.5 - var(--t)/2) calc(var(--u)*2.66 - var(--t)/2) var(--T),
+  //       {bgColor}`,
+  //   },
+  //   variables: {
+  //     size: size(150, 80, 320, 4),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#d4af37',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#0d0d0d',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#0f3d2e',
+  //       role: 'ground',
+  //     },
+  //     weight: {
+  //       type: 'range',
+  //       value: 3,
+  //       min: 1,
+  //       max: 8,
+  //       step: 0.5,
+  //     },
+  //   },
+  // },
+
+  // Chain: face-on oval links joined by edge-on links, in rows half a link out of step. Each link is
+  // drawn inside its own layer tile and shifted, so none is cut at a tile edge.
+  // 'chain': {
+  //   template: {
+  //     '--_H': 'calc({size}px*{spacing})',
+  //     '--_T': '/{size}px calc(2*var(--_H))',
+  //     '--_a': 'radial-gradient(calc({size}px*.28) calc({size}px*.16) at 30% 25%,#0000 70%,{colorOne} 73% 97%,#0000 100%)',
+  //     '--_b': 'radial-gradient(calc({size}px*.3) calc({size}px*.055) at 30% 25%,#0000 40%,{colorTwo} 46% 96%,#0000 100%)',
+  //     'background': `
+  //       var(--_b) calc({size}px*.5) 0 var(--_T),
+  //       var(--_a) 0 0 var(--_T),
+  //       var(--_b) 0 var(--_H) var(--_T),
+  //       var(--_a) calc({size}px*.5) var(--_H) var(--_T),
+  //       {bgColor}`,
+  //   },
+  //   variables: {
+  //     size: size(100, 40, 240, 4),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#c0c4cc',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#8a9099',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#20242b',
+  //       role: 'ground',
+  //     },
+  //     spacing: {
+  //       type: 'range',
+  //       value: 0.55,
+  //       min: 0.38,
+  //       max: 1.2,
+  //       step: 0.01,
+  //     },
+  //   },
+  // },
+
+  // Bubbles: rings with a glint, four sizes on four tile sizes that never line up.
+  // 'bubbles': {
+  //   template: {
+  //     background: `
+  //       radial-gradient(circle at calc(50% - calc({size}px*0.18)*.45) calc(50% - calc({size}px*0.18)*.45),{colorTwo} calc(calc({size}px*0.18)*.16),#0000 calc(calc({size}px*0.18)*.16 + 1px)) calc({size}px*0) calc({size}px*0)/calc({size}px*1) calc({size}px*1),
+  //       radial-gradient(circle,#0000 calc(calc({size}px*0.18) - {weight}px),{colorOne} 0 calc({size}px*0.18),#0000 calc(calc({size}px*0.18) + 1px)) calc({size}px*0) calc({size}px*0)/calc({size}px*1) calc({size}px*1),
+  //       radial-gradient(circle at calc(50% - calc({size}px*0.1)*.45) calc(50% - calc({size}px*0.1)*.45),{colorTwo} calc(calc({size}px*0.1)*.16),#0000 calc(calc({size}px*0.1)*.16 + 1px)) calc({size}px*0.31) calc({size}px*0.52)/calc({size}px*0.77) calc({size}px*0.77),
+  //       radial-gradient(circle,#0000 calc(calc({size}px*0.1) - {weight}px),{colorOne} 0 calc({size}px*0.1),#0000 calc(calc({size}px*0.1) + 1px)) calc({size}px*0.31) calc({size}px*0.52)/calc({size}px*0.77) calc({size}px*0.77),
+  //       radial-gradient(circle at calc(50% - calc({size}px*0.27)*.45) calc(50% - calc({size}px*0.27)*.45),{colorTwo} calc(calc({size}px*0.27)*.16),#0000 calc(calc({size}px*0.27)*.16 + 1px)) calc({size}px*0.7) calc({size}px*0.9)/calc({size}px*1.43) calc({size}px*1.43),
+  //       radial-gradient(circle,#0000 calc(calc({size}px*0.27) - {weight}px),{colorOne} 0 calc({size}px*0.27),#0000 calc(calc({size}px*0.27) + 1px)) calc({size}px*0.7) calc({size}px*0.9)/calc({size}px*1.43) calc({size}px*1.43),
+  //       radial-gradient(circle at calc(50% - calc({size}px*0.06)*.45) calc(50% - calc({size}px*0.06)*.45),{colorTwo} calc(calc({size}px*0.06)*.16),#0000 calc(calc({size}px*0.06)*.16 + 1px)) calc({size}px*0.12) calc({size}px*0.37)/calc({size}px*0.53) calc({size}px*0.53),
+  //       radial-gradient(circle,#0000 calc(calc({size}px*0.06) - {weight}px),{colorOne} 0 calc({size}px*0.06),#0000 calc(calc({size}px*0.06) + 1px)) calc({size}px*0.12) calc({size}px*0.37)/calc({size}px*0.53) calc({size}px*0.53),
+  //       {bgColor}`,
+  //   },
+  //   variables: {
+  //     size: size(120, 50, 260, 4),
+  //     colorOne: {
+  //       type: 'color',
+  //       value: '#bfe9ff',
+  //     },
+  //     colorTwo: {
+  //       type: 'color',
+  //       value: '#ffffff',
+  //     },
+  //     bgColor: {
+  //       type: 'color',
+  //       value: '#0b3954',
+  //       role: 'ground',
+  //     },
+  //     weight: {
+  //       type: 'range',
+  //       value: 2,
+  //       min: 1,
+  //       max: 6,
+  //       step: 0.5,
+  //     },
+  //   },
+  // },
 }
 export default templates

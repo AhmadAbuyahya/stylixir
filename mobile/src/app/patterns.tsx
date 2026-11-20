@@ -32,7 +32,7 @@ export default function PatternsSheet() {
       stickyHeaderIndices={[0]}
       ListFooterComponent={(
         <Text style={styles.credit} accessibilityRole="link" onPress={() => Linking.openURL('https://github.com/Afif13/CSS-Pattern')}>
-          Patterns adapted from CSS-Pattern by Temani Afif, MIT License.
+          Patterns adapted from CSS-Pattern by Temani Afif and the CSS3 Patterns Gallery by Lea Verou, MIT License.
         </Text>
       )}
       contentContainerStyle={styles.grid}

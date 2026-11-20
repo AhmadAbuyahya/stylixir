@@ -241,6 +241,19 @@ function isolation(combo: string[], index: number) {
   return Math.min(...combo.filter((_, i) => i !== index).map(hex => distance(hex, combo[index])))
 }
 
+const lightness = (hex: string) => tinycolor(hex).toHsl().l * 100
+
+/** Near-black or near-white, as procedural grounds are, so figures read against it. */
+const groundable = (hex: string) => lightness(hex) < 22 || lightness(hex) > 85
+
+const byLuminance = (combo: string[]) => [...combo].sort((a, b) => tinycolor(a).getLuminance() - tinycolor(b).getLuminance())
+
+/** The darkest and lightest colors of a combo that could serve as its ground. */
+function groundEnds(combo: string[]) {
+  const sorted = byLuminance(combo)
+  return [...new Set([sorted[0], sorted[sorted.length - 1]])].filter(groundable)
+}
+
 /** Studied combos: Wada's dictionary plus every template's own starting colors, minus the ones too close to read. */
 const CURATED = [
   ...COMBOS,
@@ -249,24 +262,28 @@ const CURATED = [
     .map(template => Object.values(template.variables)
       .filter(variable => variable.type === 'color')
       .map(variable => String(variable.value))),
-].filter(combo => combo.every((_, i) => isolation(combo, i) >= (combo.length === 2 ? 60 : 30)))
+].filter(combo => combo.every((_, i) => isolation(combo, i) >= (combo.length === 2 ? 60 : 30))
+  && (combo.length !== 2 || Math.abs(lightness(combo[0]) - lightness(combo[1])) > 25))
 
 /** Share of rolls that use a studied combo; the rest stay procedural so rolls never run out. */
 const CURATED_SHARE = 0.7
 
 function curatedColors(count: number, hasGround: boolean, rng: Rng) {
-  const pool = CURATED.filter(combo => combo.length === count)
-  // Only sizes with a deep pool, so a roll rarely repeats.
-  if (pool.length < 50)
+  // A ground must be near-black or near-white, as procedural grounds are.
+  const pool = CURATED.filter(combo => combo.length === count && (!hasGround || groundEnds(combo).length))
+  // Only sizes with a deep pool, and a shallower pool gets a smaller share, so a roll rarely repeats.
+  if (pool.length < 50 || rng() >= CURATED_SHARE * Math.min(1, pool.length / 150))
     return undefined
   const combo = shuffle(pick(pool, rng), rng)
   if (!hasGround)
     return combo
 
-  // The ground is the darkest or lightest color, leaning to the one that stands further from the figures.
-  const sorted = [...combo].sort((a, b) => tinycolor(a).getLuminance() - tinycolor(b).getLuminance())
+  // The ground is a near-black or near-white end; when both ends qualify, lean to the one that stands
+  // further from the figures.
+  const sorted = byLuminance(combo)
+  const ends = groundEnds(combo)
   const lean = isolation(sorted, 0) - isolation(sorted, count - 1) + rand(-20, 20, rng)
-  const ground = sorted[lean > 0 ? 0 : count - 1]
+  const ground = ends.length === 1 ? ends[0] : sorted[lean > 0 ? 0 : count - 1]
   return [ground, ...combo.filter(hex => hex !== ground)]
 }
 
@@ -275,11 +292,9 @@ function generateColors(count: number, harmony: ColorHarmony, hasGround: boolean
     return []
   if (harmony === 'ramp')
     return generateRamp(count, rng)
-  if (rng() < CURATED_SHARE) {
-    const curated = curatedColors(count, hasGround, rng)
-    if (curated)
-      return curated
-  }
+  const curated = curatedColors(count, hasGround, rng)
+  if (curated)
+    return curated
   if (count === 1 || harmony === 'pair' || count === 2)
     return generatePair(rng, hasGround).slice(0, count)
   return generateSet(count, rng, hasGround)

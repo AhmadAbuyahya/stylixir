@@ -141,7 +141,7 @@ watch(() => props.open, async (open) => {
     </p>
 
     <p class="book-credit">
-      Patterns adapted from <a href="https://github.com/Afif13/CSS-Pattern" target="_blank" rel="noopener">CSS-Pattern</a> by Temani Afif, MIT License.
+      Patterns adapted from <a href="https://github.com/Afif13/CSS-Pattern" target="_blank" rel="noopener">CSS-Pattern</a> by Temani Afif and the <a href="https://github.com/LeaVerou/css3patterns" target="_blank" rel="noopener">CSS3 Patterns Gallery</a> by Lea Verou, MIT License.
     </p>
   </div>
 </template>
