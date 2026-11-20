@@ -1,3 +1,4 @@
+// Patterns adapted from CSS-Pattern by Temani Afif (https://github.com/Afif13/CSS-Pattern), MIT. Notice in /LICENSE.
 import type { Templates } from '~/types'
 
 function size(value: number, min: number, max: number, step?: number) {

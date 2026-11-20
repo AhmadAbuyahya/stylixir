@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
-import { FlatList, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
+import { FlatList, Linking, Pressable, StyleSheet, Text, useWindowDimensions } from 'react-native'
 import templates from '~/lib/templates'
 import { SHEET_HEADER, SheetHeader, theme } from '@/components/ui'
 import { patternName, useStudio } from '@/lib/studio'
@@ -30,6 +30,11 @@ export default function PatternsSheet() {
       // Part of the list, not above it: an iOS sheet lays its scroll view over anything placed on top.
       ListHeaderComponent={<SheetHeader title="Patterns" note={patternName(active)} />}
       stickyHeaderIndices={[0]}
+      ListFooterComponent={(
+        <Text style={styles.credit} accessibilityRole="link" onPress={() => Linking.openURL('https://github.com/Afif13/CSS-Pattern')}>
+          Patterns adapted from CSS-Pattern by Temani Afif, MIT License.
+        </Text>
+      )}
       contentContainerStyle={styles.grid}
       columnWrapperStyle={styles.row}
       getItemLayout={(_, index) => ({ length: row, offset: SHEET_HEADER + row * index, index })}
@@ -62,4 +67,5 @@ const styles = StyleSheet.create({
   row: { gap: GAP, paddingHorizontal: PAD },
   tile: { marginBottom: GAP, borderRadius: 12, borderCurve: 'continuous', overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
   selected: { borderColor: theme.text },
+  credit: { color: theme.dim, fontSize: 12, textAlign: 'center', paddingHorizontal: PAD, paddingTop: 16 },
 })

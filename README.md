@@ -29,3 +29,7 @@ Start the dev server:
 ```bash
    npm run dev
 ```
+
+## Credits
+
+The starting patterns are adapted from [CSS-Pattern](https://github.com/Afif13/CSS-Pattern) by [Temani Afif](https://github.com/Afif13), MIT licensed. See [LICENSE](LICENSE) for the full notice.
