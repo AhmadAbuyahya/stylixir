@@ -53,7 +53,8 @@ export default function PatternsSheet() {
             accessibilityState={{ selected }}
             style={({ pressed }) => [styles.tile, { width: tile, height: tile * ASPECT, opacity: pressed ? 0.8 : 1 }, selected && styles.selected]}
           >
-            <Image source={thumbs[item]} style={StyleSheet.absoluteFill} contentFit="cover" transition={0} />
+            {/* Memory only: Glide's disk cache keys bundled images by resource ID + versionCode, IDs shift when thumbnails are added, and versionCode never changes, so an updated app showed old images. */}
+            <Image source={thumbs[item]} style={StyleSheet.absoluteFill} contentFit="cover" transition={0} cachePolicy="memory" />
           </Pressable>
         )
       }}
