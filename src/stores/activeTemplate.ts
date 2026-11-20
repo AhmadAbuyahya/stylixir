@@ -206,7 +206,7 @@ export const useActiveTemplateStore = defineStore('activeTemplate', () => {
   })
 
   /** Every layer for the current roll — pattern, light, overlay, grain, warp filter, motion rules. */
-  function frame(options: Partial<Omit<FrameOptions, 'template' | 'variables' | 'values' | 'effects' | 'overlay'>> & { overlay?: boolean } = {}) {
+  function frame(options: Partial<Omit<FrameOptions, 'template' | 'variables' | 'effects' | 'overlay'>> & { overlay?: boolean } = {}) {
     const { overlay = true, ...rest } = options
     return buildFrame({
       template: template.value,

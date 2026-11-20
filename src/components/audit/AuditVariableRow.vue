@@ -11,6 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   updateLive: [value: string | number]
   updateVariable: [patch: Partial<Variable>]
+  rename: [name: string, input: HTMLInputElement]
   remove: []
 }>()
 
@@ -42,9 +43,15 @@ function commitNumber(key: NumberField, event: Event) {
   <div class="row" :class="{ 'row-wild': variable.breaking }">
     <div class="row-head">
       <div class="min-w-0">
-        <p class="row-name">
-          {{ name }}
-        </p>
+        <input
+          class="row-name"
+          :value="name"
+          aria-label="Dial name"
+          title="Rename this dial and every {placeholder} that uses it"
+          spellcheck="false"
+          @change="emit('rename', ($event.target as HTMLInputElement).value, $event.target as HTMLInputElement)"
+          @keydown.enter="($event.target as HTMLInputElement).blur()"
+        >
         <p class="row-label">
           {{ startCase(name) }}
         </p>
@@ -142,6 +149,22 @@ function commitNumber(key: NumberField, event: Event) {
   font-family: ui-monospace, monospace;
   font-size: 12px;
   color: rgb(94 234 212);
+  width: 100%;
+  padding: 0 0.25rem;
+  margin-left: -0.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+}
+
+.row-name:hover {
+  border-color: rgb(255 255 255 / 0.1);
+}
+
+.row-name:focus {
+  outline: none;
+  border-color: rgb(45 212 191);
+  background: rgb(255 255 255 / 0.04);
 }
 
 .row-label {

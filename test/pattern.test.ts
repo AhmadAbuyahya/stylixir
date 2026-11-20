@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { randomNumber, randomVariables } from '~/lib/pattern'
+import { blendValues, randomNumber, randomVariables } from '~/lib/pattern'
 import type { Variables } from '~/types'
 
 describe('randomNumber', () => {
@@ -35,5 +35,27 @@ describe('randomVariables', () => {
     expect(sizes.size).toBeGreaterThan(1)
     const angles = new Set(Array.from({ length: 200 }, () => randomVariables(variables, { colors: false, breaking: true }).angle))
     expect(angles.size).toBeGreaterThan(1)
+  })
+})
+
+describe('blendValues', () => {
+  const variables: Variables = {
+    size: { type: 'range', value: 50, min: 10, max: 90 },
+    bg: { type: 'color', value: '#000000' },
+  }
+  const a = { size: 10, bg: '#000000' }
+  const b = { size: 30, bg: '#ffffff' }
+
+  it('hits both ends exactly', () => {
+    expect(blendValues(a, b, 0, variables)).toEqual(a)
+    expect(blendValues(a, b, 1, variables)).toEqual(b)
+  })
+
+  it('blends numbers and colors halfway', () => {
+    expect(blendValues(a, b, 0.5, variables)).toEqual({ size: 20, bg: '#808080' })
+  })
+
+  it('jumps to the target for a color that is not plain hex', () => {
+    expect(blendValues(a, { ...b, bg: '#ffffff80' }, 0.5, variables).bg).toBe('#ffffff80')
   })
 })

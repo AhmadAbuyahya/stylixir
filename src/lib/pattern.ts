@@ -106,3 +106,46 @@ export function paramToValue(
 
   return String(raw)
 }
+
+function rgbOf(color: string) {
+  const hex = color.replace(/^#/, '')
+  const full = hex.length === 3 ? hex.replace(/./g, '$&$&') : hex
+  return /^[0-9a-fA-F]{6}$/.test(full) ? [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16)) : undefined
+}
+
+/**
+ * Values part-way (0..1) between two rolls of the same pattern: numbers and colors blend,
+ * anything else (or a color that isn't plain hex) jumps to the target.
+ * shortcut: colors blend in sRGB, so a hue-far pair dips through grey; upgrade to OKLab if that shows.
+ */
+export function blendValues(from: Record<string, string | number>, to: Record<string, string | number>, t: number, variables: Variables) {
+  const out = { ...to }
+  for (const [key, variable] of Object.entries(variables)) {
+    const a = from[key]
+    const b = to[key]
+    if (typeof a === 'number' && typeof b === 'number') {
+      out[key] = +(a + (b - a) * t).toFixed(3)
+    }
+    else if (variable.type === 'color') {
+      const x = rgbOf(String(a))
+      const y = rgbOf(String(b))
+      if (x && y)
+        out[key] = `#${x.map((c, i) => Math.round(c + (y[i] - c) * t).toString(16).padStart(2, '0')).join('')}`
+    }
+  }
+  return out
+}
+
+/** Runs `onFrame` with eased 0..1 progress until it reaches 1; returns a stop function. */
+export function tween(ms: number, onFrame: (t: number) => void) {
+  const start = performance.now()
+  let id = 0
+  const step = (now: number) => {
+    const p = Math.min((now - start) / ms, 1)
+    onFrame(1 - (1 - p) ** 3)
+    if (p < 1)
+      id = requestAnimationFrame(step)
+  }
+  id = requestAnimationFrame(step)
+  return () => cancelAnimationFrame(id)
+}

@@ -4,7 +4,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview'
 import type { ExportSpec } from '~/lib/exportImage'
 import type { Look } from '~/lib/recipe'
 import { setExporter } from '@/lib/canvas'
-import { frameFor } from '@/lib/studio'
+import { frameFor, glideFrames } from '@/lib/studio'
 import html from '@/renderer/html'
 
 type Reply = { ready?: true, id?: number, data?: string, error?: string }
@@ -13,6 +13,7 @@ type Reply = { ready?: true, id?: number, data?: string, error?: string }
 const Canvas = WebView<object>
 
 const paintScript = (frame: ReturnType<typeof frameFor>) => `window.stylixir.paint(${JSON.stringify(frame)});true;`
+const glideScript = (frames: ReturnType<typeof frameFor>[]) => `window.stylixir.glide(${JSON.stringify(frames)},450);true;`
 
 /**
  * Paints the look with the website's own engine. CSS patterns need a browser engine to draw
@@ -26,12 +27,16 @@ export function PatternCanvas({ look, style }: { look: Look, style?: StyleProp<V
   const nextId = useRef(0)
   const frame = useMemo(() => frameFor(look), [look])
   const latest = useRef(frame)
+  const shown = useRef(look)
 
+  // Several dials changing at once (roll colors) glide; a new pattern or a slider drag paints straight away.
   useEffect(() => {
+    const frames = glideFrames(shown.current, look)
+    shown.current = look
     latest.current = frame
     if (ready.current)
-      view.current?.injectJavaScript(paintScript(frame))
-  }, [frame])
+      view.current?.injectJavaScript(frames ? glideScript(frames) : paintScript(frame))
+  }, [frame, look])
 
   useEffect(() => {
     setExporter((spec: ExportSpec) => new Promise((resolve, reject) => {

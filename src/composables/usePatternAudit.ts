@@ -103,6 +103,26 @@ export function usePatternAudit() {
       liveValues.value[name] = patch.value
   }
 
+  /** Renames a dial and every `{name}` in the CSS, keeping its place in the list. */
+  function renameVariable(name: string, nextName: string): 'renamed' | 'invalid' | 'taken' | null {
+    const next = nextName.trim()
+    if (next === name || !(name in draft.value.variables))
+      return null
+    if (!/^[a-zA-Z]\w*$/.test(next))
+      return 'invalid'
+    if (next in draft.value.variables)
+      return 'taken'
+    draft.value.variables = Object.fromEntries(
+      Object.entries(draft.value.variables).map(([key, v]) => [key === name ? next : key, v]),
+    )
+    draft.value.template = Object.fromEntries(
+      Object.entries(draft.value.template).map(([property, css]) => [property, css.split(`{${name}}`).join(`{${next}}`)]),
+    )
+    liveValues.value[next] = liveValues.value[name]
+    delete liveValues.value[name]
+    return 'renamed'
+  }
+
   function removeVariable(name: string) {
     const variable = draft.value.variables[name]
     if (!variable)
@@ -158,6 +178,7 @@ export function usePatternAudit() {
     removeTemplateProperty,
     addVariable,
     updateVariable,
+    renameVariable,
     removeVariable,
     shuffleLiveValues,
     defineMissingPlaceholders,

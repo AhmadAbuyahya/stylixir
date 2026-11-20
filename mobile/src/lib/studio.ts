@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { DEFAULT_EFFECTS, type Effects, buildFrame } from '~/lib/effects'
 import { pushHistory } from '~/lib/looks'
 import { buildOverlayBackground } from '~/lib/overlays'
-import { defaultVariables, randomNumber, randomTemplateSlug, randomVariables } from '~/lib/pattern'
+import { blendValues, defaultVariables, randomNumber, randomTemplateSlug, randomVariables } from '~/lib/pattern'
 import { DEFAULT_OVERLAY, type Look, type Overlay, decodeRecipe, encodeRecipe } from '~/lib/recipe'
 import templates from '~/lib/templates'
 
@@ -53,6 +53,20 @@ export function frameFor(look: Look) {
     effects: look.effects,
     overlay: { 'background': buildOverlayBackground(overlayType, overlayColor, overlayOpacity), 'backdrop-filter': `blur(${overlayBlur}px)` },
     animate: false,
+  })
+}
+
+/**
+ * Eased in-between frames from one look to the next, or undefined when it should just snap:
+ * a new pattern, or a single dial (a slider drag) has nothing to glide.
+ */
+export function glideFrames(from: Look, to: Look, steps = 14) {
+  if (from.template !== to.template || Object.keys(to.values).filter(key => to.values[key] !== from.values[key]).length < 2)
+    return undefined
+  const { variables } = templates[to.template]
+  return Array.from({ length: steps }, (_, i) => {
+    const t = (i + 1) / steps
+    return frameFor({ ...to, values: blendValues(from.values, to.values, 1 - (1 - t) ** 3, variables) })
   })
 }
 

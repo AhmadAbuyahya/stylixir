@@ -33,6 +33,7 @@ const {
   removeTemplateProperty,
   addVariable,
   updateVariable,
+  renameVariable,
   removeVariable,
   shuffleLiveValues,
   defineMissingPlaceholders,
@@ -206,6 +207,16 @@ function handleAddVariable(name: string, variable: Variable) {
     return
   }
   addToast({ id: Date.now(), variant: 'success', title: `Added variable ${name}` })
+}
+
+function handleRenameVariable(name: string, next: string, input: HTMLInputElement) {
+  const result = renameVariable(name, next)
+  if (result === 'renamed')
+    addToast({ id: Date.now(), variant: 'success', title: `Renamed {${name}} → {${next.trim()}}` })
+  else if (result)
+    addToast({ id: Date.now(), variant: 'warning', title: result === 'taken' ? `"${next.trim()}" already exists` : 'Use letters, digits and _, starting with a letter' })
+  if (result !== 'renamed')
+    input.value = name
 }
 
 function handleRemoveVariable(name: string) {
@@ -450,6 +461,7 @@ async function promoteDraft() {
             :live-value="liveValues[key] ?? variable.value"
             @update-live="liveValues[key] = $event"
             @update-variable="updateVariable(key, $event)"
+            @rename="(next, input) => handleRenameVariable(key, next, input)"
             @remove="handleRemoveVariable(key)"
           >
             <template #previews>
